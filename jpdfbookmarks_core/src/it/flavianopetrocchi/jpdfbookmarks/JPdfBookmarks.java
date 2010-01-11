@@ -55,7 +55,7 @@ class JPdfBookmarks {
 		VERSION,
 	}
 	// <editor-fold defaultstate="expanded" desc="Member variables">
-	public static final String VERSION = "2.0.0";
+	public static final String VERSION = "2.0.1";
 	public static final String APP_NAME = "JPdfBookmarks";
 	public static final String DOWNLOAD_URL =
 			"http://flavianopetrocchi.blogspot.com/2008/07/jpsdbookmarks-download-page.html";
