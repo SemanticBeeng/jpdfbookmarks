@@ -39,6 +39,7 @@ public class Bookmark extends DefaultMutableTreeNode {
 			BOLD = 2,
 			ITALIC = 3,
 			OPEN = 4;
+        
 	private String title = Res.getString("DEFAULT_TITLE");
 	private int pageNumber = -1;
 	private boolean bold = false, italic = false;
