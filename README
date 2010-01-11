@@ -1,0 +1,139 @@
+===============================================================================
+This is jpdfbookmarks
+
+Authors: Flaviano Petrocchi
+E-mail: flavianopetrocchi@gmail.com
+Author's Blog: http://flavianopetrocchi.blogspot.com/
+sourceforge: http://sourceforge.net/projects/jpdfbookmarks/
+
+For licence information read COPYING file, read the dependencies section in 
+this README for the licenses and copyright of the open source libraries used 
+by this project.
+===============================================================================
+
+Sections:
+- DESCRIPTION
+- DEPENDENCIES
+- HOW TO EXECUTE
+- HOW TO BUILD
+- CONTACTS
+
+*******************************************************************************
+	DESCRIPTION
+*******************************************************************************
+
+This software allows you to create and edit bookmarks on existing pdf files.
+
+Installers will be available for linux and windows, while other operating 
+systems users can download the zip archive version, i remind you that this 
+is a java program so you need a Java Runtime Environment (version 6 or later) 
+to run it.
+
+To use the linux installer remember to give the downloaded file execution 
+permissions, this can be done right clicking on it and choosing properties on 
+most desktop environments or with the command:
+
+chmod +x jpdfbookmarks-x.x.x-Linux-x86-Install
+
+On Windows you should be able to launch the installer with a double click.
+
+*******************************************************************************
+	DEPENDENCIES
+*******************************************************************************
+This software requires some libraries distributed in the lib folder which are 
+copyright of their respective authors.
+
+Apache Commons CLI
+Copyright 2001-2009 The Apache Software Foundation 
+http://commons.apache.org/cli/
+Apache License Version 2.0, January 2004
+http://www.apache.org/licenses/
+
+iText-2.1.7
+Copyright 1999, 2000, 2001, 2002 by Bruno Lowagie.
+http://www.lowagie.com/iText/
+GNU LIBRARY GENERAL PUBLIC LICENSE Version 2 (or later version)
+http://www.gnu.org/licenses/
+
+PDF Renderer
+Copyright 2004 Sun Microsystems, Inc. 
+4150 Network Circle, Santa Clara, California 95054, U.S.A. All rights reserved.
+https://pdf-renderer.dev.java.net/
+GNU LESSER GENERAL PUBLIC LICENSE Version 2.1 (or later version)
+http://www.gnu.org/licenses/
+
+
+*******************************************************************************
+	HOW TO EXECUTE 
+*******************************************************************************
+
+This software has a command line and a graphical interface here is a short help
+guide.
+
+usage: jpdfbookmarks [--dump | --apply <bookmarks.txt> --out <output.pdf> |
+                     --help | --version] [input.pdf]
+
+To launch the graphic interface invoke without parameters or pass a pdf file you 
+want as parameter. On Windows the command line program must be called with
+jpdfbookmarks_cli.exe while the graphic interface must be called with
+jpdfbookmarks.exe.
+
+ -a,--apply <bookmarks.txt>  Apply bookmarks from the file bookmarks.txt to a
+                             pdf file passed as argument  and save it to a new
+                             pdf file specified with --out output.pdf.
+ -d,--dump                   Extract bookmarks from a PDF file passed as
+                             argument and print them to standard output.
+ -h,--help                   Print this message.
+ -i,--indentation <arg>      String to use as indentation string (default vaue
+                             is the tab character) , must be different from the
+                             title and page number separator (default value '/')
+
+                             and from the attributes separator (default value
+                             ',').
+ -o,--out <output.pdf>       Output PDF file --out file.pdf or -o file.pdf.  Use
+
+                             with the --apply option.
+ -p,--page-sep <arg>         String to be use between title and page number
+                             (default value is '/'), must be different from
+                             attributes separator (default value ',') and from
+                             indentation string (default vaue is the tab
+                             character).
+ -t,--attributes-sep <arg>   String to be use between the bookmark attributes
+                             (default value is ','), must be different from the
+                             title and page number  separator (default value
+                             '/') and from indentation string (default vaue is
+                             the tab character).
+ -v,--version                Version number.
+
+In the bookmarks.txt file each line is a bookmark and the hierarchy is made by
+tab characters (not spaces),in the format <Title of bookmark/target
+page[,FitType,TopOffset,LeftOffset] like the following example:
+Chapter 1/23
+[TAB]Para 1.1/25,FitWidth,96
+[TAB][TAB]Para 1.1.1/26,FitHeight,43
+Chapter 2/30,TopLeft,120,42
+[TAB]Para 2.1/32,FitPage.
+It is also possible to use an extended format to specify the text style, the
+color and the open or close state of the bookmark, like the following example:
+Para 1.1/25,Red,bold,italic,open,FitWidth,96 or
+Para 1.1/25,Green,noBold,noItalic,closed,FitWidth,96
+
+*******************************************************************************
+	HOW TO BUILD 
+*******************************************************************************
+- Using Netbeans
+- Using Command Line
+
+*******************************************************************************
+	CONTACTS
+*******************************************************************************
+
+For more instructions and information go to my blog 
+http://flavianopetrocchi.blogspot.com/ please post your comments and bug
+reports.
+
+I hope this will help you getting your job done, let me know.
+
+Best Regards,
+
+Flaviano Petrocchi
