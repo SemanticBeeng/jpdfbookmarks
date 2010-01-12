@@ -19,14 +19,12 @@
  * You should have received a copy of the GNU General Public License
  * along with JPdfBookmarks.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-
-
 package it.flavianopetrocchi.jpdfbookmarks;
 
 import java.nio.ByteBuffer;
 import com.sun.pdfview.PDFFile;
 import com.sun.pdfview.PDFPage;
+import it.flavianopetrocchi.utilities.Ut;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -50,7 +48,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.Scrollable;
 import javax.swing.SwingUtilities;
-
 
 public class PdfRendererViewPanel extends JScrollPane implements IPdfView {
 
@@ -81,10 +78,16 @@ public class PdfRendererViewPanel extends JScrollPane implements IPdfView {
 
     @Override
     public void open(File file) throws Exception {
-        RandomAccessFile raf = new RandomAccessFile(file, "r");
-        FileChannel channel = raf.getChannel();
-        ByteBuffer buf = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
-        document = new PDFFile(buf);
+        //this locks the file
+        //RandomAccessFile raf = new RandomAccessFile(file, "r");
+        //FileChannel channel = raf.getChannel();
+        //ByteBuffer buf = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
+
+        //this instead should not lock the file
+        byte[] fileBytes = Ut.getBytesFromFile(file);
+        ByteBuffer fileBuffer = ByteBuffer.allocate(fileBytes.length);
+        fileBuffer.put(fileBytes);
+        document = new PDFFile(fileBuffer);
         numberOfPages = document.getNumPages();
     }
 
