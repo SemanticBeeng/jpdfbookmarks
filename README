@@ -40,6 +40,7 @@ On Windows you should be able to launch the installer with a double click.
 *******************************************************************************
 	DEPENDENCIES
 *******************************************************************************
+
 This software requires some libraries distributed in the lib folder which are 
 copyright of their respective authors.
 
@@ -121,8 +122,47 @@ Para 1.1/25,Green,noBold,noItalic,closed,FitWidth,96
 *******************************************************************************
 	HOW TO BUILD 
 *******************************************************************************
-- Using Netbeans
-- Using Command Line
+
+My development environment is the JDK 6, I use the Netbeans IDE version 6.7.1
+but you can build jpdfbookmarks on the command line using ant if you prefer.
+Netbeans have very good subversion integration if you use this IDE I recommend
+it, otherwise download an appropriate subversion client for your system, I will
+first guide you to build the program in Netbeans and then on the command line.
+
+From the Netbeans menu choose "Team->Subversion->Checkout" and on the dialog
+the repository url to enter is:
+
+https://jpdfbookmarks.svn.sourceforge.net/svnroot/jpdfbookmarks/trunk
+
+click next and you will get to the following another panel, choose trunk as the
+repository folder and check "Skip "trunk" and checkout only its content", choose
+the local folder, for example:
+
+C:\Users\username\Documents\NetbeansProjects\jpdfbookmarks
+
+and check "Scan for Netbeans Projects after Checkout", then click Finish.
+Wait for the download to finish and then you will get a message box, click on
+"Open Project ..." and on the opened dialog select the project
+jpdfbookmarks_core, check "Open Required" and click Open.
+
+Run the project in Netbeans with F6 key or with the appropriate Run menu item.
+
+If you prefer using the command line download the current source with the
+command:
+
+$> svn co https://jpdfbookmarks.svn.sourceforge.net/svnroot/jpdfbookmarks/trunk jpdfbookmarks
+
+enter the directory containing the main project with:
+
+$> cd jpdfbookmarks/jpdfbookmarks_core
+
+build the project with:
+
+$> ant jar
+
+execute the program with:
+
+$> java -jar dist/jpdfbookmarks.jar
 
 *******************************************************************************
 	CONTACTS
