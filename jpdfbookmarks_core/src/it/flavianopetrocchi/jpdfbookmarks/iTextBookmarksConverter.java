@@ -70,7 +70,6 @@
  * you aren't using an obsolete version:
  * http://www.lowagie.com/iText/
  */
-
 package it.flavianopetrocchi.jpdfbookmarks;
 
 import com.lowagie.text.DocumentException;
