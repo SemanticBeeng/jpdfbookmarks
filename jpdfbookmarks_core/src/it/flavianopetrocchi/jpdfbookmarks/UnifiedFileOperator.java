@@ -31,7 +31,8 @@ import javax.swing.SwingUtilities;
 public class UnifiedFileOperator {
 
     //private IPdfView viewPanel = new PdfViewAdapter();
-    private IPdfView viewPanel = new PdfRendererViewPanel();
+    //private IPdfView viewPanel = new PdfRendererViewPanel();
+    private IPdfView viewPanel = new JPedalViewPanel();
     private String filePath;
     private File file;
     private boolean showOnOpen = false;

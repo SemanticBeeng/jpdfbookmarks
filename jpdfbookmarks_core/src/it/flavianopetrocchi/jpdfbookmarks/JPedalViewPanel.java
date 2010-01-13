@@ -1,29 +1,30 @@
 /*
- * PdfRendererViewPanel.java
- *
+ * JPedalViewPanel.java
+ * 
  * Copyright (c) 2010 Flaviano Petrocchi <flavianopetrocchi at gmail.com>.
  * All rights reserved.
- *
+ * 
  * This file is part of JPdfBookmarks.
- *
+ * 
  * JPdfBookmarks is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * 
  * JPdfBookmarks is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License
  * along with JPdfBookmarks.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package it.flavianopetrocchi.jpdfbookmarks;
 
 import java.nio.ByteBuffer;
-import com.sun.pdfview.PDFFile;
-import com.sun.pdfview.PDFPage;
+//import com.sun.pdfview.PDFFile;
+//import com.sun.pdfview.PDFPage;
 import it.flavianopetrocchi.utilities.Ut;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -37,19 +38,18 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.RandomAccessFile;
-import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.Scrollable;
 import javax.swing.SwingUtilities;
+import org.jpedal.PdfDecoder;
+import org.jpedal.objects.PdfPageData;
 
-public class PdfRendererViewPanel extends JScrollPane implements IPdfView {
+public class JPedalViewPanel extends JScrollPane implements IPdfView {
 
     // <editor-fold defaultstate="collapsed" desc="Members">
     private ArrayList<PageChangedListener> pageChangedListeners =
@@ -66,29 +66,27 @@ public class PdfRendererViewPanel extends JScrollPane implements IPdfView {
     private int currentPage;
     private int oldPage = -2;
     private PdfRenderPanel rendererPanel;
+    //private PdfRenderer rendererPanel;
     private FitType fitType = FitType.FitPage;
     private int numberOfPages;
-    private PDFPage currentPageObject;
+    private PdfPageData currentPageObject;
     private boolean drawingComplete = true;
     private Rectangle rect = null;
     private BufferedImage img;
     private float oldScale;
     volatile boolean painting = false;
-    private PDFFile document;// </editor-fold>
+    private PdfDecoder decoder;// </editor-fold>
 
     @Override
     public void open(File file) throws Exception {
-        //this locks the file
-        //RandomAccessFile raf = new RandomAccessFile(file, "r");
-        //FileChannel channel = raf.getChannel();
-        //ByteBuffer buf = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
-
-        //this instead should not lock the file
+        if (decoder == null) {
+            decoder = new PdfDecoder();
+        }
         byte[] fileBytes = Ut.getBytesFromFile(file);
-        ByteBuffer fileBuffer = ByteBuffer.allocate(fileBytes.length);
-        fileBuffer.put(fileBytes);
-        document = new PDFFile(fileBuffer);
-        numberOfPages = document.getNumPages();
+        decoder.openPdfArray(fileBytes);
+        currentPageObject = decoder.getPdfPageData();
+        numberOfPages = decoder.getPageCount();
+
     }
 
     @Override
@@ -99,15 +97,16 @@ public class PdfRendererViewPanel extends JScrollPane implements IPdfView {
 
     @Override
     public void close() {
-        if (document != null) {
-            document = null;
+        if (decoder != null) {
+            decoder.closePdfFile();
+            decoder = null;
         }
         img = null;
         currentPage = 0;
         rendererPanel.repaint();
     }
 
-    public PdfRendererViewPanel() {
+    public JPedalViewPanel() {
 //		setVerticalScrollBarPolicy(VERTICAL_SCROLLBAR_ALWAYS);
 //		setHorizontalScrollBarPolicy(HORIZONTAL_SCROLLBAR_ALWAYS);
 
@@ -118,7 +117,7 @@ public class PdfRendererViewPanel extends JScrollPane implements IPdfView {
         addComponentListener(new ResizeListener());
     }
 
-    public PdfRendererViewPanel(FitType fitType) {
+    public JPedalViewPanel(FitType fitType) {
         this();
         this.fitType = fitType;
     }
@@ -149,13 +148,20 @@ public class PdfRendererViewPanel extends JScrollPane implements IPdfView {
             currentPage = numPage - 1;
         }
 
-        try {
-            currentPageObject = document.getPage(currentPage + 1, true);
-        } catch (Exception e) {
-            JPdfBookmarks.printErrorForDebug(e);
-        }
+//        try {
+//            currentPageObject = decoder.getPdfPageData(); //getPage(currentPage + 1, true);
+//        } catch (Exception e) {
+//            JPdfBookmarks.printErrorForDebug(e);
+//        }
+//
+//        try {
+//            decoder.decodePage(currentPage + 1);
+//        } catch (Exception e) {
+//            JPdfBookmarks.printErrorForDebug(e);
+//        }
 
         rendererPanel.repaint();
+
         firePageChangedEvent(new PageChangedEvent(this, currentPage + 1, hasNext,
                 hasPrevious));
     }
@@ -197,7 +203,10 @@ public class PdfRendererViewPanel extends JScrollPane implements IPdfView {
         drawingComplete = true;
 //        PDimension mediaBox = currentPageObject.getSize(Page.BOUNDARY_MEDIABOX,
 //                0f, 1f);
-        this.rect = new Rectangle(left, Math.round(currentPageObject.getHeight() - top),
+        PageDimension mediaBox = new PageDimension(
+                currentPageObject.getCropBoxWidth(currentPage + 1),
+                currentPageObject.getCropBoxHeight(currentPage + 1));
+        this.rect = new Rectangle(left, Math.round(mediaBox.getHeight() - top),
                 right - left, top - bottom);
         setFit(FitType.FitRect);
     }
@@ -241,7 +250,7 @@ public class PdfRendererViewPanel extends JScrollPane implements IPdfView {
 
             public void run() {
 
-                if (PdfRendererViewPanel.this.fitType == FitType.FitRect) {
+                if (JPedalViewPanel.this.fitType == FitType.FitRect) {
                     setCursor(Cursor.getPredefinedCursor(
                             Cursor.CROSSHAIR_CURSOR));
                 } else {
@@ -280,15 +289,18 @@ public class PdfRendererViewPanel extends JScrollPane implements IPdfView {
     private void calcScaleFactor() {
 //        PDimension mediaBox = currentPageObject.getSize(Page.BOUNDARY_MEDIABOX,
 //                0f, 1f);
+        PageDimension mediaBox = new PageDimension(
+                currentPageObject.getCropBoxWidth(currentPage + 1),
+                currentPageObject.getCropBoxHeight(currentPage + 1));
 
         switch (fitType) {
             case FitWidth:
                 scale = (float) viewport.getWidth() /
-                        currentPageObject.getWidth();
+                        mediaBox.getWidth();
                 break;
             case FitHeight:
                 scale = (float) viewport.getHeight() /
-                        currentPageObject.getHeight();
+                        mediaBox.getHeight();
                 break;
             case FitNative:
                 scale = 1.0f;
@@ -310,9 +322,9 @@ public class PdfRendererViewPanel extends JScrollPane implements IPdfView {
                 break;
             case FitPage:
                 float scaleWidth = (float) viewport.getWidth() /
-                        currentPageObject.getWidth();
+                        mediaBox.getWidth();
                 float scaleHeight = (float) viewport.getHeight() /
-                        currentPageObject.getHeight();
+                        mediaBox.getHeight();
                 scale = Math.min(scaleWidth, scaleHeight);
                 break;
         }
@@ -327,8 +339,8 @@ public class PdfRendererViewPanel extends JScrollPane implements IPdfView {
         bookmark.setPageNumber(getCurrentPage());
         bookmark.setType(getFitType().convertToBookmarkType());
         PageDimension mediaBox = new PageDimension(
-                currentPageObject.getWidth(),
-                currentPageObject.getHeight());
+                currentPageObject.getCropBoxWidth(currentPage + 1),
+                currentPageObject.getCropBoxHeight(currentPage + 1));
         Point pt = viewport.getViewPosition();
         switch (bookmark.getType()) {
             case FitWidth:
@@ -386,8 +398,11 @@ public class PdfRendererViewPanel extends JScrollPane implements IPdfView {
 
     private Dimension calcViewSize() {
         PageDimension scaledMediaBox = new PageDimension(
-                currentPageObject.getWidth() * scale,
-                currentPageObject.getHeight() * scale);
+                currentPageObject.getCropBoxWidth(currentPage + 1) * scale,
+                currentPageObject.getCropBoxHeight(currentPage + 1) * scale);
+//        PageDimension scaledMediaBox = new PageDimension(
+//                currentPageObject.getWidth() * scale,
+//                currentPageObject.getHeight() * scale);
 
         int viewWidth = Math.max(Math.round(scaledMediaBox.getWidth()),
                 viewport.getWidth());
@@ -420,8 +435,11 @@ public class PdfRendererViewPanel extends JScrollPane implements IPdfView {
 
     private void adjustViewportPosition() {
         PageDimension mediaBox = new PageDimension(
-                currentPageObject.getWidth() * scale,
-                currentPageObject.getHeight() * scale);
+                currentPageObject.getCropBoxWidth(currentPage + 1) * scale,
+                currentPageObject.getCropBoxHeight(currentPage + 1) * scale);
+//        PageDimension mediaBox = new PageDimension(
+//                currentPageObject.getWidth() * scale,
+//                currentPageObject.getHeight() * scale);
 
         switch (fitType) {
             case FitPage:
@@ -465,6 +483,7 @@ public class PdfRendererViewPanel extends JScrollPane implements IPdfView {
                 movePanel(gapWidth, gapHeight);
                 break;
         }
+
     }
 
     private void firePageChangedEvent(PageChangedEvent e) {
@@ -533,7 +552,7 @@ public class PdfRendererViewPanel extends JScrollPane implements IPdfView {
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
 
-            if (document == null || currentPageObject == null) {
+            if (decoder == null || currentPageObject == null) {
                 setPreferredSize(viewport.getSize());
                 revalidate();
                 return;
@@ -546,22 +565,21 @@ public class PdfRendererViewPanel extends JScrollPane implements IPdfView {
 
 
             if (oldScale != scale || currentPage != oldPage || img == null) {
-                CursorToolkit.startWaitCursor(PdfRendererViewPanel.this);
+                CursorToolkit.startWaitCursor(JPedalViewPanel.this);
                 try {
-//                    img = (BufferedImage) document.getPageImage(
-//                            currentPage, GraphicsRenderingHints.SCREEN,
-//                            Page.BOUNDARY_MEDIABOX, rotation, scale);
-                    img = (BufferedImage) currentPageObject.getImage(
-                            Math.round(currentPageObject.getWidth() * scale),
-                            Math.round(currentPageObject.getHeight() * scale),
-                            currentPageObject.getBBox(),
-                            this, true, true);
+                    decoder.setPageParameters(scale, currentPage + 1);
+                    img = decoder.getPageAsImage(currentPage + 1);
+//                    img = (BufferedImage) currentPageObject.getImage(
+//                            Math.round(currentPageObject.getWidth() * scale),
+//                            Math.round(currentPageObject.getHeight() * scale),
+//                            currentPageObject.getBBox(),
+//                            this, true, true);
                     oldScale = scale;
                     oldPage = currentPage;
                 } catch (Exception e) {
                     JPdfBookmarks.printErrorForDebug(e);
                 } finally {
-                    CursorToolkit.stopWaitCursor(PdfRendererViewPanel.this);
+                    CursorToolkit.stopWaitCursor(JPedalViewPanel.this);
                 }
             }
 
