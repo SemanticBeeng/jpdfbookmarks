@@ -25,6 +25,7 @@ package it.flavianopetrocchi.jpdfbookmarks;
 import it.flavianopetrocchi.utilities.FileOperationEvent;
 import it.flavianopetrocchi.utilities.FileOperationListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import javax.swing.SwingUtilities;
 
