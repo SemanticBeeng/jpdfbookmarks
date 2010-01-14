@@ -80,6 +80,7 @@ public class OptionsDlg extends javax.swing.JDialog {
         mainTabPane = new javax.swing.JTabbedPane();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("JPdfBookmarks");
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("it/flavianopetrocchi/jpdfbookmarks/locales/localizedText"); // NOI18N
         btnOk.setText(bundle.getString("OK")); // NOI18N
