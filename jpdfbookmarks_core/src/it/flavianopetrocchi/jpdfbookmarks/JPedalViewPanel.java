@@ -201,12 +201,8 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
 
     public void setFitRect(int top, int left, int bottom, int right) {
         drawingComplete = true;
-//        PDimension mediaBox = currentPageObject.getSize(Page.BOUNDARY_MEDIABOX,
-//                0f, 1f);
-        PageDimension mediaBox = new PageDimension(
-                currentPageObject.getCropBoxWidth(currentPage + 1),
-                currentPageObject.getCropBoxHeight(currentPage + 1));
-        this.rect = new Rectangle(left, Math.round(mediaBox.getHeight() - top),
+        int mediaBoxHeight = currentPageObject.getMediaBoxHeight(currentPage + 1);
+        this.rect = new Rectangle(left, mediaBoxHeight - top,
                 right - left, top - bottom);
         setFit(FitType.FitRect);
     }
@@ -472,8 +468,8 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
                 break;
             case FitRect:
                 if (rect != null && drawingComplete) {
-                    movePanel(Math.round(rect.x * scale),
-                            Math.round(rect.y * scale));
+                    movePanel(Math.round(rect.x * scale - scaledCropBoxX),
+                            Math.round(rect.y * scale - scaledCropBoxY));
                 } else {
 //					movePanel(Math.round(left * scale),
 //							Math.round((mediaBox.getHeight() - top) * scale));
