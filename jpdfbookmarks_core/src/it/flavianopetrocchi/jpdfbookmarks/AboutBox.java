@@ -69,7 +69,6 @@ public class AboutBox extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        progIconLabel = new javax.swing.JLabel();
         rightPanel = new javax.swing.JPanel();
         javax.swing.JLabel appTitleLabel = new javax.swing.JLabel();
         javax.swing.JLabel appDescLabel = new javax.swing.JLabel();
@@ -79,7 +78,6 @@ public class AboutBox extends javax.swing.JDialog {
         javax.swing.JLabel appVersionLabel = new javax.swing.JLabel();
         javax.swing.JLabel appVendorLabel = new javax.swing.JLabel();
         javax.swing.JLabel homepageLabel1 = new javax.swing.JLabel();
-        btnClose = new javax.swing.JButton();
         txtHomepage = new LinkLabel(homePage);
         txtMail = new LinkLabel(homePage);
         txtBlog = new LinkLabel(homePage);
@@ -87,12 +85,15 @@ public class AboutBox extends javax.swing.JDialog {
         javax.swing.JLabel appDescLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         txtLibraries = new javax.swing.JTextPane();
+        javax.swing.JLabel vendorLabel1 = new javax.swing.JLabel();
+        javax.swing.JLabel appVendorLabel1 = new javax.swing.JLabel();
+        leftPanel = new javax.swing.JPanel();
+        progIconLabel = new javax.swing.JLabel();
+        btnClose = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("JPdfBookmarks");
         setModal(true);
-
-        progIconLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/it/flavianopetrocchi/jpdfbookmarks/gfx/jpdfbookmarks.png"))); // NOI18N
 
         rightPanel.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -121,15 +122,6 @@ public class AboutBox extends javax.swing.JDialog {
 
         homepageLabel1.setFont(homepageLabel1.getFont().deriveFont(homepageLabel1.getFont().getStyle() | java.awt.Font.BOLD));
         homepageLabel1.setText(bundle.getString("HOME_PAGE_LABEL")); // NOI18N
-
-        btnClose.setMnemonic(java.util.ResourceBundle.getBundle("it/flavianopetrocchi/jpdfbookmarks/locales/localizedText").getString("ACTION_CLOSE_MNEMONIC").charAt(0));
-        btnClose.setText(bundle.getString("ACTION_CLOSE")); // NOI18N
-        btnClose.setToolTipText("Close this dialog");
-        btnClose.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnCloseActionPerformed(evt);
-            }
-        });
 
         txtHomepage.setEditable(false);
         txtHomepage.setFont(txtHomepage.getFont());
@@ -212,35 +204,52 @@ public class AboutBox extends javax.swing.JDialog {
         txtLibraries.setText("<html>\n<head>\n</head>\n<body>\n<span style=\"font-weight: bold;\">Apache Commons CLI</span><br>\nCopyright 2001-2009 The Apache Software Foundation <br>\n<a href=\"http://commons.apache.org/cli/\">http://commons.apache.org/cli/</a><br>\nApache License Version 2.0, January 2004<br>\n<a href=\"http://www.apache.org/licenses/\">http://www.apache.org/licenses/</a><br>\n<br>\n<span style=\"font-weight: bold;\">iText-2.1.7</span><br>\nCopyright 1999, 2000, 2001, 2002 by Bruno Lowagie.<br>\n<a href=\"http://www.lowagie.com/iText/\">http://www.lowagie.com/iText/</a><br>\nGNU LIBRARY GENERAL PUBLIC LICENSE Version 2 (or later version)<br>\n<a href=\"http://www.gnu.org/licenses\">http://www.gnu.org/licenses</a>/<br>\n<br>\n<b>Bouncy Castle Crypto APIs<br>\n</b>Copyright (c) 2000 - 2009 The Legion Of The Bouncy Castle<br>\n<a href=\"http://www.bouncycastle.org\">http://www.bouncycastle.org</a>\n<br>\nAdaptation of the <a\n href=\"http://opensource.org/licenses/mit-license.php\">MIT\nX11 License</a><br>\n<a href=\"http://www.bouncycastle.org/licence.html\">http://www.bouncycastle.org/licence.html</a><br>\n<span style=\"font-weight: bold;\"></span><br>\n<span style=\"font-weight: bold;\">JPedal</span><br>\n(C) Copyright 1997-2008, IDRsolutions and Contributors.<br>\n<a href=\"http://www.jpedal.org\">http://www.jpedal.org</a><br>\nGNU Lesser General Public License Version 2.1 (or later version)<br>\n<a href=\"http://www.gnu.org/licenses/\">http://www.gnu.org/licenses/</a>\n</body>\n</html>\n"); // NOI18N
         jScrollPane1.setViewportView(txtLibraries);
 
+        vendorLabel1.setFont(vendorLabel1.getFont().deriveFont(vendorLabel1.getFont().getStyle() | java.awt.Font.BOLD));
+        vendorLabel1.setText(bundle.getString("LICENSE_LABEL")); // NOI18N
+
+        appVendorLabel1.setText("GNU General Public License Version 3"); // NOI18N
+
         org.jdesktop.layout.GroupLayout rightPanelLayout = new org.jdesktop.layout.GroupLayout(rightPanel);
         rightPanel.setLayout(rightPanelLayout);
         rightPanelLayout.setHorizontalGroup(
             rightPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, rightPanelLayout.createSequentialGroup()
-                .add(rightPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(rightPanelLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(rightPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 486, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, appDescLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 486, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, appTitleLabel)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, rightPanelLayout.createSequentialGroup()
-                                .add(rightPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(versionLabel)
-                                    .add(vendorLabel)
-                                    .add(homepageLabel)
-                                    .add(homepageLabel1)
-                                    .add(homepageLabel2))
-                                .add(16, 16, 16)
-                                .add(rightPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(txtBlog, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .add(txtMail, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .add(txtHomepage, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .add(appVendorLabel)
-                                    .add(appVersionLabel))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 191, Short.MAX_VALUE))
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, appDescLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 486, Short.MAX_VALUE)))
-                    .add(btnClose, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 89, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+            .add(rightPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(versionLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(appVersionLabel)
+                .add(373, 373, 373))
+            .add(rightPanelLayout.createSequentialGroup()
+                .add(10, 10, 10)
+                .add(appDescLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 470, Short.MAX_VALUE)
+                .addContainerGap(20, Short.MAX_VALUE))
+            .add(rightPanelLayout.createSequentialGroup()
+                .add(10, 10, 10)
+                .add(appTitleLabel)
+                .addContainerGap(390, Short.MAX_VALUE))
+            .add(rightPanelLayout.createSequentialGroup()
+                .add(10, 10, 10)
+                .add(appDescLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 470, Short.MAX_VALUE)
+                .addContainerGap(20, Short.MAX_VALUE))
+            .add(rightPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(rightPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(homepageLabel)
+                    .add(homepageLabel1)
+                    .add(homepageLabel2)
+                    .add(vendorLabel1)
+                    .add(vendorLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(rightPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(appVendorLabel1)
+                    .add(appVendorLabel)
+                    .add(txtMail, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(txtHomepage, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(txtBlog, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(205, Short.MAX_VALUE))
+            .add(rightPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 480, Short.MAX_VALUE)
                 .addContainerGap())
         );
         rightPanelLayout.setVerticalGroup(
@@ -258,6 +267,10 @@ public class AboutBox extends javax.swing.JDialog {
                 .add(rightPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(vendorLabel)
                     .add(appVendorLabel))
+                .add(5, 5, 5)
+                .add(rightPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(vendorLabel1)
+                    .add(appVendorLabel1))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(rightPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(homepageLabel)
@@ -270,11 +283,39 @@ public class AboutBox extends javax.swing.JDialog {
                 .add(rightPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(homepageLabel2)
                     .add(txtBlog, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(18, 18, 18)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(appDescLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 141, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 211, Short.MAX_VALUE))
+        );
+
+        progIconLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/it/flavianopetrocchi/jpdfbookmarks/gfx/jpdfbookmarks.png"))); // NOI18N
+
+        btnClose.setMnemonic(java.util.ResourceBundle.getBundle("it/flavianopetrocchi/jpdfbookmarks/locales/localizedText").getString("ACTION_CLOSE_MNEMONIC").charAt(0));
+        btnClose.setText(bundle.getString("ACTION_CLOSE")); // NOI18N
+        btnClose.setToolTipText("Close this dialog");
+        btnClose.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCloseActionPerformed(evt);
+            }
+        });
+
+        org.jdesktop.layout.GroupLayout leftPanelLayout = new org.jdesktop.layout.GroupLayout(leftPanel);
+        leftPanel.setLayout(leftPanelLayout);
+        leftPanelLayout.setHorizontalGroup(
+            leftPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(leftPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(leftPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(btnClose, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 162, Short.MAX_VALUE)
+                    .add(progIconLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 162, Short.MAX_VALUE)))
+        );
+        leftPanelLayout.setVerticalGroup(
+            leftPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(leftPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(progIconLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 179, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 224, Short.MAX_VALUE)
                 .add(btnClose)
                 .addContainerGap())
         );
@@ -284,20 +325,17 @@ public class AboutBox extends javax.swing.JDialog {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(18, 18, 18)
-                .add(progIconLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 140, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(rightPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+                .add(leftPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(rightPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, leftPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(progIconLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 179, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(rightPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
+                .add(11, 11, 11)
+                .add(rightPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(11, 11, 11))
         );
 
         pack();
@@ -445,6 +483,7 @@ public class AboutBox extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnClose;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JPanel leftPanel;
     private javax.swing.JLabel progIconLabel;
     private javax.swing.JPanel rightPanel;
     private javax.swing.JTextField txtBlog;

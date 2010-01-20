@@ -60,6 +60,8 @@ class JPdfBookmarks {
             "http://flavianopetrocchi.blogspot.com/2008/07/jpsdbookmarks-download-page.html";
     public static final String BLOG_URL =
             "http://flavianopetrocchi.blogspot.com";
+    public static final String ITEXT_URL = "http://www.lowagie.com/iText/";
+    public static final String ICEPDF_URL = "http://www.icepdf.org/";
     public static final String LAST_VERSION_URL =
             "http://jpdfbookmarks.altervista.org/version/lastVersion";
     public static final String LAST_VERSION_PROPERTIES_URL =
@@ -79,7 +81,7 @@ class JPdfBookmarks {
 
     //<editor-fold defaultstate="expanded" desc="public methods">
     public static void main(String[] args) {
-        //java.util.Locale.setDefault(java.util.Locale.ENGLISH);
+        java.util.Locale.setDefault(java.util.Locale.ENGLISH);
         JPdfBookmarks app = new JPdfBookmarks();
         app.start(args);
     }
@@ -129,28 +131,34 @@ class JPdfBookmarks {
                         pdf.close();
                         pdf = null;
                     }
-                    EventQueue.invokeLater(new Runnable() {
-
-                        public void run() {
-                            JPdfBookmarksGui viewer;
-                            viewer = new JPdfBookmarksGui();
-                            viewer.setVisible(true);
-                            if (inputFilePath != null) {
-                                viewer.openFileAsync(new File(new File(inputFilePath).getAbsolutePath()));
-                            }
-                        }
-                    });
+                    EventQueue.invokeLater(new GuiLauncher());
                 }
                 if (pdf != null) {
                     pdf.close();
                 }
             } catch (Exception ex) {
                 if (mode == Mode.GUI) {
-                    JOptionPane.showMessageDialog(null, ex.getMessage(),
-                            APP_NAME, JOptionPane.INFORMATION_MESSAGE);
+                    EventQueue.invokeLater(new GuiLauncher());
                 } else {
                     err.println(ex.getMessage());
                 }
+            }
+        }
+    }
+
+    private class GuiLauncher implements Runnable {
+
+        public void run() {
+            try {
+                JPdfBookmarksGui viewer;
+                viewer = new JPdfBookmarksGui();
+                viewer.setVisible(true);
+                if (inputFilePath != null) {
+                    viewer.openFileAsync(new File(new File(inputFilePath).getAbsolutePath()));
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(null, ex.getMessage(),
+                        APP_NAME, JOptionPane.INFORMATION_MESSAGE);
             }
         }
     }

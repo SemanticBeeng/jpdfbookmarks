@@ -19,9 +19,6 @@
  * You should have received a copy of the GNU General Public License
  * along with JPdfBookmarks.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-
-
 package it.flavianopetrocchi.jpdfbookmarks;
 
 import javax.swing.JOptionPane;
@@ -31,129 +28,129 @@ import javax.swing.event.DocumentListener;
 
 public class GeneralOptionsPanel extends javax.swing.JPanel {
 
-	Prefs userPrefs;
-	String previewText = "Chapter 1/1,Black,notBold,notItalic,open,FitWidth,80\n" +
-			"\tParagraph 1/5,Red,bold,italic,closed,FitWidth,120\n" +
-			"\t\tParagraph 1.1/9,Black,notBold,notItalic,closed,FitWidth,500\n" +
-			"\tParagraph 2/13,Black,bold,italic,closed,FitWidth,250";
+    Prefs userPrefs;
+    String previewText = "Chapter 1/1,Black,notBold,notItalic,open,FitWidth,80\n" +
+            "\tParagraph 1/5,Red,bold,italic,closed,FitWidth,120\n" +
+            "\t\tParagraph 1.1/9,Black,notBold,notItalic,closed,FitWidth,500\n" +
+            "\tParagraph 2/13,Black,bold,italic,closed,FitWidth,250";
 
     /** Creates new form GeneralOptionsPanel */
     public GeneralOptionsPanel(Prefs userPrefs) {
-		this.userPrefs = userPrefs;
+        this.userPrefs = userPrefs;
         initComponents();
-		String ind = userPrefs.getIndentationString();
-		String pag = userPrefs.getPageSeparator();
-		String sep = userPrefs.getAttributesSeparator();
-		txtPageSeparator.setText(formatText(pag));
-		txtAttributesSeparator.setText(formatText(sep));
-		txtIndentationString.setText(formatText(ind));
+        String ind = userPrefs.getIndentationString();
+        String pag = userPrefs.getPageSeparator();
+        String sep = userPrefs.getAttributesSeparator();
+        txtPageSeparator.setText(formatText(pag));
+        txtAttributesSeparator.setText(formatText(sep));
+        txtIndentationString.setText(formatText(ind));
 
-		checkConvertNamedDestinations.setSelected(userPrefs.getConvertNamedDestinations());
-		checkUseThousandthsUnits.setSelected(userPrefs.getUseThousandths());
-		checkUseThousandthsUnits.setVisible(false);
+        checkConvertNamedDestinations.setSelected(userPrefs.getConvertNamedDestinations());
+        checkUseThousandthsUnits.setSelected(userPrefs.getUseThousandths());
+        checkUseThousandthsUnits.setVisible(false);
 
-		setPreview();
+        setPreview();
 
-		TextChangedListener textListener = new TextChangedListener();
-		txtPageSeparator.getDocument().addDocumentListener(textListener);
-		txtAttributesSeparator.getDocument().addDocumentListener(textListener);
-		txtIndentationString.getDocument().addDocumentListener(textListener);
+        TextChangedListener textListener = new TextChangedListener();
+        txtPageSeparator.getDocument().addDocumentListener(textListener);
+        txtAttributesSeparator.getDocument().addDocumentListener(textListener);
+        txtIndentationString.getDocument().addDocumentListener(textListener);
     }
 
-	public String getAttributesSeparator(){
-		return unformatText(txtAttributesSeparator.getText());
-	}
+    public String getAttributesSeparator() {
+        return unformatText(txtAttributesSeparator.getText());
+    }
 
-	public String getPageSeparator() {
-		return unformatText(txtPageSeparator.getText());
-	}
+    public String getPageSeparator() {
+        return unformatText(txtPageSeparator.getText());
+    }
 
-	public String getIndentationString() {
-		return unformatText(txtIndentationString.getText());
-	}
+    public String getIndentationString() {
+        return unformatText(txtIndentationString.getText());
+    }
 
-	public boolean convertNamedDestinations() {
-		return checkConvertNamedDestinations.isSelected();
-	}
+    public boolean convertNamedDestinations() {
+        return checkConvertNamedDestinations.isSelected();
+    }
 
-	public boolean useThousandths() {
-		return checkUseThousandthsUnits.isSelected();
-	}
+    public boolean useThousandths() {
+        return checkUseThousandthsUnits.isSelected();
+    }
 
-	private class TextChangedListener implements DocumentListener {
+    private class TextChangedListener implements DocumentListener {
 
-		public void insertUpdate(DocumentEvent e) {
-			setPreview();
-		}
+        public void insertUpdate(DocumentEvent e) {
+            setPreview();
+        }
 
-		public void removeUpdate(DocumentEvent e) {
-			setPreview();
-		}
+        public void removeUpdate(DocumentEvent e) {
+            setPreview();
+        }
 
-		public void changedUpdate(DocumentEvent e) {
-			setPreview();
-		}
-	}
+        public void changedUpdate(DocumentEvent e) {
+            setPreview();
+        }
+    }
 
-	private String formatText(String text) {
-		String formatted = text.replace("\t", "[tab]");
-		formatted = formatted.replace(" ", "[space]");
-		return formatted;
-	}
+    private String formatText(String text) {
+        String formatted = text.replace("\t", "[tab]");
+        formatted = formatted.replace(" ", "[space]");
+        return formatted;
+    }
 
-	private String unformatText(String text) {
-		String formatted = text.replace("[tab]", "\t");
-		formatted = formatted.replace("[space]", " ");
-		return formatted;
-	}
+    private String unformatText(String text) {
+        String formatted = text.replace("[tab]", "\t");
+        formatted = formatted.replace("[space]", " ");
+        return formatted;
+    }
 
-	private void setPreview() {
-		String pag = unformatText(txtPageSeparator.getText());
-		String ind = unformatText(txtIndentationString.getText());
-		String sep = unformatText(txtAttributesSeparator.getText());
+    private void setPreview() {
+        String pag = unformatText(txtPageSeparator.getText());
+        String ind = unformatText(txtIndentationString.getText());
+        String sep = unformatText(txtAttributesSeparator.getText());
 
-		String text = previewText.replace("\t", ind).replace("/", pag).replace(",", sep);
+        String text = previewText.replace("\t", ind).replace("/", pag).replace(",", sep);
 
-		txtPreview.setText(text);
-	}
+        txtPreview.setText(text);
+    }
 
-	private boolean checkNotEmpty(JTextField... textFields) {
-		for (JTextField field : textFields) {
-			if (field.getText().isEmpty()) {
-				JOptionPane.showMessageDialog(this,
-						Res.getString("ERROR_EMPTY_FIELD"),
-						JPdfBookmarks.APP_NAME, JOptionPane.WARNING_MESSAGE);
-				field.requestFocusInWindow();
-				return false;
-			}
-		}
-		return true;
-	}
+    private boolean checkNotEmpty(JTextField... textFields) {
+        for (JTextField field : textFields) {
+            if (field.getText().isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                        Res.getString("ERROR_EMPTY_FIELD"),
+                        JPdfBookmarks.APP_NAME, JOptionPane.WARNING_MESSAGE);
+                field.requestFocusInWindow();
+                return false;
+            }
+        }
+        return true;
+    }
 
-	private boolean checkDifferentValues() {
-		String pag = unformatText(txtPageSeparator.getText());
-		String ind = unformatText(txtIndentationString.getText());
-		String sep = unformatText(txtAttributesSeparator.getText());
+    private boolean checkDifferentValues() {
+        String pag = unformatText(txtPageSeparator.getText());
+        String ind = unformatText(txtIndentationString.getText());
+        String sep = unformatText(txtAttributesSeparator.getText());
 
-		JTextField duplicated = null;
+        JTextField duplicated = null;
 
-		if (pag.equals(ind)) {
-			duplicated = txtIndentationString;
-		} else if (pag.equals(sep)) {
-			duplicated = txtAttributesSeparator;
-		} else if (ind.equals(sep)) {
-			duplicated = txtPageSeparator;
-		}
+        if (pag.equals(ind)) {
+            duplicated = txtIndentationString;
+        } else if (pag.equals(sep)) {
+            duplicated = txtAttributesSeparator;
+        } else if (ind.equals(sep)) {
+            duplicated = txtPageSeparator;
+        }
 
-		if (duplicated != null) {
-			JOptionPane.showMessageDialog(this,
-					Res.getString("ERROR_DUPLICATED_VALUES"),
-					JPdfBookmarks.APP_NAME, JOptionPane.WARNING_MESSAGE);
-			duplicated.requestFocusInWindow();
-			return false;
-		}
-		return true;
-	}
+        if (duplicated != null) {
+            JOptionPane.showMessageDialog(this,
+                    Res.getString("ERROR_DUPLICATED_VALUES"),
+                    JPdfBookmarks.APP_NAME, JOptionPane.WARNING_MESSAGE);
+            duplicated.requestFocusInWindow();
+            return false;
+        }
+        return true;
+    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -296,16 +293,14 @@ public class GeneralOptionsPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 	private void txtPageSeparatorInputMethodTextChanged(java.awt.event.InputMethodEvent evt) {//GEN-FIRST:event_txtPageSeparatorInputMethodTextChanged
-		System.out.println("textchanged");
+            System.out.println("textchanged");
 }//GEN-LAST:event_txtPageSeparatorInputMethodTextChanged
 
 	private void checkConvertNamedDestinationsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkConvertNamedDestinationsActionPerformed
-		JOptionPane.showMessageDialog(this,
-				Res.getString("CONVERT_NAMED_DEST_MSG"), JPdfBookmarks.APP_NAME,
-				JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                    Res.getString("CONVERT_NAMED_DEST_MSG"), JPdfBookmarks.APP_NAME,
+                    JOptionPane.WARNING_MESSAGE);
 }//GEN-LAST:event_checkConvertNamedDestinationsActionPerformed
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox checkConvertNamedDestinations;
     private javax.swing.JCheckBox checkUseThousandthsUnits;
@@ -322,5 +317,4 @@ public class GeneralOptionsPanel extends javax.swing.JPanel {
     private javax.swing.JTextArea txtPreview;
     private javax.swing.JPanel valueSeparatorsPanel;
     // End of variables declaration//GEN-END:variables
-
 }

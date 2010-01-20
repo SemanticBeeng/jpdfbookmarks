@@ -25,35 +25,24 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
-              <Component id="progIconLabel" min="-2" pref="140" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Component id="rightPanel" max="32767" attributes="0"/>
+              <Component id="leftPanel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
+              <Component id="rightPanel" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="progIconLabel" alignment="0" min="-2" pref="179" max="-2" attributes="0"/>
-                  <Component id="rightPanel" alignment="0" max="32767" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
+          <Component id="leftPanel" alignment="1" max="32767" attributes="0"/>
+          <Group type="102" attributes="0">
+              <EmptySpace min="11" pref="11" max="11" attributes="0"/>
+              <Component id="rightPanel" max="32767" attributes="0"/>
+              <EmptySpace min="11" pref="11" max="11" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Component class="javax.swing.JLabel" name="progIconLabel">
-      <Properties>
-        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-          <Image iconType="3" name="/it/flavianopetrocchi/jpdfbookmarks/gfx/jpdfbookmarks.png"/>
-        </Property>
-      </Properties>
-    </Component>
     <Container class="javax.swing.JPanel" name="rightPanel">
       <Events>
         <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="txtHomepageMouseClicked"/>
@@ -62,37 +51,50 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" alignment="1" attributes="0">
-                  <Group type="103" groupAlignment="1" attributes="0">
-                      <Group type="102" alignment="1" attributes="0">
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="1" attributes="0">
-                              <Component id="jScrollPane1" alignment="0" pref="486" max="32767" attributes="0"/>
-                              <Component id="appDescLabel" alignment="0" pref="486" max="32767" attributes="0"/>
-                              <Component id="appTitleLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="versionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="vendorLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="homepageLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="homepageLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="homepageLabel2" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                                  <EmptySpace min="-2" pref="16" max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="txtBlog" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="txtMail" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="txtHomepage" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="appVendorLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="appVersionLabel" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                                  <EmptySpace pref="191" max="32767" attributes="0"/>
-                              </Group>
-                              <Component id="appDescLabel1" alignment="0" pref="486" max="32767" attributes="0"/>
-                          </Group>
-                      </Group>
-                      <Component id="btnClose" alignment="1" min="-2" pref="89" max="-2" attributes="0"/>
+              <Group type="102" attributes="0">
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="versionLabel" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="appVersionLabel" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace min="-2" pref="373" max="-2" attributes="0"/>
+              </Group>
+              <Group type="102" alignment="0" attributes="0">
+                  <EmptySpace min="10" pref="10" max="10" attributes="0"/>
+                  <Component id="appDescLabel1" pref="470" max="32767" attributes="0"/>
+                  <EmptySpace pref="20" max="32767" attributes="0"/>
+              </Group>
+              <Group type="102" alignment="0" attributes="0">
+                  <EmptySpace min="10" pref="10" max="10" attributes="0"/>
+                  <Component id="appTitleLabel" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace pref="390" max="32767" attributes="0"/>
+              </Group>
+              <Group type="102" alignment="0" attributes="0">
+                  <EmptySpace min="10" pref="10" max="10" attributes="0"/>
+                  <Component id="appDescLabel" pref="470" max="32767" attributes="0"/>
+                  <EmptySpace pref="20" max="32767" attributes="0"/>
+              </Group>
+              <Group type="102" alignment="0" attributes="0">
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="homepageLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="homepageLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="homepageLabel2" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="vendorLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="vendorLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="appVendorLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="appVendorLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="txtMail" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="txtHomepage" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="txtBlog" alignment="0" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace pref="205" max="32767" attributes="0"/>
+              </Group>
+              <Group type="102" alignment="0" attributes="0">
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="jScrollPane1" pref="480" max="32767" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
@@ -109,10 +111,15 @@
                       <Component id="versionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="appVersionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="vendorLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="appVendorLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="vendorLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="appVendorLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
@@ -129,13 +136,10 @@
                       <Component id="homepageLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="txtBlog" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace type="separate" max="-2" attributes="0"/>
+                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
                   <Component id="appDescLabel1" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="jScrollPane1" pref="141" max="32767" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="btnClose" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="jScrollPane1" pref="211" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -251,20 +255,6 @@
             <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="true"/>
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
           </AuxValues>
-        </Component>
-        <Component class="javax.swing.JButton" name="btnClose">
-          <Properties>
-            <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-              <ResourceString bundle="it/flavianopetrocchi/jpdfbookmarks/locales/localizedText.properties" key="ACTION_CLOSE_MNEMONIC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-            </Property>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="it/flavianopetrocchi/jpdfbookmarks/locales/localizedText.properties" key="ACTION_CLOSE" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-            </Property>
-            <Property name="toolTipText" type="java.lang.String" value="Close this dialog"/>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnCloseActionPerformed"/>
-          </Events>
         </Component>
         <Component class="javax.swing.JTextField" name="txtHomepage">
           <Properties>
@@ -389,6 +379,81 @@
             </Component>
           </SubComponents>
         </Container>
+        <Component class="javax.swing.JLabel" name="vendorLabel1">
+          <Properties>
+            <Property name="font" type="java.awt.Font" noResource="true" editor="org.netbeans.modules.form.editors2.FontEditor">
+              <FontInfo relative="true">
+                <Font bold="true" component="vendorLabel1" property="font" relativeSize="true" size="0"/>
+              </FontInfo>
+            </Property>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="it/flavianopetrocchi/jpdfbookmarks/locales/localizedText.properties" key="LICENSE_LABEL" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="true"/>
+            <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
+          </AuxValues>
+        </Component>
+        <Component class="javax.swing.JLabel" name="appVendorLabel1">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="GNU General Public License Version 3" noResource="true"/>
+          </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="true"/>
+            <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
+          </AuxValues>
+        </Component>
+      </SubComponents>
+    </Container>
+    <Container class="javax.swing.JPanel" name="leftPanel">
+
+      <Layout>
+        <DimensionLayout dim="0">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="102" alignment="0" attributes="0">
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="btnClose" alignment="0" pref="162" max="32767" attributes="1"/>
+                      <Component id="progIconLabel" alignment="0" pref="162" max="32767" attributes="1"/>
+                  </Group>
+              </Group>
+          </Group>
+        </DimensionLayout>
+        <DimensionLayout dim="1">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="102" alignment="0" attributes="0">
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="progIconLabel" min="-2" pref="179" max="-2" attributes="0"/>
+                  <EmptySpace pref="224" max="32767" attributes="0"/>
+                  <Component id="btnClose" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+              </Group>
+          </Group>
+        </DimensionLayout>
+      </Layout>
+      <SubComponents>
+        <Component class="javax.swing.JLabel" name="progIconLabel">
+          <Properties>
+            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+              <Image iconType="3" name="/it/flavianopetrocchi/jpdfbookmarks/gfx/jpdfbookmarks.png"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JButton" name="btnClose">
+          <Properties>
+            <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
+              <ResourceString bundle="it/flavianopetrocchi/jpdfbookmarks/locales/localizedText.properties" key="ACTION_CLOSE_MNEMONIC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+            </Property>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="it/flavianopetrocchi/jpdfbookmarks/locales/localizedText.properties" key="ACTION_CLOSE" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+            </Property>
+            <Property name="toolTipText" type="java.lang.String" value="Close this dialog"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnCloseActionPerformed"/>
+          </Events>
+        </Component>
       </SubComponents>
     </Container>
   </SubComponents>

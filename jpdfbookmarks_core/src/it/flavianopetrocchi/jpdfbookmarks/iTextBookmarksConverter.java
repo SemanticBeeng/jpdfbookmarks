@@ -254,22 +254,29 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
             }
             StringBuffer pageDest = new StringBuffer(
                     String.valueOf(bookmark.getPageNumber()));
+            int left = bookmark.getLeft();
+            int right = bookmark.getRight();
+            int top = bookmark.getTop();
+            int bottom = bookmark.getBottom();
+            float zoom = bookmark.getZoom();
             if (type == BookmarkType.TopLeftZoom) {
-                pageDest.append(" XYZ ").append(bookmark.getLeft()).append(" ").append(bookmark.getTop()).append(" ").append(bookmark.getZoom());
+                pageDest.append(" XYZ ");
+                pageDest.append(left == -1 ? "null" : left).append(" ");
+                pageDest.append(top == -1 ? "null" : top).append(" ").append(bookmark.getZoom());
             } else if (type == BookmarkType.FitPage) {
                 pageDest.append(" Fit");
             } else if (type == BookmarkType.FitWidth) {
-                pageDest.append(" FitH ").append(bookmark.getTop());
+                pageDest.append(" FitH ").append(top == -1 ? "null" : top);
             } else if (type == BookmarkType.FitHeight) {
-                pageDest.append(" FitV ").append(bookmark.getLeft());
+                pageDest.append(" FitV ").append(left == -1 ? "null" : left);
             } else if (type == BookmarkType.FitRect) {
-                pageDest.append(" FitR ").append(bookmark.getLeft()).append(" ").append(bookmark.getBottom()).append(" ").append(bookmark.getRight()).append(" ").append(bookmark.getTop());
+                pageDest.append(" FitR ").append(left == -1 ? "null" : left).append(" ").append(bottom == -1 ? "null" : bottom).append(" ").append(right == -1 ? "null" : right).append(" ").append(top == -1 ? "null" : top);
             } else if (type == BookmarkType.FitContent) {
                 pageDest.append(" FitB");
             } else if (type == BookmarkType.FitContentWidth) {
-                pageDest.append(" FitBH ").append(bookmark.getTop());
+                pageDest.append(" FitBH ").append(top == -1 ? "null" : top);
             } else if (type == BookmarkType.FitContentHeight) {
-                pageDest.append(" FitBV ").append(bookmark.getLeft());
+                pageDest.append(" FitBV ").append(left == -1 ? "null" : left);
             }
             map.put("Page", pageDest.toString());
         }

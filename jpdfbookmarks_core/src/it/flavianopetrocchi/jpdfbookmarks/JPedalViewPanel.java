@@ -289,18 +289,18 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
     private void calcScaleFactor() {
 //        PDimension mediaBox = currentPageObject.getSize(Page.BOUNDARY_MEDIABOX,
 //                0f, 1f);
-        PageDimension mediaBox = new PageDimension(
+        PageDimension cropBox = new PageDimension(
                 currentPageObject.getCropBoxWidth(currentPage + 1),
                 currentPageObject.getCropBoxHeight(currentPage + 1));
 
         switch (fitType) {
             case FitWidth:
                 scale = (float) viewport.getWidth() /
-                        mediaBox.getWidth();
+                        cropBox.getWidth();
                 break;
             case FitHeight:
                 scale = (float) viewport.getHeight() /
-                        mediaBox.getHeight();
+                        cropBox.getHeight();
                 break;
             case FitNative:
                 scale = 1.0f;
@@ -322,9 +322,9 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
                 break;
             case FitPage:
                 float scaleWidth = (float) viewport.getWidth() /
-                        mediaBox.getWidth();
+                        cropBox.getWidth();
                 float scaleHeight = (float) viewport.getHeight() /
-                        mediaBox.getHeight();
+                        cropBox.getHeight();
                 scale = Math.min(scaleWidth, scaleHeight);
                 break;
         }
@@ -338,34 +338,42 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
         Bookmark bookmark = new Bookmark();
         bookmark.setPageNumber(getCurrentPage());
         bookmark.setType(getFitType().convertToBookmarkType());
-        PageDimension mediaBox = new PageDimension(
+        PageDimension cropBox = new PageDimension(
                 currentPageObject.getCropBoxWidth(currentPage + 1),
                 currentPageObject.getCropBoxHeight(currentPage + 1));
+//                currentPageObject.getMediaBoxWidth(currentPage + 1),
+//                currentPageObject.getMediaBoxHeight(currentPage + 1));
+        int cropBoxY = currentPageObject.getCropBoxY(currentPage + 1);
+        int cropBoxX = currentPageObject.getCropBoxX(currentPage + 1);
+        int mediaBoxHeight = currentPageObject.getMediaBoxHeight(currentPage + 1);
+        int mediaBoxWidth = currentPageObject.getMediaBoxWidth(currentPage + 1);
         Point pt = viewport.getViewPosition();
         switch (bookmark.getType()) {
             case FitWidth:
-                bookmark.setTop(Math.round(mediaBox.getHeight() -
-                        (pt.y / scale)));
+                bookmark.setTop(Math.round(
+                        (cropBox.getHeight() - (pt.y / scale)) + cropBoxY)
+                        );
                 bookmark.setThousandthsTop(
                         Bookmark.thousandthsVertical(bookmark.getTop(),
-                        mediaBox.getHeight()));
+                        mediaBoxHeight));
                 break;
             case FitHeight:
-                bookmark.setLeft(Math.round(pt.x / scale));
+                bookmark.setLeft(Math.round((pt.x / scale) + cropBoxX));
                 bookmark.setThousandthsLeft(
                         Bookmark.thousandthsHorizontal(bookmark.getLeft(),
-                        mediaBox.getWidth()));
+                        mediaBoxWidth));
                 break;
             case TopLeftZoom:
-                bookmark.setTop(Math.round(mediaBox.getHeight() -
-                        (pt.y / scale)));
+                bookmark.setTop(Math.round(
+                        (cropBox.getHeight() - (pt.y / scale)) + cropBoxY)
+                        );
                 bookmark.setThousandthsTop(
                         Bookmark.thousandthsVertical(bookmark.getTop(),
-                        mediaBox.getHeight()));
-                bookmark.setLeft(Math.round(pt.x / scale));
+                        mediaBoxHeight));
+                bookmark.setLeft(Math.round((pt.x / scale) + cropBoxX));
                 bookmark.setThousandthsLeft(
                         Bookmark.thousandthsHorizontal(bookmark.getLeft(),
-                        mediaBox.getWidth()));
+                        mediaBoxWidth));
                 bookmark.setZoom(scale);
                 break;
             case FitRect:
@@ -373,23 +381,23 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
                     float f = drawingComplete ? 1.0f : scale;
                     Point p = rect.getLocation();
                     Dimension d = rect.getSize();
-                    bookmark.setLeft(Math.round(p.x / f));
+                    bookmark.setLeft(Math.round((p.x / f) + cropBoxX));
                     bookmark.setThousandthsLeft(
                             Bookmark.thousandthsHorizontal(bookmark.getLeft(),
-                            mediaBox.getWidth()));
-                    bookmark.setTop(Math.round(mediaBox.getHeight() - Math.round(p.y / f)));
+                            mediaBoxWidth));
+                    bookmark.setTop(Math.round(cropBox.getHeight() - Math.round(p.y / f) + cropBoxY));
                     bookmark.setThousandthsTop(
                             Bookmark.thousandthsVertical(bookmark.getTop(),
-                            mediaBox.getHeight()));
-                    bookmark.setRight(Math.round(p.x / f) + Math.round(d.width / f));
+                            mediaBoxHeight));
+                    bookmark.setRight(Math.round(p.x / f) + Math.round(d.width / f) + cropBoxX);
                     bookmark.setThousandthsRight(
                             Bookmark.thousandthsHorizontal(bookmark.getRight(),
-                            mediaBox.getWidth()));
-                    bookmark.setBottom(Math.round(mediaBox.getHeight() -
-                            (Math.round(p.y / f) + Math.round(d.height / f))));
+                            mediaBoxWidth));
+                    bookmark.setBottom(Math.round(cropBox.getHeight() -
+                            (Math.round(p.y / f) + Math.round(d.height / f)) + cropBoxY));
                     bookmark.setThousandthsBottom(
                             Bookmark.thousandthsVertical(bookmark.getBottom(),
-                            mediaBox.getWidth()));
+                            mediaBoxHeight));
                 }
                 break;
         }
@@ -397,25 +405,25 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
     }
 
     private Dimension calcViewSize() {
-        PageDimension scaledMediaBox = new PageDimension(
+        PageDimension scaledCropBox = new PageDimension(
                 currentPageObject.getCropBoxWidth(currentPage + 1) * scale,
                 currentPageObject.getCropBoxHeight(currentPage + 1) * scale);
 //        PageDimension scaledMediaBox = new PageDimension(
 //                currentPageObject.getWidth() * scale,
 //                currentPageObject.getHeight() * scale);
 
-        int viewWidth = Math.max(Math.round(scaledMediaBox.getWidth()),
+        int viewWidth = Math.max(Math.round(scaledCropBox.getWidth()),
                 viewport.getWidth());
-        int viewHeight = Math.max(Math.round(scaledMediaBox.getHeight()),
+        int viewHeight = Math.max(Math.round(scaledCropBox.getHeight()),
                 viewport.getHeight());
 
         switch (fitType) {
             case FitWidth:
-                viewHeight = Math.round(scaledMediaBox.getHeight() +
+                viewHeight = Math.round(scaledCropBox.getHeight() +
                         viewport.getHeight());
                 break;
             case FitHeight:
-                viewWidth = Math.round(scaledMediaBox.getWidth()) +
+                viewWidth = Math.round(scaledCropBox.getWidth()) +
                         viewport.getWidth();
                 break;
             case FitPage:
@@ -424,9 +432,9 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
             case FitRect:
             case TopLeftZoom:
                 viewWidth = viewport.getWidth() +
-                        Math.round(scaledMediaBox.getWidth());
+                        Math.round(scaledCropBox.getWidth());
                 viewHeight = viewport.getHeight() +
-                        Math.round(scaledMediaBox.getHeight());
+                        Math.round(scaledCropBox.getHeight());
                 break;
         }
 
@@ -434,9 +442,13 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
     }
 
     private void adjustViewportPosition() {
-        PageDimension mediaBox = new PageDimension(
-                currentPageObject.getCropBoxWidth(currentPage + 1) * scale,
-                currentPageObject.getCropBoxHeight(currentPage + 1) * scale);
+//        PageDimension cropBox = new PageDimension(
+//                currentPageObject.getCropBoxWidth(currentPage + 1) * scale,
+//                currentPageObject.getCropBoxHeight(currentPage + 1) * scale);
+        float scaledMediaBoxHeight = currentPageObject.getMediaBoxHeight(currentPage + 1) * scale;
+//        float scaledMediaBoxWidth = currentPageObject.getMediaBoxWidth(currentPage + 1) * scale;
+        float scaledCropBoxY = currentPageObject.getCropBoxY(currentPage + 1) * scale;
+        float scaledCropBoxX = currentPageObject.getCropBoxX(currentPage + 1) * scale;
 //        PageDimension mediaBox = new PageDimension(
 //                currentPageObject.getWidth() * scale,
 //                currentPageObject.getHeight() * scale);
@@ -447,13 +459,14 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
                 break;
             case FitWidth:
                 if (top != -1) {
-                    float gap = mediaBox.getHeight() - top * scale;
+                    //float gap = cropBox.getHeight() - top * scale;
+                    float gap = (scaledMediaBoxHeight - top * scale) - scaledCropBoxY;
                     movePanel(0, Math.round(gap));
                 }
                 break;
             case FitHeight:
                 if (left != -1) {
-                    float gap = left * scale;
+                    float gap = (left * scale) - scaledCropBoxX;
                     movePanel(Math.round(gap), 0);
                 }
                 break;
@@ -471,12 +484,14 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
                 int gapWidth;
                 Point pt = viewport.getViewPosition();
                 if (top != -1) {
-                    gapHeight = Math.round(mediaBox.getHeight() - top * scale);
+                    gapHeight = Math.round((scaledMediaBoxHeight - top * scale) - scaledCropBoxY);
+                    //gapHeight = Math.round(cropBox.getHeight() - top * scale);
                 } else {
                     gapHeight = pt.y;
                 }
                 if (left != -1) {
-                    gapWidth = Math.round(left * scale);
+                    //gapWidth = Math.round(left * scale);
+                    gapWidth = Math.round((left * scale) - scaledCropBoxX);
                 } else {
                     gapWidth = pt.x;
                 }

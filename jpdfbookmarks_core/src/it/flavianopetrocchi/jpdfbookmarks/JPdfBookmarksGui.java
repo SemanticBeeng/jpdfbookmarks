@@ -624,28 +624,28 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                 Bookmark root = null;
                 try {
                     root = get();
+                    if (root != null) {
+                        bookmarksTreeModel.setRoot(root);
+                        recreateNodesOpenedState();
+                    } else {
+                        bookmarksTreeModel.setRoot(new Bookmark());
+                    }
+                    bookmarksTree.setRootVisible(false);
+                    bookmarksTree.setEditable(true);
+                    bookmarksTree.treeDidChange();
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        public void run() {
+                            viewPanel.goToFirstPage();
+                        }
+                    });
                 } catch (Exception ex) {
                     showErrorMessage(Res.getString("ERROR_OPENING_FILE") + " " +
                             file.getName());
+                } finally {
+                    CursorToolkit.stopWaitCursor(tbBold);
+                    removeProgressBar();
                 }
-                if (root != null) {
-                    bookmarksTreeModel.setRoot(root);
-                    recreateNodesOpenedState();
-                } else {
-                    bookmarksTreeModel.setRoot(new Bookmark());
-                }
-                bookmarksTree.setRootVisible(false);
-                bookmarksTree.setEditable(true);
-                bookmarksTree.treeDidChange();
-                CursorToolkit.stopWaitCursor(tbBold);
-                removeProgressBar();
-//				viewPanel.goToFirstPage();
-                SwingUtilities.invokeLater(new Runnable() {
-
-                    public void run() {
-                        viewPanel.goToFirstPage();
-                    }
-                });
             }
         };
         opener.execute();
@@ -1640,7 +1640,12 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         }
 
         public void actionPerformed(ActionEvent e) {
-            openFileAsync(f);
+            if (f != null && f.isFile()) {
+                close();
+                openFileAsync(f);
+            } else {
+                showErrorMessage(Res.getString("ERROR_OPENING_FILE") + " " + f.getName());
+            }
         }
     }
 

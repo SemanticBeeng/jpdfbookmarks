@@ -19,59 +19,59 @@
  * You should have received a copy of the GNU General Public License
  * along with JPdfBookmarks.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package it.flavianopetrocchi.jpdfbookmarks;
 
 import it.flavianopetrocchi.utilities.Ut;
 import javax.swing.ButtonGroup;
 
 public class ConnectionOptionsPanel extends javax.swing.JPanel {
-	Prefs userPrefs;
-	ButtonGroup proxyTypeGroup = new ButtonGroup();
+
+    Prefs userPrefs;
+    ButtonGroup proxyTypeGroup = new ButtonGroup();
 
     /** Creates new form ConnectionOptionsPanel */
     public ConnectionOptionsPanel(Prefs userPrefs) {
-		this.userPrefs = userPrefs;
+        this.userPrefs = userPrefs;
         initComponents();
-		proxyTypeGroup.add(radioHttp);
-		proxyTypeGroup.add(radioSocks);
-		checkUseProxy.setSelected(userPrefs.getUseProxy());
-		Ut.enableComponents(checkUseProxy.isSelected(), radioHttp, radioSocks,
-				txtProxyAddress, portSpinner, lblProxyAddress, lblPort);
-		String proxyType = userPrefs.getProxyType();
-		if (proxyType.equals("SOCKS")) {
-			radioSocks.setSelected(true);
-		} else {
-			radioHttp.setSelected(true);
-		}
-		txtProxyAddress.setText(userPrefs.getProxyAddress());
-		portSpinner.setValue(userPrefs.getProxyPort());
-		checkUpdatesOnStart.setSelected(userPrefs.getCheckUpdatesOnStart());
+        proxyTypeGroup.add(radioHttp);
+        proxyTypeGroup.add(radioSocks);
+        checkUseProxy.setSelected(userPrefs.getUseProxy());
+        Ut.enableComponents(checkUseProxy.isSelected(), radioHttp, radioSocks,
+                txtProxyAddress, portSpinner, lblProxyAddress, lblPort);
+        String proxyType = userPrefs.getProxyType();
+        if (proxyType.equals("SOCKS")) {
+            radioSocks.setSelected(true);
+        } else {
+            radioHttp.setSelected(true);
+        }
+        txtProxyAddress.setText(userPrefs.getProxyAddress());
+        portSpinner.setValue(userPrefs.getProxyPort());
+        checkUpdatesOnStart.setSelected(userPrefs.getCheckUpdatesOnStart());
     }
 
-	public boolean checkUpdatesOnStart() {
-		return checkUpdatesOnStart.isSelected();
-	}
+    public boolean checkUpdatesOnStart() {
+        return checkUpdatesOnStart.isSelected();
+    }
 
-	public boolean useProxy() {
-		return checkUseProxy.isSelected();
-	}
+    public boolean useProxy() {
+        return checkUseProxy.isSelected();
+    }
 
-	public String getProxyType() {
-		if (radioSocks.isSelected()) {
-			return "SOCKS";
-		} else {
-			return "HTTP";
-		}
-	}
+    public String getProxyType() {
+        if (radioSocks.isSelected()) {
+            return "SOCKS";
+        } else {
+            return "HTTP";
+        }
+    }
 
-	public String getProxyAddress() {
-		return txtProxyAddress.getText().trim();
-	}
+    public String getProxyAddress() {
+        return txtProxyAddress.getText().trim();
+    }
 
-	public int getProxyPort() {
-		return (Integer) portSpinner.getValue();
-	}
+    public int getProxyPort() {
+        return (Integer) portSpinner.getValue();
+    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -158,11 +158,9 @@ public class ConnectionOptionsPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 	private void checkUseProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkUseProxyActionPerformed
-		Ut.enableComponents(checkUseProxy.isSelected(), radioHttp, radioSocks,
-				txtProxyAddress, portSpinner, lblProxyAddress, lblPort);
+            Ut.enableComponents(checkUseProxy.isSelected(), radioHttp, radioSocks,
+                    txtProxyAddress, portSpinner, lblProxyAddress, lblPort);
 	}//GEN-LAST:event_checkUseProxyActionPerformed
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox checkUpdatesOnStart;
     private javax.swing.JCheckBox checkUseProxy;
@@ -173,5 +171,4 @@ public class ConnectionOptionsPanel extends javax.swing.JPanel {
     private javax.swing.JRadioButton radioSocks;
     private javax.swing.JTextField txtProxyAddress;
     // End of variables declaration//GEN-END:variables
-
 }
