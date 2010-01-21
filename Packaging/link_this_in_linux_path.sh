@@ -5,7 +5,7 @@
 # Unix like systems in a folder in the PATH environment variable. For example  
 # as root type:
 #
-# $ ln -s  link_this_in_linux_path.sh /usr/local/bin/jpdfbookmarks
+# $ ln -s  link_this_in_linux_path.sh /usr/local/bin/jpdfbookmarks_gui
 #
 ###############################################################################
 
