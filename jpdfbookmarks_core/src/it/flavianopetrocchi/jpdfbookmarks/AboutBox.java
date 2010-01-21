@@ -90,6 +90,7 @@ public class AboutBox extends javax.swing.JDialog {
         leftPanel = new javax.swing.JPanel();
         progIconLabel = new javax.swing.JLabel();
         btnClose = new javax.swing.JButton();
+        gplv3Label = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("JPdfBookmarks");
@@ -201,7 +202,7 @@ public class AboutBox extends javax.swing.JDialog {
 
         txtLibraries.setContentType("text/html");
         txtLibraries.setEditable(false);
-        txtLibraries.setText("<html>\n<head>\n</head>\n<body>\n<span style=\"font-weight: bold;\">Apache Commons CLI</span><br>\nCopyright 2001-2009 The Apache Software Foundation <br>\n<a href=\"http://commons.apache.org/cli/\">http://commons.apache.org/cli/</a><br>\nApache License Version 2.0, January 2004<br>\n<a href=\"http://www.apache.org/licenses/\">http://www.apache.org/licenses/</a><br>\n<br>\n<span style=\"font-weight: bold;\">iText-2.1.7</span><br>\nCopyright 1999, 2000, 2001, 2002 by Bruno Lowagie.<br>\n<a href=\"http://www.lowagie.com/iText/\">http://www.lowagie.com/iText/</a><br>\nGNU LIBRARY GENERAL PUBLIC LICENSE Version 2 (or later version)<br>\n<a href=\"http://www.gnu.org/licenses\">http://www.gnu.org/licenses</a>/<br>\n<br>\n<b>Bouncy Castle Crypto APIs<br>\n</b>Copyright (c) 2000 - 2009 The Legion Of The Bouncy Castle<br>\n<a href=\"http://www.bouncycastle.org\">http://www.bouncycastle.org</a>\n<br>\nAdaptation of the <a\n href=\"http://opensource.org/licenses/mit-license.php\">MIT\nX11 License</a><br>\n<a href=\"http://www.bouncycastle.org/licence.html\">http://www.bouncycastle.org/licence.html</a><br>\n<span style=\"font-weight: bold;\"></span><br>\n<span style=\"font-weight: bold;\">JPedal</span><br>\n(C) Copyright 1997-2008, IDRsolutions and Contributors.<br>\n<a href=\"http://www.jpedal.org\">http://www.jpedal.org</a><br>\nGNU Lesser General Public License Version 2.1 (or later version)<br>\n<a href=\"http://www.gnu.org/licenses/\">http://www.gnu.org/licenses/</a>\n</body>\n</html>\n"); // NOI18N
+        txtLibraries.setText("<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">\n<html>\n<head>\n</head>\n<body>\n<span style=\"font-weight: bold;\">Apache Commons CLI</span><br>\nCopyright 2001-2009 The Apache Software Foundation <br>\n<a href=\"http://commons.apache.org/cli/\">http://commons.apache.org/cli/</a><br>\nApache License Version 2.0, January 2004<br>\n<a href=\"http://www.apache.org/licenses/\">http://www.apache.org/licenses/</a><br>\n<br>\n<span style=\"font-weight: bold;\">iText-2.1.7</span><br>\nCopyright 1999, 2000, 2001, 2002 by Bruno Lowagie.<br>\n<a href=\"http://www.lowagie.com/iText/\">http://www.lowagie.com/iText/</a><br>\nGNU LIBRARY GENERAL PUBLIC LICENSE Version 2 (or later version)<br>\n<a href=\"http://www.gnu.org/licenses\">http://www.gnu.org/licenses</a>/<br>\n<br>\n<b>Bouncy Castle Crypto APIs<br>\n</b>Copyright (c) 2000 - 2009 The Legion Of The Bouncy Castle<br>\n<a href=\"http://www.bouncycastle.org\">http://www.bouncycastle.org</a>\n<br>\nAdaptation of the <a\n href=\"http://opensource.org/licenses/mit-license.php\">MIT\nX11 License</a><br>\n<a href=\"http://www.bouncycastle.org/licence.html\">http://www.bouncycastle.org/licence.html</a><br>\n<span style=\"font-weight: bold;\"></span><br>\n<span style=\"font-weight: bold;\">JPedal</span><br>\n(C) Copyright 1997-2008, IDRsolutions and Contributors.<br>\n<a href=\"http://www.jpedal.org\">http://www.jpedal.org</a><br>\nGNU Lesser General Public License Version 2.1 (or later version)<br>\n<a href=\"http://www.gnu.org/licenses/\">http://www.gnu.org/licenses/</a><br>\n<br>\nIcons are from the <span style=\"font-weight: bold;\">\"Tango\nDesktop Project\"</span><br>\n<a href=\"http://tango.freedesktop.org/Tango_Desktop_Project\">http://tango.freedesktop.org/Tango_Desktop_Project</a>\n</body>\n</html>\n"); // NOI18N
         jScrollPane1.setViewportView(txtLibraries);
 
         vendorLabel1.setFont(vendorLabel1.getFont().deriveFont(vendorLabel1.getFont().getStyle() | java.awt.Font.BOLD));
@@ -289,6 +290,7 @@ public class AboutBox extends javax.swing.JDialog {
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 211, Short.MAX_VALUE))
         );
 
+        progIconLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         progIconLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/it/flavianopetrocchi/jpdfbookmarks/gfx/jpdfbookmarks.png"))); // NOI18N
 
         btnClose.setMnemonic(java.util.ResourceBundle.getBundle("it/flavianopetrocchi/jpdfbookmarks/locales/localizedText").getString("ACTION_CLOSE_MNEMONIC").charAt(0));
@@ -300,6 +302,9 @@ public class AboutBox extends javax.swing.JDialog {
             }
         });
 
+        gplv3Label.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        gplv3Label.setIcon(new javax.swing.ImageIcon(getClass().getResource("/it/flavianopetrocchi/jpdfbookmarks/gfx/gplv3-127x51.png"))); // NOI18N
+
         org.jdesktop.layout.GroupLayout leftPanelLayout = new org.jdesktop.layout.GroupLayout(leftPanel);
         leftPanel.setLayout(leftPanelLayout);
         leftPanelLayout.setHorizontalGroup(
@@ -308,14 +313,17 @@ public class AboutBox extends javax.swing.JDialog {
                 .addContainerGap()
                 .add(leftPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(btnClose, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 162, Short.MAX_VALUE)
-                    .add(progIconLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 162, Short.MAX_VALUE)))
+                    .add(progIconLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 162, Short.MAX_VALUE)
+                    .add(gplv3Label, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 162, Short.MAX_VALUE)))
         );
         leftPanelLayout.setVerticalGroup(
             leftPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(leftPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(progIconLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 179, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 224, Short.MAX_VALUE)
+                .add(18, 18, 18)
+                .add(gplv3Label)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 155, Short.MAX_VALUE)
                 .add(btnClose)
                 .addContainerGap())
         );
@@ -482,6 +490,7 @@ public class AboutBox extends javax.swing.JDialog {
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnClose;
+    private javax.swing.JLabel gplv3Label;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPanel leftPanel;
     private javax.swing.JLabel progIconLabel;
