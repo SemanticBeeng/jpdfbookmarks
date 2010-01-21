@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="32px"
+   height="32px"
+   id="svg2383"
+   sodipodi:version="0.32"
+   inkscape:version="0.46"
+   inkscape:export-filename="C:\Users\fla\Documents\NetBeansProjects\tango-icon-theme-0.8.90\32x32\myicons\hand-opened.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90"
+   sodipodi:docname="hand-open.svg"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape">
+  <defs
+     id="defs2385">
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 16 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="32 : 16 : 1"
+       inkscape:persp3d-origin="16 : 10.666667 : 1"
+       id="perspective2391" />
+    <inkscape:perspective
+       id="perspective2457"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       sodipodi:type="inkscape:persp3d" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="15.96875"
+     inkscape:cx="6.2309198"
+     inkscape:cy="16"
+     inkscape:current-layer="layer1"
+     showgrid="true"
+     inkscape:grid-bbox="true"
+     inkscape:document-units="px"
+     inkscape:window-width="1350"
+     inkscape:window-height="718"
+     inkscape:window-x="0"
+     inkscape:window-y="14"
+     showguides="true"
+     inkscape:guide-bbox="true" />
+  <metadata
+     id="metadata2388">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     id="layer1"
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     style="display:inline">
+    <image
+       y="-28.011826"
+       x="48.336056"
+       id="image2459"
+       height="64.703728"
+       width="52.24826"
+       sodipodi:absref="C:\Users\fla\Documents\NetBeansProjects\hand cursors.jpg"
+       xlink:href="C:\Users\fla\Documents\NetBeansProjects\hand cursors.jpg" />
+    <path
+       style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.315;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 12.378582,27.060716 L 20.70371,27.060716 L 20.70371,25.597585 L 20.808353,24.211936 L 20.975075,22.976412 L 21.173783,21.996983 L 21.526062,20.70127 L 21.958458,18.54899 L 22.224847,14.047583 L 22.071569,9.0039186 L 21.69714,7.8309602 L 21.134315,7.5883664 L 20.82198,7.8467511 L 20.359426,8.776826 L 20.146314,13.612051 L 19.972931,15.023301 L 19.722442,7.1273608 L 19.308492,5.7317739 L 18.689231,5.4812847 L 18.069971,5.7317739 L 17.755404,7.0650655 L 17.567537,10.453307 L 17.567537,13.716305 L 17.392959,14.241105 L 17.233125,9.6521963 L 16.760179,5.1259103 L 16.270996,4.2783286 L 15.506077,4.2783286 L 14.819851,4.8898104 L 14.569361,5.8766742 L 14.694606,9.4419228 L 14.694606,13.612051 L 14.234584,14.694197 L 14.128027,10.712769 L 13.557871,6.5434725 L 13.021503,5.6253814 L 12.453287,5.5469578 L 12.010316,5.7190235 L 11.497501,6.8194176 L 11.497501,9.1291632 L 11.710613,11.943999 L 11.923723,15.280103 L 11.920156,16.500906 L 11.596921,16.053658 L 10.950452,15.054909 L 9.2095054,12.910752 L 7.6901278,12.285233 L 7.1186224,12.844389 L 6.8165941,13.947217 L 7.349373,14.55033 L 8.2123629,15.498925 L 9.339207,17.380566 L 10.661591,19.962202 L 11.361214,21.995543 L 11.860385,23.612122 L 12.256144,25.193129 L 12.378582,27.060716 z"
+       id="path3247"
+       sodipodi:nodetypes="ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer3"
+     inkscape:label="imageLayer"
+     style="display:inline" />
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="drawLayer" />
+</svg>

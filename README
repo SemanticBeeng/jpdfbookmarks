@@ -1,14 +1,17 @@
 ===============================================================================
 This is jpdfbookmarks
 
-Authors: Flaviano Petrocchi
-E-mail: flavianopetrocchi@gmail.com
+Copyright (c) 2008 2009 2010 Flaviano Petrocchi <flavianopetrocchi@gmail.com>
+except where differently indicated in source code.
+
+License: GNU General Public License version 3
 Author's Blog: http://flavianopetrocchi.blogspot.com/
 sourceforge: http://sourceforge.net/projects/jpdfbookmarks/
 
 For licence information read COPYING file, read the dependencies section in 
 this README for the licenses and copyright of the open source libraries used 
 by this project.
+
 ===============================================================================
 
 Sections:
@@ -16,6 +19,7 @@ Sections:
 - DEPENDENCIES
 - HOW TO EXECUTE
 - HOW TO BUILD
+- HOW TO PACKAGE
 - CONTACTS
 
 *******************************************************************************
@@ -23,19 +27,6 @@ Sections:
 *******************************************************************************
 
 This software allows you to create and edit bookmarks on existing pdf files.
-
-Installers will be available for linux and windows, while other operating 
-systems users can download the zip archive version, i remind you that this 
-is a java program so you need a Java Runtime Environment (version 6 or later) 
-to run it.
-
-To use the linux installer remember to give the downloaded file execution 
-permissions, this can be done right clicking on it and choosing properties on 
-most desktop environments or with the command:
-
-chmod +x jpdfbookmarks-x.x.x-Linux-x86-Install
-
-On Windows you should be able to launch the installer with a double click.
 
 *******************************************************************************
 	DEPENDENCIES
@@ -68,12 +59,55 @@ http://www.jpedal.org
 GNU Lesser General Public License Version 2.1 (or later version)
 http://www.gnu.org/licenses/
 
+Icons are from the "Tango Desktop Project"
+http://tango.freedesktop.org/Tango_Desktop_Project
+
 *******************************************************************************
 	HOW TO EXECUTE 
 *******************************************************************************
 
-This software has a command line and a graphical interface here is a short help
-guide.
+Download the zip or tar.gz archive of the latest version from sourceforge
+(http://sourceforge.net/projects/jpdfbookmarks/) and extract the folder
+jpdfbookmarks-x.x.x to a position on your drive. Inside that folder you have
+both the windows executables and the Linux scripts to launch the application.
+
+IMPORTANT: this software requires a Java Runtime Environment version 6 or later
+for information on how to install one on your system, or to check if you already
+have it, go to http://www.java.com or search your system's software
+repositories.
+
+On Windows
+==========
+To launch the graphical user interface of the program on windows double click
+jpdfbookmarks.exe, the program can take the pdf file to open as an argument to
+facilitate shell integration. To use the program on the command-line use the
+other executable jpdfbookmarks_cli.exe, if you use often the command prompt I
+suggest you to add the jpdfbookmarks-x.x.x folder to the PATH environment
+variable, you can easily find instructions on how to accomplish this on the web.
+
+On Linux (or similar)
+======================
+To launch the program on Linux first you must create links to the launch scripts
+contained in the jpdfbookmarks-x.x.x folder with the following commands:
+
+# ln -s link_this_in_linux_path.sh /usr/local/bin/jpdfbookmarks_gui
+
+# ln -s link_this_in_linux_path_cli.sh /usr/local/bin/jpdfbookmarks
+
+you can change the names of the executables if you want. Now on the terminal 
+you can use the commands jpdfbookmarks_gui for the graphical user interface 
+mode and jpdfbookmarks for the command-line.
+
+Universal
+=========
+For all the systems you can launch the program with:
+
+$ java -jar jpdfbookmarks.jar
+
+and on many systems also double clicking on jpdfbookmarks.jar will work.
+
+
+Here follows a short help on the jpdfbookmarks parameters.
 
 usage: jpdfbookmarks [--dump | --apply <bookmarks.txt> --out <output.pdf> |
                      --help | --version] [input.pdf]
@@ -89,24 +123,22 @@ jpdfbookmarks.exe.
  -d,--dump                   Extract bookmarks from a PDF file passed as
                              argument and print them to standard output.
  -h,--help                   Print this message.
- -i,--indentation <arg>      String to use as indentation string (default vaue
+ -i,--indentation <arg>      String to use as indentation string (default value
                              is the tab character) , must be different from the
                              title and page number separator (default value '/')
-
                              and from the attributes separator (default value
                              ',').
  -o,--out <output.pdf>       Output PDF file --out file.pdf or -o file.pdf.  Use
-
                              with the --apply option.
  -p,--page-sep <arg>         String to be use between title and page number
                              (default value is '/'), must be different from
                              attributes separator (default value ',') and from
-                             indentation string (default vaue is the tab
+                             indentation string (default value is the tab
                              character).
  -t,--attributes-sep <arg>   String to be use between the bookmark attributes
                              (default value is ','), must be different from the
                              title and page number  separator (default value
-                             '/') and from indentation string (default vaue is
+                             '/') and from indentation string (default value is
                              the tab character).
  -v,--version                Version number.
 
@@ -134,7 +166,7 @@ it, otherwise download an appropriate subversion client for your system, I will
 first guide you to build the program in Netbeans and then on the command line.
 
 From the Netbeans menu choose "Team->Subversion->Checkout" and on the dialog
-the repository url to enter is:
+the repository URL to enter is:
 
 https://jpdfbookmarks.svn.sourceforge.net/svnroot/jpdfbookmarks/trunk
 
@@ -169,11 +201,16 @@ execute the program with:
 $> java -jar dist/jpdfbookmarks.jar
 
 *******************************************************************************
+	HOW TO PACKAGE
+*******************************************************************************
+
+*******************************************************************************
 	CONTACTS
 *******************************************************************************
 
 For more instructions and information go to my blog 
-http://flavianopetrocchi.blogspot.com/ please post your comments and bug
+http://flavianopetrocchi.blogspot.com/ or to 
+http://sourceforge.net/projects/jpdfbookmarks/ please post your comments and bug
 reports.
 
 I hope this will help you getting your job done, let me know.

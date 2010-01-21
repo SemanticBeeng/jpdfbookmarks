@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="32px"
+   height="32px"
+   id="svg2383"
+   sodipodi:version="0.32"
+   inkscape:version="0.46"
+   inkscape:export-filename="C:\Users\fla\Documents\NetBeansProjects\tango-icon-theme-0.8.90\32x32\myicons\hand-closed.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90"
+   sodipodi:docname="hand-close.svg"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape">
+  <defs
+     id="defs2385">
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 16 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="32 : 16 : 1"
+       inkscape:persp3d-origin="16 : 10.666667 : 1"
+       id="perspective2391" />
+    <inkscape:perspective
+       id="perspective2457"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       sodipodi:type="inkscape:persp3d" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="7.8694008"
+     inkscape:cx="30.24488"
+     inkscape:cy="1.8070308"
+     inkscape:current-layer="layer1"
+     showgrid="true"
+     inkscape:grid-bbox="true"
+     inkscape:document-units="px"
+     inkscape:window-width="1350"
+     inkscape:window-height="718"
+     inkscape:window-x="0"
+     inkscape:window-y="14" />
+  <metadata
+     id="metadata2388">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     id="layer1"
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     style="display:inline">
+    <image
+       y="-28.011826"
+       x="48.336056"
+       id="image2459"
+       height="64.703728"
+       width="52.24826"
+       sodipodi:absref="C:\Users\fla\Documents\NetBeansProjects\hand cursors.jpg"
+       xlink:href="C:\Users\fla\Documents\NetBeansProjects\hand cursors.jpg" />
+    <path
+       style="fill:#ffffff;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+       d="M 10.674256,29.585585 L 20.71314,29.585585 L 20.71314,26.917021 L 20.837934,25.891913 L 21.092083,24.883829 L 21.329054,23.41339 L 21.583203,21.834042 L 22.098863,19.210624 L 22.416549,13.723848 L 22.225937,9.5078173 L 20.945298,8.5293105 L 20.191916,9.0783527 L 19.937767,13.192977 L 19.730996,14.913152 L 19.85807,8.364147 L 19.013292,7.2481203 L 18.298725,6.9939713 L 17.116561,7.3986936 L 16.862413,9.342777 L 16.862413,13.320052 L 16.654217,13.959732 L 16.463605,8.366301 L 15.637622,7.2204766 L 14.553758,6.8990601 L 13.563335,7.4746256 L 13.309187,8.109998 L 13.436261,13.192977 L 12.887655,14.512008 L 12.76058,9.6590348 L 12.125208,8.2370726 L 10.954971,7.8292832 L 10.004735,8.4715058 L 9.6235119,9.8890407 L 9.8776609,11.159785 L 10.131809,15.226169 L 10.127555,16.714209 L 9.7420772,16.169057 L 8.9711214,14.95168 L 9.9447203,14.117205 L 9.6576603,11.956939 L 7.3241359,12.384346 L 6.5827246,13.347363 L 5.8202777,14.463721 L 5.8328519,15.365818 L 6.795461,17.786429 L 8.6266365,20.933191 L 9.460981,23.411635 L 10.056274,25.382087 L 10.528242,27.309179 L 10.674256,29.585585 z"
+       id="path3247"
+       sodipodi:nodetypes="cccccccccccccccccccccccccccccccccccccccccccccccccc" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer3"
+     inkscape:label="imageLayer"
+     style="display:inline" />
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="drawLayer" />
+</svg>
