@@ -1,9 +1,31 @@
 @echo off
 
+REM
+REM packager.bat
+REM 
+REM Copyright (c) 2010 Flaviano Petrocchi <flavianopetrocchi at gmail.com>.
+REM All rights reserved.
+REM 
+REM This file is part of JPdfBookmarks.
+REM 
+REM JPdfBookmarks is free software: you can redistribute it and/or modify
+REM it under the terms of the GNU General Public License as published by
+REM the Free Software Foundation, either version 3 of the License, or
+REM (at your option) any later version.
+REM 
+REM JPdfBookmarks is distributed in the hope that it will be useful,
+REM but WITHOUT ANY WARRANTY; without even the implied warranty of
+REM MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+REM GNU General Public License for more details.
+REM 
+REM You should have received a copy of the GNU General Public License
+REM along with JPdfBookmarks.  If not, see <http://www.gnu.org/licenses/>.
+REM
+
 SET BATDIR=%~dp0
 PUSHD %BATDIR%
 
-rem Customize this path as needed to point to 7zip folder
+REM Customize this path as needed to point to 7zip folder
 SET PATH7ZIP="D:\LiberKey\Apps\7Zip\App\7-Zip"
 SET PATH=%PATH7ZIP%;%PATH%
 

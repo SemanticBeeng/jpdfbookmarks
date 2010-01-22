@@ -6,7 +6,7 @@ except where differently indicated in source code.
 
 License: GNU General Public License version 3
 Author's Blog: http://flavianopetrocchi.blogspot.com/
-sourceforge: http://sourceforge.net/projects/jpdfbookmarks/
+source-forge: http://sourceforge.net/projects/jpdfbookmarks/
 
 For licence information read COPYING file, read the dependencies section in 
 this README for the licenses and copyright of the open source libraries used 
@@ -20,7 +20,7 @@ Sections:
 - HOW TO EXECUTE
 - HOW TO BUILD
 - HOW TO PACKAGE
-- CONTACTS
+- HOW TO HELP
 
 *******************************************************************************
 	DESCRIPTION
@@ -32,8 +32,11 @@ This software allows you to create and edit bookmarks on existing pdf files.
 	DEPENDENCIES
 *******************************************************************************
 
-This software requires some libraries distributed in the lib folder which are 
-copyright of their respective authors.
+This software requires a Java Runtime Environment version 6 or later for 
+information on how to install one on your system, or to check if you already
+have it, go to http://www.java.com or search your system's software
+repositories. It uses the following libraries distributed in the lib folder 
+which are copyright of their respective authors:
 
 Apache Commons CLI
 Copyright 2001-2009 The Apache Software Foundation 
@@ -66,7 +69,7 @@ http://tango.freedesktop.org/Tango_Desktop_Project
 	HOW TO EXECUTE 
 *******************************************************************************
 
-Download the zip or tar.gz archive of the latest version from sourceforge
+Download the zip or tar.gz archive of the latest version from source-forge
 (http://sourceforge.net/projects/jpdfbookmarks/) and extract the folder
 jpdfbookmarks-x.x.x to a position on your drive. Inside that folder you have
 both the windows executables and the Linux scripts to launch the application.
@@ -87,16 +90,21 @@ variable, you can easily find instructions on how to accomplish this on the web.
 
 On Linux (or similar)
 ======================
-To launch the program on Linux first you must create links to the launch scripts
-contained in the jpdfbookmarks-x.x.x folder with the following commands:
+After you have extracted the archive enter the folder jpdfbookmarks-x.x.x and
+here you will find a linux_install.sh bash script, execute it from terminal as
+root with:
 
-# ln -s link_this_in_linux_path.sh /usr/local/bin/jpdfbookmarks_gui
+# bash linux_install.sh
 
-# ln -s link_this_in_linux_path_cli.sh /usr/local/bin/jpdfbookmarks
+the script simply copies the directory to /usr/local/lib an than create two 
+symbolic links in /usr/local/bin called jpdfbookmarks (to launch from 
+command-line) and jpdfbookamrks_gui (to launch the gui with a splash screen),   
+so after the execution you can try to execute the program from the terminal 
+with:
 
-you can change the names of the executables if you want. Now on the terminal 
-you can use the commands jpdfbookmarks_gui for the graphical user interface 
-mode and jpdfbookmarks for the command-line.
+$ jpdfbookmarks --help
+
+which should print a short help.
 
 Universal
 =========
@@ -204,9 +212,49 @@ $> java -jar dist/jpdfbookmarks.jar
 	HOW TO PACKAGE
 *******************************************************************************
 
+I have decided not to provide installers for jpdfbookmarks but only archives
+containing binaries, the reason is that I prefer spending my time programming
+and solving bugs on the code, creating installers for different platforms is 
+not an easy task and I hope someone will offer his help to create state of the 
+art packages for specific systems.
+
+To create the archives there are two scripts in the Packaging folder, 
+packager.bat if you are in Windows, and packager.sh if you are on Linux. 
+
+On Windows
+==========
+The packager.bat batch script depends on 7zip software to create the archives, 
+you must modify the script to use it on your system, find the line:
+
+SET PATH7ZIP="D:\LiberKey\Apps\7Zip\App\7-Zip"
+
+and substitute the path with the 7zip installation folder on your system, than 
+simply run the batch file after you have built jpdfbookmarks to create the
+zip and tar.gz archives.
+
+On Linux
+========
+Run the packager.sh script with:
+
+$ sh packager.sh
+
+ 
+
 *******************************************************************************
-	CONTACTS
+	HOW TO HELP
 *******************************************************************************
+
+There are really many ways to help a small GPL project like this, here I give 
+some hints but feel free to offer any other idea you have.
+
+- report bugs;
+- correct bugs submitting patches;
+- write documentation or tutorials;
+- write translations of the program or of the documentation;
+- create better icons;
+- suggest new features;
+- create Installers; 
+...
 
 For more instructions and information go to my blog 
 http://flavianopetrocchi.blogspot.com/ or to 

@@ -1,7 +1,7 @@
-#!/bin/bash
+#!/bin/sh
 
 #
-# linux_uninstall.sh
+# packager.sh
 # 
 # Copyright (c) 2010 Flaviano Petrocchi <flavianopetrocchi at gmail.com>.
 # All rights reserved.
@@ -22,20 +22,41 @@
 # along with JPdfBookmarks.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-if [[ $(/usr/bin/id -u) -ne 0 ]]; then
-    echo "To run this script you must be root!"
-    exit
-fi
+SCRIPTDIR=$(cd $(dirname "$0"); pwd)
+PREV_DIR=$(pwd)
 
-DIR_IN_PATH=/usr/local/bin
-INSTALL_PATH=/usr/local/lib
 
-SCRIPT_DIR=$(cd $(dirname "$0"); pwd)
-VERSION=$(cat ${SCRIPT_DIR}/VERSION)
+cd ${SCRIPTDIR}
+
+VERSION=$(cat ../VERSION)
+
 NAME=jpdfbookmarks-${VERSION}
-INSTALL_DIR=${INSTALL_PATH}/${NAME}
 
-rm ${DIR_IN_PATH}/jpdfbookmarks_gui
-rm ${DIR_IN_PATH}/jpdfbookmarks
-rm -f -R ${INSTALL_DIR}
+rm -f ${NAME}.zip
+rm -f ${NAME}.tar
+rm -f ${NAME}.tar.gz
+rm -f -R ${NAME}
+
+mkdir ${NAME}
+
+cp jpdfbookmarks.exe ${NAME}/
+cp jpdfbookmarks_cli.exe ${NAME}/
+cp link_this_in_linux_path.sh ${NAME}/
+cp link_this_in_linux_path_cli.sh ${NAME}/
+cp linux_install.sh ${NAME}/
+cp linux_uninstall.sh ${NAME}/
+cp ../jpdfbookmarks_core/dist/jpdfbookmarks.jar ${NAME}/
+cp ../README ${NAME}/
+cp ../COPYING ${NAME}/
+cp ../VERSION ${NAME}/
+mkdir ${NAME}/lib
+cp ../jpdfbookmarks_core/dist/lib/* ${NAME}/lib/
+
+zip -r ${NAME}.zip ${NAME}
+tar -cvzf ${NAME}.tar.gz ${NAME} 
+
+rm -f ${NAME}.tar
+rm -f -R ${NAME}
+
+cd ${PREV_DIR}
 
