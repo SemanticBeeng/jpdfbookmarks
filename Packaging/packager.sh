@@ -43,8 +43,8 @@ cp jpdfbookmarks.exe ${NAME}/
 cp jpdfbookmarks_cli.exe ${NAME}/
 cp link_this_in_linux_path.sh ${NAME}/
 cp link_this_in_linux_path_cli.sh ${NAME}/
-cp linux_install.sh ${NAME}/
-cp linux_uninstall.sh ${NAME}/
+cp jpdfbookmarks ${NAME}/
+cp jpdfbookmarks_cli ${NAME}/
 cp ../jpdfbookmarks_core/dist/jpdfbookmarks.jar ${NAME}/
 cp ../README ${NAME}/
 cp ../COPYING ${NAME}/
@@ -53,7 +53,7 @@ mkdir ${NAME}/lib
 cp ../jpdfbookmarks_core/dist/lib/* ${NAME}/lib/
 
 zip -r ${NAME}.zip ${NAME}
-tar -cvzf ${NAME}.tar.gz ${NAME} 
+tar -cpvzf ${NAME}.tar.gz ${NAME} 
 
 rm -f ${NAME}.tar
 rm -f -R ${NAME}

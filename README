@@ -17,6 +17,7 @@ by this project.
 Sections:
 - DESCRIPTION
 - DEPENDENCIES
+- HOW TO INSTALL
 - HOW TO EXECUTE
 - HOW TO BUILD
 - HOW TO PACKAGE
@@ -66,54 +67,89 @@ Icons are from the "Tango Desktop Project"
 http://tango.freedesktop.org/Tango_Desktop_Project
 
 *******************************************************************************
-	HOW TO EXECUTE 
+	HOW TO INSTALL AND UNINSTALL
 *******************************************************************************
+
+I have decided not to provide installers any more, this is because I want to 
+dedicate more time on development than on deployment, this could change in the 
+future especially if someone else wants to help maintaining packages for specific 
+platforms. For the time general purpose archives are distributed with binaries
+and scripts for all systems. 
 
 Download the zip or tar.gz archive of the latest version from source-forge
 (http://sourceforge.net/projects/jpdfbookmarks/) and extract the folder
-jpdfbookmarks-x.x.x to a position on your drive. Inside that folder you have
-both the windows executables and the Linux scripts to launch the application.
+jpdfbookmarks-x.x.x to a position on your drive. 
+Inside that folder you have both the windows executables and the Linux scripts 
+to launch the application. 
 
 IMPORTANT: this software requires a Java Runtime Environment version 6 or later
 for information on how to install one on your system, or to check if you already
 have it, go to http://www.java.com or search your system's software
 repositories.
 
+On Linux 
+========
+You should extract the folder in a path without spaces and check if the scripts 
+have execution permissions and if they don't use the following command:
+
+$ chmod +x jpdfbookmarks jpdfbookmarks_cli 
+$ chmod +x link_this_in_linux_path.sh link_this_in_linux_path_cli.sh
+
+The jpdfbookmarks and jpdfbookmarks_cli scripts are intended to be used from the
+installation folder, so supposing you have extracted the folder to 
+/home/user/jpdfbookmarks and you are working in the folder /home/user/documents
+you can launch the program with the full path to the script 
+/home/user/jpdfbookmarks/jpdfbookmarks --help
+
+This is not particularly efficient so I suggest to create links to start the 
+program in a folder on your PATH environment variable like /usr/local/bin for
+example with the root commands:
+
+# ln -s /home/user/jpdfbookmarks/link_this_in_linux_path.sh /user/local/bin/jpdfbookmarks
+
+or
+
+# ln -s /home/user/jpdfbookmarks/link_this_in_linux_path_cli.sh /user/local/bin/jpdfbookmarks
+
+Now you are able to run jpdfbookmarks from any position just typing jpdfbookmars
+or to create a launcher icon in any desktop easily.
+The only difference between the *_cli (command-line-interface) version and the 
+other script is that the cli version does not use a splash screen so it's more 
+tailored to be used inside a terminal, choose what you prefer to link. 
+
+To uninstall on linux just delete the extracted folder and delete the link in 
+the PATH folder if you created it with the command:
+
+$rm /usr/local/bin/jpdfbookmarks 
+
 On Windows
 ==========
-To launch the graphical user interface of the program on windows double click
+To launch the graphical user interface of the program on Windows double click
 jpdfbookmarks.exe, the program can take the pdf file to open as an argument to
 facilitate shell integration. To use the program on the command-line use the
 other executable jpdfbookmarks_cli.exe, if you use often the command prompt I
 suggest you to add the jpdfbookmarks-x.x.x folder to the PATH environment
 variable, you can easily find instructions on how to accomplish this on the web.
 
-On Linux (or similar)
-======================
-After you have extracted the archive enter the folder jpdfbookmarks-x.x.x and
-here you will find a linux_install.sh bash script, execute it from terminal as
-root with:
-
-# bash linux_install.sh
-
-the script simply copies the directory to /usr/local/lib an than create two 
-symbolic links in /usr/local/bin called jpdfbookmarks (to launch from 
-command-line) and jpdfbookamrks_gui (to launch the gui with a splash screen),   
-so after the execution you can try to execute the program from the terminal 
-with:
-
-$ jpdfbookmarks --help
-
-which should print a short help.
+To uninstall just delete the extracted folder and cancel the path to the same 
+folder from the PATH environment variable if you added it. 
 
 Universal
 =========
-For all the systems you can launch the program with:
+For all the systems you can launch the program after you have extracted the 
+folder with:
 
-$ java -jar jpdfbookmarks.jar
+$ java -jar /full/path/jpdfbookmarks/jpdfbookmarks.jar
 
-and on many systems also double clicking on jpdfbookmarks.jar will work.
+it's important to provide the full path to the jpdfbookmarks.jar file.
 
+On many systems also double clicking on jpdfbookmarks.jar will work to launch 
+the application.
+
+
+*******************************************************************************
+	HOW TO EXECUTE 
+*******************************************************************************
 
 Here follows a short help on the jpdfbookmarks parameters.
 

@@ -42,6 +42,8 @@ copy jpdfbookmarks.exe %NAME%
 copy jpdfbookmarks_cli.exe %NAME%
 copy link_this_in_linux_path.sh %NAME%
 copy link_this_in_linux_path_cli.sh %NAME%
+copy jpdfbookmarks %NAME%
+copy jpdfbookmarks_cli %NAME%
 copy ..\jpdfbookmarks_core\dist\jpdfbookmarks.jar %NAME%
 copy ..\README %NAME%
 copy ..\COPYING %NAME%

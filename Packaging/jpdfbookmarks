@@ -1,7 +1,7 @@
-#!/bin/bash
+#!/bin/sh
 
 #
-# linux_uninstall.sh
+# jpdfbookmarks
 # 
 # Copyright (c) 2010 Flaviano Petrocchi <flavianopetrocchi at gmail.com>.
 # All rights reserved.
@@ -22,20 +22,14 @@
 # along with JPdfBookmarks.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-if [[ $(/usr/bin/id -u) -ne 0 ]]; then
-    echo "To run this script you must be root!"
-    exit
-fi
-
-DIR_IN_PATH=/usr/local/bin
-INSTALL_PATH=/usr/local/lib
+JAR_NAME=jpdfbookmarks.jar
+JVM_OPTIONS="-Xms64m -Xmx512m"
 
 SCRIPT_DIR=$(cd $(dirname "$0"); pwd)
-VERSION=$(cat ${SCRIPT_DIR}/VERSION)
-NAME=jpdfbookmarks-${VERSION}
-INSTALL_DIR=${INSTALL_PATH}/${NAME}
 
-rm ${DIR_IN_PATH}/jpdfbookmarks_gui
-rm ${DIR_IN_PATH}/jpdfbookmarks
-rm -f -R ${INSTALL_DIR}
+if [ -n "$JAVA_HOME" ]; then
+  "$JAVA_HOME/bin/java" $JVM_OPTIONS -jar "$SCRIPT_DIR/$JAR_NAME" "$@"
+else
+  java $JVM_OPTIONS -jar "$SCRIPT_DIR/$JAR_NAME" "$@"
+fi
 
