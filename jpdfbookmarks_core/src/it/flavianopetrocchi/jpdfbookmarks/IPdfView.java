@@ -38,7 +38,7 @@ public interface IPdfView {
 	public void goToNextPage();
 	public void goToLastPage();
 
-	public void goToBookmark(Bookmark bookmark);
+//	public void goToBookmark(Bookmark bookmark);
 
 	public void setFitNative();
 	public void setFitWidth(int top);
