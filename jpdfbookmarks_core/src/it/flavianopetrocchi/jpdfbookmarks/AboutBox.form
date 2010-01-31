@@ -77,7 +77,7 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="homepageLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Component id="homepageLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="siteLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="homepageLabel2" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="vendorLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="vendorLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -128,7 +128,7 @@
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="homepageLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="siteLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="txtHomepage" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
@@ -240,15 +240,15 @@
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
           </AuxValues>
         </Component>
-        <Component class="javax.swing.JLabel" name="homepageLabel1">
+        <Component class="javax.swing.JLabel" name="siteLabel">
           <Properties>
             <Property name="font" type="java.awt.Font" noResource="true" editor="org.netbeans.modules.form.editors2.FontEditor">
               <FontInfo relative="true">
-                <Font bold="true" component="homepageLabel1" property="font" relativeSize="true" size="0"/>
+                <Font bold="true" component="siteLabel" property="font" relativeSize="true" size="0"/>
               </FontInfo>
             </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="it/flavianopetrocchi/jpdfbookmarks/locales/localizedText.properties" key="HOME_PAGE_LABEL" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+              <ResourceString bundle="it/flavianopetrocchi/jpdfbookmarks/locales/localizedText.properties" key="SITE_LABEL" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
             </Property>
           </Properties>
           <AuxValues>

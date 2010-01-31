@@ -504,6 +504,26 @@ public class PdfViewAdapter extends JScrollPane implements IPdfView {
 //        }
     }
 
+    @Override
+    public void setTextSelectionMode(boolean set) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void setConnectToClipboard(Boolean set) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void addTextCopiedListener(TextCopiedListener listener) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void removeTextCopiedListener(TextCopiedListener listener) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
     private class ResizeListener extends ComponentAdapter {
 
         @Override

@@ -77,7 +77,7 @@ public class AboutBox extends javax.swing.JDialog {
         javax.swing.JLabel homepageLabel = new javax.swing.JLabel();
         javax.swing.JLabel appVersionLabel = new javax.swing.JLabel();
         javax.swing.JLabel appVendorLabel = new javax.swing.JLabel();
-        javax.swing.JLabel homepageLabel1 = new javax.swing.JLabel();
+        javax.swing.JLabel siteLabel = new javax.swing.JLabel();
         txtHomepage = new LinkLabel(homePage);
         txtMail = new LinkLabel(homePage);
         txtBlog = new LinkLabel(homePage);
@@ -121,8 +121,8 @@ public class AboutBox extends javax.swing.JDialog {
 
         appVendorLabel.setText("Flaviano Petrocchi");
 
-        homepageLabel1.setFont(homepageLabel1.getFont().deriveFont(homepageLabel1.getFont().getStyle() | java.awt.Font.BOLD));
-        homepageLabel1.setText(bundle.getString("HOME_PAGE_LABEL")); // NOI18N
+        siteLabel.setFont(siteLabel.getFont().deriveFont(siteLabel.getFont().getStyle() | java.awt.Font.BOLD));
+        siteLabel.setText(bundle.getString("SITE_LABEL")); // NOI18N
 
         txtHomepage.setEditable(false);
         txtHomepage.setFont(txtHomepage.getFont());
@@ -236,7 +236,7 @@ public class AboutBox extends javax.swing.JDialog {
                 .addContainerGap()
                 .add(rightPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(homepageLabel)
-                    .add(homepageLabel1)
+                    .add(siteLabel)
                     .add(homepageLabel2)
                     .add(vendorLabel1)
                     .add(vendorLabel))
@@ -278,7 +278,7 @@ public class AboutBox extends javax.swing.JDialog {
                     .add(txtMail, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(rightPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(homepageLabel1)
+                    .add(siteLabel)
                     .add(txtHomepage, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(rightPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)

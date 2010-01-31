@@ -118,7 +118,7 @@ import javax.swing.undo.UndoableEditSupport;
 class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         PageChangedListener, ViewChangedListener, TreeExpansionListener,
         UndoableEditListener, TreeSelectionListener, CellEditorListener,
-        RenderingStartListener {
+        RenderingStartListener, TextCopiedListener {
 
     // <editor-fold defaultstate="collapsed" desc="Members">
     private final int ZOOM_STEP = 10;
@@ -146,6 +146,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     private JCheckBoxMenuItem cbEditMenuBold;
     private JCheckBoxMenuItem cbEditMenuItalic;
     private JCheckBoxMenuItem cbShowOnOpen;
+    private JCheckBoxMenuItem cbSelectText;
+    private JCheckBoxMenuItem cbConnectToClipboard;
     private ButtonGroup zoomButtonsGroup;
     private JToggleButton tbShowOnOpen;
     private JToggleButton tbFitWidth;
@@ -174,7 +176,9 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     private JCheckBox checkInheritLeft;
     private JCheckBox checkInheritZoom;
     private VerticalLabel lblInheritLeft;
-    private JMenu openRecent;// </editor-fold>
+    private JMenu openRecent;
+    private JToggleButton tbSelectText;
+    private JToggleButton tbConnectToClipboard;// </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Actions">
     private Action quitAction;
     //File actions
@@ -221,7 +225,9 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     private Action optionsDialogAction;
     private Action checkUpdatesAction;
     private Action readOnlineManualAction;
-    private Action goToAuthorBlog;// </editor-fold>
+    private Action goToAuthorBlog;
+    private Action selectText;
+    private Action connectToClipboard;// </editor-fold>
 
     private void saveWindowState() {
         userPrefs.setWindowState(windowState);
@@ -254,7 +260,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
         fileOperator = new UnifiedFileOperator();
         viewPanel = fileOperator.getViewPanel();
-
+        viewPanel.addTextCopiedListener(this);
+        
         initComponents();
 
         fileOperator.addFileOperationListener(this);
@@ -336,7 +343,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                     fitHeightAction, fitPageAction, fitNativeAction,
                     zoomInAction, zoomOutAction, goToPageAction, fitRectAction,
                     expandAllAction, collapseAllAction, topLeftZoomAction,
-                    addSiblingAction, showOnOpenAction, dumpAction, loadAction);
+                    addSiblingAction, showOnOpenAction, dumpAction, loadAction,
+                    selectText, connectToClipboard);
             tbShowOnOpen.setSelected(fileOperator.getShowBookmarksOnOpen());
             cbShowOnOpen.setSelected(fileOperator.getShowBookmarksOnOpen());
             switch (viewPanel.getFitType()) {
@@ -378,7 +386,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                     showOnOpenAction, setBoldAction, setItalicAction,
                     renameAction, setDestFromViewAction, changeColorAction,
                     dumpAction, loadAction, addWebLinkAction, saveAction,
-                    applyPageOffset);
+                    applyPageOffset, selectText, connectToClipboard);
             lblMouseOverNode.setText(" ");
             lblSelectedNode.setText(" ");
             lblCurrentView.setText(" ");
@@ -544,6 +552,15 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     public void renderingStart(RenderingStartEvent evt) {
         lblStatus.setText("Rendering page " + evt.getPageNumber() + " wait ...");
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+    }
+
+    @Override
+    public void textCopied(TextCopiedEvent evt) {
+        String text = evt.getText();
+        if (text == null) {
+            text = "";
+        }
+        lblStatus.setText("Copied: " + evt.getText());
     }
 
     abstract class ActionBuilder extends AbstractAction {
@@ -1372,6 +1389,37 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             }
         };
 
+        selectText = new ActionBuilder("ACTION_SELECT_TEXT", "ACTION_SELECT_TEXT_DESCR", "ctrl alt T",
+                "select-text.png", false) {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (e.getSource().equals(tbSelectText)) {
+                    cbSelectText.setSelected(tbSelectText.isSelected());
+                } else {
+                    tbSelectText.setSelected(cbSelectText.isSelected());
+                }
+
+                viewPanel.setTextSelectionMode(tbSelectText.isSelected());
+            }
+
+        };
+
+        connectToClipboard = new ActionBuilder("ACTION_CONNECT_CLIPBOARD",
+                "ACTION_CONNECT_CLIPBOARD_DESCR", "ctrl alt C", "edit-paste.png", false) {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (e.getSource().equals(tbConnectToClipboard)) {
+                    cbConnectToClipboard.setSelected(tbConnectToClipboard.isSelected());
+                } else {
+                    tbConnectToClipboard.setSelected(cbConnectToClipboard.isSelected());
+                }
+
+                viewPanel.setConnectToClipboard(tbConnectToClipboard.isSelected());
+            }
+        };
+
         // <editor-fold defaultstate="collapsed" desc="Navigation Actions">
         goNextPageAction = new ActionBuilder("ACTION_GO_NEXT",
                 "ACTION_GO_NEXT_DESCR", "ctrl alt RIGHT", "go-next.png", false) {
@@ -1506,6 +1554,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         zoomInAction = new ActionBuilder("ACTION_ZOOM_IN",
                 "ACTION_ZOOM_IN_DESCR", "alt +", "zoom-in.png", false) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 float scale = (txtZoom.getInteger() + ZOOM_STEP) / 100f;
                 viewPanel.setTopLeftZoom(-1, -1, scale);
@@ -1799,6 +1848,16 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             rb.addActionListener(new ActionListenerSetLAF(info.getClassName()));
         }
         //menuTools.add(menuSetLAF);
+
+        cbSelectText = new JCheckBoxMenuItem(selectText);
+        cbSelectText.setSelected(false);
+        menuTools.add(cbSelectText);
+        cbConnectToClipboard = new JCheckBoxMenuItem(connectToClipboard);
+        cbConnectToClipboard.setSelected(false);
+        menuTools.add(cbConnectToClipboard);
+
+        menuTools.addSeparator();
+        
         cbShowOnOpen = new JCheckBoxMenuItem(showOnOpenAction);
         cbShowOnOpen.setMnemonic(Res.mnemonicFromRes("MENU_SHOW_ON_OPEN_MNEMONIC"));
         menuTools.add(cbShowOnOpen);
@@ -2006,6 +2065,13 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         btn = zoomToolbar.add(zoomOutAction);
 
         JToolBar othersToolbar = new JToolBar();
+        tbSelectText = new JToggleButton(selectText);
+        tbSelectText.setText("");
+        othersToolbar.add(tbSelectText);
+        tbConnectToClipboard = new JToggleButton(connectToClipboard);
+        tbConnectToClipboard.setText("");
+        othersToolbar.add(tbConnectToClipboard);
+        othersToolbar.addSeparator();
         tbShowOnOpen = new JToggleButton(showOnOpenAction);
         tbShowOnOpen.setText("");
         othersToolbar.add(tbShowOnOpen);

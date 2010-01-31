@@ -60,7 +60,13 @@ public interface IPdfView {
 	public void addViewChangedListener(ViewChangedListener listener);
 	public void removeViewChangedListener(ViewChangedListener listener);
 
+	public void addTextCopiedListener(TextCopiedListener listener);
+	public void removeTextCopiedListener(TextCopiedListener listener);
+
 	public void addRenderingStartListener(RenderingStartListener listener);
 	public void removeRenderingStartListener(RenderingStartListener listener);
+
+        public void setTextSelectionMode(boolean set);
+        public void setConnectToClipboard(Boolean set);
 
 }
