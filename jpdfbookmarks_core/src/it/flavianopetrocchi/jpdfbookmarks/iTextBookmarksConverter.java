@@ -262,7 +262,8 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
             if (type == BookmarkType.TopLeftZoom) {
                 pageDest.append(" XYZ ");
                 pageDest.append(left == -1 ? "null" : left).append(" ");
-                pageDest.append(top == -1 ? "null" : top).append(" ").append(bookmark.getZoom());
+                pageDest.append(top == -1 ? "null" : top).append(" ")
+                        .append(bookmark.getZoom());
             } else if (type == BookmarkType.FitPage) {
                 pageDest.append(" Fit");
             } else if (type == BookmarkType.FitWidth) {
@@ -270,7 +271,10 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
             } else if (type == BookmarkType.FitHeight) {
                 pageDest.append(" FitV ").append(left == -1 ? "null" : left);
             } else if (type == BookmarkType.FitRect) {
-                pageDest.append(" FitR ").append(left == -1 ? "null" : left).append(" ").append(bottom == -1 ? "null" : bottom).append(" ").append(right == -1 ? "null" : right).append(" ").append(top == -1 ? "null" : top);
+                pageDest.append(" FitR ").append(left == -1 ? "null" : left)
+                        .append(" ").append(bottom == -1 ? "null" : bottom)
+                        .append(" ").append(right == -1 ? "null" : right)
+                        .append(" ").append(top == -1 ? "null" : top);
             } else if (type == BookmarkType.FitContent) {
                 pageDest.append(" FitB");
             } else if (type == BookmarkType.FitContentWidth) {

@@ -252,7 +252,7 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
         drawingComplete = true;
 //        rectInMediaBox = new Rectangle(left, top,
 //                Math.abs(right - left), Math.abs(bottom - top));
-        rectInCropBox = new Rectangle(left - cropBoxX, top - cropBoxY,
+        rectInCropBox = new Rectangle(left - cropBoxX, mediaBoxHeight - top - cropBoxY,
                 Math.abs(right - left), Math.abs(bottom - top));
         setFit(FitType.FitRect);
     }
@@ -475,7 +475,7 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
                     bookmark.setThousandthsLeft(
                             Bookmark.thousandthsHorizontal(bookmark.getLeft(),
                             mediaBoxWidth));
-                    bookmark.setTop(p.y + cropBoxY);
+                    bookmark.setTop(mediaBoxHeight -  (p.y + cropBoxY));
                     bookmark.setThousandthsTop(
                             Bookmark.thousandthsVertical(bookmark.getTop(),
                             mediaBoxHeight));
@@ -483,7 +483,7 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
                     bookmark.setThousandthsRight(
                             Bookmark.thousandthsHorizontal(bookmark.getRight(),
                             mediaBoxWidth));
-                    bookmark.setBottom(p.y + d.height + cropBoxY);
+                    bookmark.setBottom(mediaBoxHeight -  (p.y + d.height + cropBoxY));
                     bookmark.setThousandthsBottom(
                             Bookmark.thousandthsVertical(bookmark.getBottom(),
                             mediaBoxHeight));
