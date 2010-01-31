@@ -560,7 +560,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         if (text == null) {
             text = "";
         }
-        lblStatus.setText("Copied: " + evt.getText());
+        
+        lblStatus.setText(Res.getString("EXTRACTED") + ": " + text);
     }
 
     abstract class ActionBuilder extends AbstractAction {

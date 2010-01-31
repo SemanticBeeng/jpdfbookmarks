@@ -81,7 +81,7 @@ class JPdfBookmarks {
 
     //<editor-fold defaultstate="expanded" desc="public methods">
     public static void main(String[] args) {
-        java.util.Locale.setDefault(java.util.Locale.ENGLISH);
+        //java.util.Locale.setDefault(java.util.Locale.ENGLISH);
         JPdfBookmarks app = new JPdfBookmarks();
         app.start(args);
     }

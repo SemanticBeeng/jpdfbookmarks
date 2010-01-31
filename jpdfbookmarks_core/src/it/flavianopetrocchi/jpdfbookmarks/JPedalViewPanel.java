@@ -627,9 +627,9 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
                 Toolkit.getDefaultToolkit().getSystemClipboard().setContents(ss, null);
             }
         } else {
-            JOptionPane.showMessageDialog(this, Res.getString("ERROR_COPYING_TEXT"),
-                    JPdfBookmarks.APP_NAME,
-                    JOptionPane.ERROR_MESSAGE);
+//            JOptionPane.showMessageDialog(this, Res.getString("ERROR_COPYING_TEXT"),
+//                    JPdfBookmarks.APP_NAME,
+//                    JOptionPane.ERROR_MESSAGE);
         }
 
         fireTextCopiedEvent(new TextCopiedEvent(this, text));
