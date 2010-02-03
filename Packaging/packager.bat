@@ -31,11 +31,17 @@ SET PATH=%PATH7ZIP%;%PATH%
 
 SET /p VERSION=<..\VERSION
 SET NAME=jpdfbookmarks-%VERSION%
+SET SRCNAME=jpdfbookmarks-src-%VERSION%
 
 IF EXIST %NAME% del /Q %NAME% & rmdir /S /Q %NAME%
 IF EXIST %NAME%.zip del /Q %NAME%.zip
 IF EXIST %NAME%.tar del /Q %NAME%.tar
 IF EXIST %NAME%.tar.gz del /Q %NAME%.tar.gz
+
+IF EXIST %SRCNAME% del /Q %SRCNAME% & rmdir /S /Q %SRCNAME%
+IF EXIST %SRCNAME%.zip del /Q %SRCNAME%.zip
+IF EXIST %SRCNAME%.tar del /Q %SRCNAME%.tar
+IF EXIST %SRCNAME%.tar.gz del /Q %SRCNAME%.tar.gz
 
 mkdir %NAME%
 copy jpdfbookmarks.exe %NAME%
@@ -52,12 +58,21 @@ mkdir %NAME%\lib
 copy ..\jpdfbookmarks_core\dist\lib %NAME%\lib
 
 7z a -tzip %NAME%.zip %NAME%
-
 7z a -ttar %NAME%.tar %NAME%
-7z a -tbzip2 %NAME%.tar.gz %NAME%.tar
+7z a -tgzip %NAME%.tar.gz %NAME%.tar
 
 del /Q %NAME%.tar
 del /Q %NAME%
 rmdir /S /Q %NAME%
+
+svn export .. %SRCNAME%
+
+7z a -tzip %SRCNAME%.zip %SRCNAME%
+7z a -ttar %SRCNAME%.tar %SRCNAME%
+7z a -tgzip %SRCNAME%.tar.gz %SRCNAME%.tar
+
+del /Q %SRCNAME%.tar
+del /Q %SRCNAME%
+rmdir /S /Q %SRCNAME%
 
 POPD
