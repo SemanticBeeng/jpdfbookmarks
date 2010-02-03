@@ -31,6 +31,7 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
@@ -63,7 +64,7 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
     private static final int MIN_RECT_WIDTH = 100;
     private static final int MIN_RECT_HEIGHT = 100;
     private static final float MIN_SCALE = 0.001f;
-    private static final float MAX_SCALE = 5f;
+    private static final float MAX_SCALE = 4.0f;
     private ArrayList<PageChangedListener> pageChangedListeners =
             new ArrayList<PageChangedListener>();
     private ArrayList<ViewChangedListener> viewChangedListeners =
@@ -131,6 +132,7 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
         }
         img = null;
         currentPage = 0;
+        setCopiedText(null);
         rendererPanel.repaint();
     }
 
@@ -475,7 +477,7 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
                     bookmark.setThousandthsLeft(
                             Bookmark.thousandthsHorizontal(bookmark.getLeft(),
                             mediaBoxWidth));
-                    bookmark.setTop(mediaBoxHeight -  (p.y + cropBoxY));
+                    bookmark.setTop(mediaBoxHeight - (p.y + cropBoxY));
                     bookmark.setThousandthsTop(
                             Bookmark.thousandthsVertical(bookmark.getTop(),
                             mediaBoxHeight));
@@ -483,7 +485,7 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
                     bookmark.setThousandthsRight(
                             Bookmark.thousandthsHorizontal(bookmark.getRight(),
                             mediaBoxWidth));
-                    bookmark.setBottom(mediaBoxHeight -  (p.y + d.height + cropBoxY));
+                    bookmark.setBottom(mediaBoxHeight - (p.y + d.height + cropBoxY));
                     bookmark.setThousandthsBottom(
                             Bookmark.thousandthsVertical(bookmark.getBottom(),
                             mediaBoxHeight));
@@ -617,7 +619,6 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
         renderingStartListeners.remove(listener);
     }
 
-
     private void setCopiedText(String text) {
         copiedText = text;
 
@@ -675,7 +676,6 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
             }
 
             Graphics2D g2 = (Graphics2D) g;
-            int rotation = 0;
 
             calcScaleFactor();
 
@@ -822,11 +822,13 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
                         setCopiedText(extractText(rectInCropBox));
                         //repaint(); //uncomment to remove the selection rect immediately
                     } else {
-                        int width = Math.max(MIN_RECT_WIDTH,
-                                Math.round(drawingRect.width / scale));
-                        int height = Math.max(MIN_RECT_HEIGHT,
+                        rectInCropBox.setSize(Math.round(drawingRect.width / scale),
                                 Math.round(drawingRect.height / scale));
-                        rectInCropBox.setSize(width, height);
+//                        int width = Math.max(MIN_RECT_WIDTH,
+//                                Math.round(drawingRect.width / scale));
+//                        int height = Math.max(MIN_RECT_HEIGHT,
+//                                Math.round(drawingRect.height / scale));
+//                        rectInCropBox.setSize(width, height);
                         setFitRect(rectInCropBox);
                     }
                 } else {

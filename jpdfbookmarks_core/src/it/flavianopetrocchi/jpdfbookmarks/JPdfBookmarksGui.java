@@ -1028,9 +1028,13 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             String[] newVersionNumbers = inputLine.split("\\.");
             String[] thisVersionNumbers = JPdfBookmarks.VERSION.split("\\.");
             for (int i = 0; i < newVersionNumbers.length; i++) {
-                if (Integer.parseInt(newVersionNumbers[i]) >
-                        Integer.parseInt(thisVersionNumbers[i])) {
+                int newVerN = Integer.parseInt(newVersionNumbers[i]);
+                int thisVerN = Integer.parseInt(thisVersionNumbers[i]);
+                if (newVerN > thisVerN) {
                     newVersionAvailable = true;
+                    break;
+                } else if (thisVerN > newVerN) {
+                    break;
                 }
             }
             reader.close();
