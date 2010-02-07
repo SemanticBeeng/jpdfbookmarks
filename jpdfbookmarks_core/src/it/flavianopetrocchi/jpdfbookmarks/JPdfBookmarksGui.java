@@ -249,6 +249,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     }
 
     public JPdfBookmarksGui() {
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+
         Authenticator.setDefault(new ProxyAuthenticator(this, true));
 
         undoManager = new ExtendedUndoManager();
@@ -261,7 +263,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         fileOperator = new UnifiedFileOperator();
         viewPanel = fileOperator.getViewPanel();
         viewPanel.addTextCopiedListener(this);
-        
+
         initComponents();
 
         fileOperator.addFileOperationListener(this);
@@ -560,7 +562,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         if (text == null) {
             text = "";
         }
-        
+
         lblStatus.setText(Res.getString("EXTRACTED") + ": " + text);
     }
 
@@ -593,10 +595,10 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     }
 
     private void openDialog() {
-//		if (!askCloseWithoutSave()) {
-//			return;
-//		}
-//		fileOperator.close();
+        if (!askCloseWithoutSave()) {
+            return;
+        }
+        fileOperator.close();
 
 
         JFileChooser chooser = new JFileChooser(userPrefs.getLastDirectory());
@@ -608,7 +610,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             final File file = chooser.getSelectedFile();
             if (file != null && file.isFile()) {
-                close();
+                //close();
                 openFileAsync(file);
             }
         }
@@ -1407,7 +1409,6 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
                 viewPanel.setTextSelectionMode(tbSelectText.isSelected());
             }
-
         };
 
         connectToClipboard = new ActionBuilder("ACTION_CONNECT_CLIPBOARD",
@@ -1694,8 +1695,13 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         }
 
         public void actionPerformed(ActionEvent e) {
+            if (!askCloseWithoutSave()) {
+                return;
+            }
+            fileOperator.close();
+
             if (f != null && f.isFile()) {
-                close();
+                //close();
                 openFileAsync(f);
             } else {
                 showErrorMessage(Res.getString("ERROR_OPENING_FILE") + " " + f.getName());
@@ -1862,7 +1868,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         menuTools.add(cbConnectToClipboard);
 
         menuTools.addSeparator();
-        
+
         cbShowOnOpen = new JCheckBoxMenuItem(showOnOpenAction);
         cbShowOnOpen.setMnemonic(Res.mnemonicFromRes("MENU_SHOW_ON_OPEN_MNEMONIC"));
         menuTools.add(cbShowOnOpen);
