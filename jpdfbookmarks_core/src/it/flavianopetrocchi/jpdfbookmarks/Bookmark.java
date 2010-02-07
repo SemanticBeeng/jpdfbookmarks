@@ -480,9 +480,9 @@ public class Bookmark extends DefaultMutableTreeNode {
         if (!shortFormat) {
             try {
                 bookmark.setColor(Colors.stringToColor(tokens[COLOR].trim()));
-                bookmark.setBold(tokens[BOLD].trim().equals("bold"));
-                bookmark.setItalic(tokens[ITALIC].trim().equals("italic"));
-                bookmark.setOpened(tokens[OPEN].trim().equals("open"));
+                bookmark.setBold(tokens[BOLD].trim().equalsIgnoreCase("bold"));
+                bookmark.setItalic(tokens[ITALIC].trim().equalsIgnoreCase("italic"));
+                bookmark.setOpened(tokens[OPEN].trim().equalsIgnoreCase("open"));
                 type = BookmarkType.valueOf(tokens[OPEN + 1].trim());
             } catch (Exception e) {
                 wellFormed = false;
