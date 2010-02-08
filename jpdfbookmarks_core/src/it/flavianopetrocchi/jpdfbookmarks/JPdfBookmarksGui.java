@@ -781,12 +781,14 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     }
 
     private void goToWebLink(String uri) {
-        int answer = JOptionPane.showConfirmDialog(this,
-                Res.getString("MSG_LAUNCH_BROWSER"), title,
-                JOptionPane.OK_CANCEL_OPTION);
+        if (userPrefs.getNeverAskWebAccess() == false) {
+            int answer = JOptionPane.showConfirmDialog(this,
+                    Res.getString("MSG_LAUNCH_BROWSER"), title,
+                    JOptionPane.OK_CANCEL_OPTION);
 
-        if (answer != JOptionPane.OK_OPTION) {
-            return;
+            if (answer != JOptionPane.OK_OPTION) {
+                return;
+            }
         }
 
         Desktop desktop = Desktop.getDesktop();

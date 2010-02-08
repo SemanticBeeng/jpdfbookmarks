@@ -59,6 +59,7 @@ public class Prefs {
 	private final String PROXY_TYPE = "PROXY_TYPE";
 	private final String USE_PROXY = "USE_PROXY";
 	private final String CHECK_UPDATES_ON_START = "CHECK_UPDATES_ON_START";
+        private final String CONFIRM_WEB_ACCESS = "CONFIRM_WEB_ACCESS";
 
 	private Dimension screenSize;
 
@@ -73,6 +74,14 @@ public class Prefs {
 
 	public void setUseProxy(boolean useProxy) {
 		userPrefs.putBoolean(USE_PROXY, useProxy);
+	}
+
+        public boolean getNeverAskWebAccess() {
+		return userPrefs.getBoolean(CONFIRM_WEB_ACCESS, false);
+	}
+
+	public void setNeverAskWebAccess(boolean neverAsk) {
+		userPrefs.putBoolean(CONFIRM_WEB_ACCESS, neverAsk);
 	}
 
 	public boolean getCheckUpdatesOnStart() {

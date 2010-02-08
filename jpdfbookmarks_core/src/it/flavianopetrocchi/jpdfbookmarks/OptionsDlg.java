@@ -156,6 +156,8 @@ public class OptionsDlg extends javax.swing.JDialog {
 
             userPrefs.setCheckUpdatesOnStart(connectionOptions.checkUpdatesOnStart());
 
+            userPrefs.setNeverAskWebAccess(connectionOptions.neverAskWebAccess());
+
             dispose();
 	}//GEN-LAST:event_btnOkActionPerformed
 

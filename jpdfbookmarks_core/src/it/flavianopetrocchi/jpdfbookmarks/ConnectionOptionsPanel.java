@@ -47,10 +47,15 @@ public class ConnectionOptionsPanel extends javax.swing.JPanel {
         txtProxyAddress.setText(userPrefs.getProxyAddress());
         portSpinner.setValue(userPrefs.getProxyPort());
         checkUpdatesOnStart.setSelected(userPrefs.getCheckUpdatesOnStart());
+        checkConfirmWebAccess.setSelected(userPrefs.getNeverAskWebAccess());
     }
 
     public boolean checkUpdatesOnStart() {
         return checkUpdatesOnStart.isSelected();
+    }
+
+    public boolean neverAskWebAccess() {
+        return checkConfirmWebAccess.isSelected();
     }
 
     public boolean useProxy() {
@@ -82,16 +87,22 @@ public class ConnectionOptionsPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        checkUpdatesOnStart = new javax.swing.JCheckBox();
+        proxyPanel = new javax.swing.JPanel();
         checkUseProxy = new javax.swing.JCheckBox();
         lblProxyAddress = new javax.swing.JLabel();
         txtProxyAddress = new javax.swing.JTextField();
-        radioHttp = new javax.swing.JRadioButton();
-        radioSocks = new javax.swing.JRadioButton();
         lblPort = new javax.swing.JLabel();
         portSpinner = new javax.swing.JSpinner();
-        checkUpdatesOnStart = new javax.swing.JCheckBox();
+        radioSocks = new javax.swing.JRadioButton();
+        radioHttp = new javax.swing.JRadioButton();
+        checkConfirmWebAccess = new javax.swing.JCheckBox();
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("it/flavianopetrocchi/jpdfbookmarks/locales/localizedText"); // NOI18N
+        checkUpdatesOnStart.setText(bundle.getString("CHECK_UPDATES_ON_START")); // NOI18N
+
+        proxyPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(bundle.getString("PROXY_SETTINGS"))); // NOI18N
+
         checkUseProxy.setText(bundle.getString("USE_PROXY")); // NOI18N
         checkUseProxy.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -101,15 +112,58 @@ public class ConnectionOptionsPanel extends javax.swing.JPanel {
 
         lblProxyAddress.setText(bundle.getString("PROXY_ADDRESS")); // NOI18N
 
-        radioHttp.setText("HTTP");
-
-        radioSocks.setText("SOCKS");
-
         lblPort.setText(bundle.getString("PROXY_PORT")); // NOI18N
 
         portSpinner.setModel(new javax.swing.SpinnerNumberModel(80, 0, 65535, 1));
 
-        checkUpdatesOnStart.setText(bundle.getString("CHECK_UPDATES_ON_START")); // NOI18N
+        radioSocks.setText("SOCKS");
+
+        radioHttp.setText("HTTP");
+
+        javax.swing.GroupLayout proxyPanelLayout = new javax.swing.GroupLayout(proxyPanel);
+        proxyPanel.setLayout(proxyPanelLayout);
+        proxyPanelLayout.setHorizontalGroup(
+            proxyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(proxyPanelLayout.createSequentialGroup()
+                .addGroup(proxyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(proxyPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(checkUseProxy))
+                    .addGroup(proxyPanelLayout.createSequentialGroup()
+                        .addComponent(lblProxyAddress)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(proxyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(proxyPanelLayout.createSequentialGroup()
+                                .addComponent(radioHttp)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(radioSocks))
+                            .addGroup(proxyPanelLayout.createSequentialGroup()
+                                .addComponent(txtProxyAddress, javax.swing.GroupLayout.PREFERRED_SIZE, 172, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(lblPort)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(portSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                .addContainerGap(19, Short.MAX_VALUE))
+        );
+        proxyPanelLayout.setVerticalGroup(
+            proxyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(proxyPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(checkUseProxy)
+                .addGap(18, 18, 18)
+                .addGroup(proxyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(radioHttp)
+                    .addComponent(radioSocks))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(proxyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblProxyAddress)
+                    .addComponent(txtProxyAddress, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblPort)
+                    .addComponent(portSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        checkConfirmWebAccess.setText(bundle.getString("CONFIRM_WEB_ACCESS")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -118,42 +172,21 @@ public class ConnectionOptionsPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(checkConfirmWebAccess)
                     .addComponent(checkUpdatesOnStart)
-                    .addComponent(checkUseProxy)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(lblProxyAddress)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(radioHttp)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(radioSocks))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(txtProxyAddress, javax.swing.GroupLayout.PREFERRED_SIZE, 172, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(lblPort)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(portSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                .addContainerGap(41, Short.MAX_VALUE))
+                    .addComponent(proxyPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(checkUseProxy)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(radioHttp)
-                    .addComponent(radioSocks))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblProxyAddress)
-                    .addComponent(txtProxyAddress, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lblPort)
-                    .addComponent(portSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(proxyPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(checkUpdatesOnStart)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(checkConfirmWebAccess)
+                .addGap(80, 80, 80))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -162,11 +195,13 @@ public class ConnectionOptionsPanel extends javax.swing.JPanel {
                     txtProxyAddress, portSpinner, lblProxyAddress, lblPort);
 	}//GEN-LAST:event_checkUseProxyActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox checkConfirmWebAccess;
     private javax.swing.JCheckBox checkUpdatesOnStart;
     private javax.swing.JCheckBox checkUseProxy;
     private javax.swing.JLabel lblPort;
     private javax.swing.JLabel lblProxyAddress;
     private javax.swing.JSpinner portSpinner;
+    private javax.swing.JPanel proxyPanel;
     private javax.swing.JRadioButton radioHttp;
     private javax.swing.JRadioButton radioSocks;
     private javax.swing.JTextField txtProxyAddress;

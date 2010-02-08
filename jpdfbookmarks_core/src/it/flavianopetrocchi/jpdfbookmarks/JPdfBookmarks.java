@@ -66,8 +66,8 @@ class JPdfBookmarks {
             "http://jpdfbookmarks.altervista.org/version/lastVersion";
     public static final String LAST_VERSION_PROPERTIES_URL =
             "http://jpdfbookmarks.altervista.org/version/jpdfbookmarks.properties";
-    public static final String MANUAL_URL =
-            "http://jpdfbookmarks.altervista.org";
+    public static final String MANUAL_URL = "http://sourceforge.net/apps/mediawiki/jpdfbookmarks/";
+            //"http://jpdfbookmarks.altervista.org";
     private Mode mode = Mode.GUI;
     private Options options = createOptions();
     private final PrintWriter out = new PrintWriter(System.out, true);
