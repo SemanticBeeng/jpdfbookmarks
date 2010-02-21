@@ -21,6 +21,7 @@
  */
 package it.flavianopetrocchi.jpdfbookmarks;
 
+import com.sun.xml.internal.stream.util.BufferAllocator;
 import it.flavianopetrocchi.colors.Colors;
 import java.awt.Color;
 import java.io.BufferedReader;
@@ -56,7 +57,7 @@ public class Bookmark extends DefaultMutableTreeNode {
     private String uri;
     private String remoteFilePath;
     private String fileToLaunch;
-    private boolean newWindow;
+    private boolean newWindow = false;
     private boolean remoteDestination = false;
     private boolean namedAsName = false;
     private Bookmark namedTarget;
@@ -291,7 +292,15 @@ public class Bookmark extends DefaultMutableTreeNode {
     public String getDescription(boolean useThousandths) {
         StringBuilder buffer = new StringBuilder(getExtendedDescription(null,
                 null, useThousandths));
+
+        if (isRemoteDestination()) {
+            String filePath = getRemoteFilePath();
+            int filePathIndex = buffer.lastIndexOf(filePath);
+            buffer = new StringBuilder(buffer.substring(0, filePathIndex));
+        }
+         
         int pageSepIndex = buffer.lastIndexOf(pageSep);
+        
         StringTokenizer tokenizer = new StringTokenizer(
                 buffer.substring(pageSepIndex + pageSep.length()), attributeSep);
         String[] attributes = new String[tokenizer.countTokens()];
@@ -300,9 +309,28 @@ public class Bookmark extends DefaultMutableTreeNode {
         }
         //String[] attributes = buffer.substring(pageSepIndex + pageSep.length()).split(attributeSep);
         buffer = new StringBuilder("[ ").append(Res.getString("PAGE")).append(" ").append(attributes[0]).append("  ");
-        for (int i = OPEN + 1; i < attributes.length; i++) {
+        boolean goToFileReached = false;
+        int i = OPEN + 1;
+        for ( ; i < attributes.length; i++) {
             buffer.append(attributes[i]).append(" ");
+            if (attributes[i].equalsIgnoreCase("GoToFile")) {
+                goToFileReached = true;
+                break;
+            }
         }
+        //necessary to handle file names containing attributesSep
+        if (goToFileReached) {
+            buffer.append('\"');
+//            for ( i++; i < attributes.length; i++) {
+//                buffer.append(attributes[i]);
+//                if (i < (attributes.length - 1)) {
+//                    buffer.append(attributeSep);
+//                }
+//            }
+            buffer.append(getRemoteFilePath());
+            buffer.append('\"');
+        }
+
         buffer.append("]");
 
         return buffer.toString();
@@ -313,11 +341,11 @@ public class Bookmark extends DefaultMutableTreeNode {
 
         if (pageSeparator == null) {
             pageSeparator = pageSep;
-        }
+        } 
 
         if (attributeSeparator == null) {
             attributeSeparator = attributeSep;
-        }
+        } 
 
         StringBuilder buffer = new StringBuilder(title);
         buffer.append(pageSeparator);
@@ -419,6 +447,14 @@ public class Bookmark extends DefaultMutableTreeNode {
             buffer.append(fileToLaunch);
         } else if (type == BookmarkType.GoToFile) {
         }
+
+        if (isRemoteDestination()) {
+            buffer.append(attributeSeparator);
+            buffer.append(BookmarkType.GoToFile.toString());
+            buffer.append(attributeSeparator);
+            buffer.append(remoteFilePath);
+        }
+        
         return buffer.toString();
     }
 
@@ -434,7 +470,16 @@ public class Bookmark extends DefaultMutableTreeNode {
             line = line.replaceFirst(indentation, "");
         }
 
-        int pageSepIndex = line.lastIndexOf(pageSeparator);
+        //if there is a GoToFile we must be sure the pageSeparator is
+        //before the GoToFile attribute otherwise could be a path separator
+        int goToFileIndex = line.lastIndexOf(BookmarkType.GoToFile.toString());
+        int pageSepIndex;
+        if (goToFileIndex != -1) {
+            pageSepIndex = line.substring(0, goToFileIndex).lastIndexOf(pageSeparator);
+        } else {
+            pageSepIndex = line.lastIndexOf(pageSeparator);
+        }
+        
         String title = line;
         String attributes = null;
 
@@ -495,7 +540,8 @@ public class Bookmark extends DefaultMutableTreeNode {
             case FitWidth:
             case FitContentWidth:
                 try {
-                    bookmark.setThousandthsTop(Integer.parseInt(tokens[typeIndex + 1]));
+                    //bookmark.setThousandthsTop(Integer.parseInt(tokens[typeIndex + 1]));
+                    bookmark.setThousandthsTop(Integer.parseInt(tokens[++typeIndex]));
                     bookmark.setTop(verticalFromThousandths(bookmark.getThousandthsTop(),
                             converter.getPageHeight(bookmark.getPageNumber())));
                 } catch (NumberFormatException e) {
@@ -506,7 +552,8 @@ public class Bookmark extends DefaultMutableTreeNode {
             case FitHeight:
             case FitContentHeight:
                 try {
-                    bookmark.setThousandthsLeft(Integer.parseInt(tokens[typeIndex + 1]));
+                    //bookmark.setThousandthsLeft(Integer.parseInt(tokens[typeIndex + 1]));
+                    bookmark.setThousandthsLeft(Integer.parseInt(tokens[++typeIndex]));
                     bookmark.setLeft(horizontalFromThousandths(bookmark.getThousandthsLeft(),
                             converter.getPageWidth(bookmark.getPageNumber())));
                 } catch (NumberFormatException e) {
@@ -517,13 +564,16 @@ public class Bookmark extends DefaultMutableTreeNode {
             case TopLeft:
             case TopLeftZoom:
                 try {
-                    bookmark.setThousandthsTop(Integer.parseInt(tokens[typeIndex + 1]));
+                    //bookmark.setThousandthsTop(Integer.parseInt(tokens[typeIndex + 1]));
+                    bookmark.setThousandthsTop(Integer.parseInt(tokens[++typeIndex]));
                     bookmark.setTop(verticalFromThousandths(bookmark.getThousandthsTop(),
                             converter.getPageHeight(bookmark.getPageNumber())));
-                    bookmark.setThousandthsLeft(Integer.parseInt(tokens[typeIndex + 2]));
+                    //bookmark.setThousandthsLeft(Integer.parseInt(tokens[typeIndex + 2]));
+                    bookmark.setThousandthsLeft(Integer.parseInt(tokens[++typeIndex]));
                     bookmark.setLeft(horizontalFromThousandths(bookmark.getThousandthsLeft(),
                             converter.getPageWidth(bookmark.getPageNumber())));
-                    bookmark.setZoom(Float.parseFloat(tokens[typeIndex + 3]));
+                    //bookmark.setZoom(Float.parseFloat(tokens[typeIndex + 3]));
+                    bookmark.setZoom(Float.parseFloat(tokens[++typeIndex]));
                 } catch (NumberFormatException e) {
                     wellFormed = false;
                 } catch (Exception e) {
@@ -531,16 +581,20 @@ public class Bookmark extends DefaultMutableTreeNode {
                 break;
             case FitRect:
                 try {
-                    bookmark.setThousandthsTop(Integer.parseInt(tokens[typeIndex + 1]));
+                    //bookmark.setThousandthsTop(Integer.parseInt(tokens[typeIndex + 1]));
+                    bookmark.setThousandthsTop(Integer.parseInt(tokens[++typeIndex]));
                     bookmark.setTop(verticalFromThousandths(bookmark.getThousandthsTop(),
                             converter.getPageHeight(bookmark.getPageNumber())));
-                    bookmark.setThousandthsLeft(Integer.parseInt(tokens[typeIndex + 2]));
+                    //bookmark.setThousandthsLeft(Integer.parseInt(tokens[typeIndex + 2]));
+                    bookmark.setThousandthsLeft(Integer.parseInt(tokens[++typeIndex]));
                     bookmark.setLeft(horizontalFromThousandths(bookmark.getThousandthsLeft(),
                             converter.getPageWidth(bookmark.getPageNumber())));
-                    bookmark.setThousandthsBottom(Integer.parseInt(tokens[typeIndex + 3]));
+                    //bookmark.setThousandthsBottom(Integer.parseInt(tokens[typeIndex + 3]));
+                    bookmark.setThousandthsBottom(Integer.parseInt(tokens[++typeIndex]));
                     bookmark.setBottom(verticalFromThousandths(bookmark.getThousandthsBottom(),
                             converter.getPageHeight(bookmark.getPageNumber())));
-                    bookmark.setThousandthsRight(Integer.parseInt(tokens[typeIndex + 4]));
+                    //bookmark.setThousandthsRight(Integer.parseInt(tokens[typeIndex + 4]));
+                    bookmark.setThousandthsRight(Integer.parseInt(tokens[++typeIndex]));
                     bookmark.setRight(horizontalFromThousandths(bookmark.getThousandthsRight(),
                             converter.getPageWidth(bookmark.getPageNumber())));
                 } catch (NumberFormatException e) {
@@ -550,18 +604,37 @@ public class Bookmark extends DefaultMutableTreeNode {
                 break;
             case Named:
                 try {
-                    bookmark.setNamedDestination(tokens[typeIndex + 1].trim());
+                    //bookmark.setNamedDestination(tokens[typeIndex + 1].trim());
+                    bookmark.setNamedDestination(tokens[++typeIndex].trim());
                 } catch (Exception e) {
                     wellFormed = false;
                 }
                 break;
             case Uri:
                 try {
-                    bookmark.setUri(tokens[typeIndex + 1].trim());
+                    //bookmark.setUri(tokens[typeIndex + 1].trim());
+                    bookmark.setUri(tokens[++typeIndex].trim());
                 } catch (Exception e) {
                     wellFormed = false;
                 }
                 break;
+        }
+
+        try {
+            if (tokens[++typeIndex].trim().equalsIgnoreCase(BookmarkType.GoToFile.toString())) {
+                bookmark.setRemoteDestination(true);
+                StringBuffer remotePath = new StringBuffer();
+                //if the path contains the attributes separator we must add all
+                //remaining tokens to get the correct path
+                remotePath.append(tokens[++typeIndex]);
+                for (int i = ++typeIndex; i < tokens.length; i++) {
+                    remotePath.append(attributesSeparator);
+                    remotePath.append(tokens[i]);
+                }    
+                bookmark.setRemoteFilePath(remotePath.toString().trim());
+            }
+        } catch (Exception e) {
+
         }
 
         if (!wellFormed) {

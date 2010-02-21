@@ -27,6 +27,7 @@ import it.flavianopetrocchi.utilities.FileOperationListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 public class UnifiedFileOperator {
@@ -112,6 +113,8 @@ public class UnifiedFileOperator {
             setFileChanged(false);
             return true;
         } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, ex.getMessage(), JPdfBookmarks.APP_NAME,
+                    JOptionPane.ERROR_MESSAGE);
             return false;
         }
     }

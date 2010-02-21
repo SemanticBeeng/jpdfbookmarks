@@ -27,6 +27,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.net.URISyntaxException;
+import java.util.List;
 import javax.swing.JOptionPane;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -61,7 +65,6 @@ class JPdfBookmarks {
     public static final String BLOG_URL =
             "http://flavianopetrocchi.blogspot.com";
     public static final String ITEXT_URL = "http://www.lowagie.com/iText/";
-    public static final String ICEPDF_URL = "http://www.icepdf.org/";
     public static final String LAST_VERSION_URL =
             "http://jpdfbookmarks.altervista.org/version/lastVersion";
     public static final String LAST_VERSION_PROPERTIES_URL =
@@ -77,13 +80,32 @@ class JPdfBookmarks {
     private String bookmarksFilePath = null;
     private String pageSeparator = "/";
     private String attributesSeparator = ",";
-    private String indentationString = "\t";// </editor-fold>
+    private String indentationString = "\t";
+    private Bookmark firstTargetBookmark = null;
+    private String firstTargetString = null;// </editor-fold>
+
 
     //<editor-fold defaultstate="expanded" desc="public methods">
     public static void main(String[] args) {
         //java.util.Locale.setDefault(java.util.Locale.ENGLISH);
         JPdfBookmarks app = new JPdfBookmarks();
         app.start(args);
+    }
+
+
+    static void launchNewGuiInstance(String path, Bookmark bookmark) {
+
+        EventQueue.invokeLater(new GuiLauncher(path, bookmark));
+
+    }
+
+    static public File getPath() {
+        File f = null;
+        try {
+            f = new File(JPdfBookmarks.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
+        } catch (URISyntaxException ex) {
+        }
+        return f;
     }
 
     /**
@@ -105,9 +127,15 @@ class JPdfBookmarks {
             try {
                 if (inputFilePath != null) {
                     pdf = new iTextBookmarksConverter(inputFilePath);
-                    if (pdf.isEncryped()) {
-                        throw new Exception(
-                                Res.getString("ERROR_PDF_ENCRYPTED"));
+//                    if (pdf.isEncryped()) {
+//                        throw new Exception(
+//                                Res.getString("ERROR_PDF_ENCRYPTED"));
+//                    }
+                    if (firstTargetString != null) {
+                        StringBuffer buffer = new StringBuffer("Bookmark");
+                        buffer.append(pageSeparator).append(firstTargetString);
+                        firstTargetBookmark = Bookmark.bookmarkFromString(pdf,
+                                buffer.toString(), indentationString, pageSeparator, attributesSeparator);
                     }
                 }
                 if (mode == Mode.DUMP) {
@@ -131,14 +159,14 @@ class JPdfBookmarks {
                         pdf.close();
                         pdf = null;
                     }
-                    EventQueue.invokeLater(new GuiLauncher());
+                    EventQueue.invokeLater(new GuiLauncher(inputFilePath, firstTargetBookmark));
                 }
                 if (pdf != null) {
                     pdf.close();
                 }
             } catch (Exception ex) {
                 if (mode == Mode.GUI) {
-                    EventQueue.invokeLater(new GuiLauncher());
+                    EventQueue.invokeLater(new GuiLauncher(inputFilePath, firstTargetBookmark));
                 } else {
                     err.println(ex.getMessage());
                 }
@@ -146,15 +174,23 @@ class JPdfBookmarks {
         }
     }
 
-    private class GuiLauncher implements Runnable {
+    private static class GuiLauncher implements Runnable {
+        private Bookmark firstTarget;
+        private String inputPath;
+
+        public GuiLauncher(String inputPath, Bookmark firstTarget) {
+            this.firstTarget = firstTarget;
+            this.inputPath = inputPath;
+        }
 
         public void run() {
             try {
                 JPdfBookmarksGui viewer;
                 viewer = new JPdfBookmarksGui();
                 viewer.setVisible(true);
-                if (inputFilePath != null) {
-                    viewer.openFileAsync(new File(new File(inputFilePath).getAbsolutePath()));
+                if (inputPath != null) {
+                    viewer.openFileAsync(new File(new File(inputPath).getAbsolutePath()),
+                            this.firstTarget);
                 }
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(null, ex.getMessage(),
@@ -214,6 +250,9 @@ class JPdfBookmarks {
                 mode = Mode.DUMP;
             } else {
                 mode = Mode.GUI;
+                if (cmd.hasOption('b')) {
+                    firstTargetString = cmd.getOptionValue('b');
+                }
             }
 
             String[] leftOverArgs = cmd.getArgs();
@@ -299,6 +338,8 @@ class JPdfBookmarks {
         appOptions.addOption(OptionBuilder.withLongOpt("apply").hasArg(true).withArgName("bookmarks.txt").withDescription(Res.getString("APPLY_DESCR")).create('a'));
         appOptions.addOption(OptionBuilder.withLongOpt("out").hasArg(true).withArgName("output.pdf").withDescription(Res.getString("OUT_DESCR")).create('o'));
 
+        appOptions.addOption("b", "bookmark", true, 
+                Res.getString("BOOKMARK_ARG_DESCR"));
         appOptions.addOption("p", "page-sep", true,
                 Res.getString("PAGE_SEP_DESCR"));
         appOptions.addOption("t", "attributes-sep", true,

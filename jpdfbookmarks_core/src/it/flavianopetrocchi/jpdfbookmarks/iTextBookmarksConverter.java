@@ -84,9 +84,9 @@ import com.lowagie.text.pdf.PdfName;
 import com.lowagie.text.pdf.PdfNumber;
 import com.lowagie.text.pdf.PdfObject;
 import com.lowagie.text.pdf.PdfReader;
-import com.lowagie.text.pdf.PdfStamper;
 import com.lowagie.text.pdf.PdfString;
 import com.lowagie.text.pdf.PdfWriter;
+import com.lowagie.text.pdf.PdfStamper;
 import it.flavianopetrocchi.utilities.Ut;
 import java.awt.Color;
 import java.io.File;
@@ -237,52 +237,56 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
         } else if (type != BookmarkType.Unknown) {
             if (bookmark.isRemoteDestination()) {
                 map.put("Action", "GoToR");
-                if (type == BookmarkType.Named) {
-                    if (bookmark.isNamedAsName()) {
-                        map.put("NamedN", bookmark.getNamedDestination());
-                    } else {
-                        map.put("Named", bookmark.getNamedDestination());
-                    }
-                }
                 map.put("File", bookmark.getRemoteFilePath());
-                map.put("NewWindow", bookmark.isNewWindow());
+                //map.put("NewWindow", bookmark.isNewWindow());
             } else {
                 map.put("Action", "GoTo");
-                if (type == BookmarkType.Named) {
+//                if (type == BookmarkType.Named) {
+//                    map.put("Named", bookmark.getNamedDestination());
+//                }
+            }
+
+            if (type == BookmarkType.Named) {
+                if (bookmark.isNamedAsName()) {
+                    map.put("NamedN", bookmark.getNamedDestination());
+                } else {
                     map.put("Named", bookmark.getNamedDestination());
                 }
+            } else {
+                StringBuffer pageDest = new StringBuffer();
+                if (bookmark.isRemoteDestination()) {
+                    pageDest.append(
+                            String.valueOf(bookmark.getPageNumber() -  1));
+                } else {
+                    pageDest.append(
+                            String.valueOf(bookmark.getPageNumber()));
+                }
+                int left = bookmark.getLeft();
+                int right = bookmark.getRight();
+                int top = bookmark.getTop();
+                int bottom = bookmark.getBottom();
+                float zoom = bookmark.getZoom();
+                if (type == BookmarkType.TopLeftZoom) {
+                    pageDest.append(" XYZ ");
+                    pageDest.append(left == -1 ? "null" : left).append(" ");
+                    pageDest.append(top == -1 ? "null" : top).append(" ").append(zoom);
+                } else if (type == BookmarkType.FitPage) {
+                    pageDest.append(" Fit");
+                } else if (type == BookmarkType.FitWidth) {
+                    pageDest.append(" FitH ").append(top == -1 ? "null" : top);
+                } else if (type == BookmarkType.FitHeight) {
+                    pageDest.append(" FitV ").append(left == -1 ? "null" : left);
+                } else if (type == BookmarkType.FitRect) {
+                    pageDest.append(" FitR ").append(left == -1 ? "null" : left).append(" ").append(bottom == -1 ? "null" : bottom).append(" ").append(right == -1 ? "null" : right).append(" ").append(top == -1 ? "null" : top);
+                } else if (type == BookmarkType.FitContent) {
+                    pageDest.append(" FitB");
+                } else if (type == BookmarkType.FitContentWidth) {
+                    pageDest.append(" FitBH ").append(top == -1 ? "null" : top);
+                } else if (type == BookmarkType.FitContentHeight) {
+                    pageDest.append(" FitBV ").append(left == -1 ? "null" : left);
+                }
+                map.put("Page", pageDest.toString());
             }
-            StringBuffer pageDest = new StringBuffer(
-                    String.valueOf(bookmark.getPageNumber()));
-            int left = bookmark.getLeft();
-            int right = bookmark.getRight();
-            int top = bookmark.getTop();
-            int bottom = bookmark.getBottom();
-            float zoom = bookmark.getZoom();
-            if (type == BookmarkType.TopLeftZoom) {
-                pageDest.append(" XYZ ");
-                pageDest.append(left == -1 ? "null" : left).append(" ");
-                pageDest.append(top == -1 ? "null" : top).append(" ")
-                        .append(bookmark.getZoom());
-            } else if (type == BookmarkType.FitPage) {
-                pageDest.append(" Fit");
-            } else if (type == BookmarkType.FitWidth) {
-                pageDest.append(" FitH ").append(top == -1 ? "null" : top);
-            } else if (type == BookmarkType.FitHeight) {
-                pageDest.append(" FitV ").append(left == -1 ? "null" : left);
-            } else if (type == BookmarkType.FitRect) {
-                pageDest.append(" FitR ").append(left == -1 ? "null" : left)
-                        .append(" ").append(bottom == -1 ? "null" : bottom)
-                        .append(" ").append(right == -1 ? "null" : right)
-                        .append(" ").append(top == -1 ? "null" : top);
-            } else if (type == BookmarkType.FitContent) {
-                pageDest.append(" FitB");
-            } else if (type == BookmarkType.FitContentWidth) {
-                pageDest.append(" FitBH ").append(top == -1 ? "null" : top);
-            } else if (type == BookmarkType.FitContentHeight) {
-                pageDest.append(" FitBV ").append(left == -1 ? "null" : left);
-            }
-            map.put("Page", pageDest.toString());
         }
 
         return map;

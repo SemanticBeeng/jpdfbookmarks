@@ -38,8 +38,13 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Desktop;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Frame;
 import java.awt.GridLayout;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -63,18 +68,24 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.CellEditor;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JColorChooser;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -96,6 +107,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
+import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.event.CellEditorListener;
@@ -328,7 +340,12 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
         fileOperator.close();
 
-        System.exit(0);
+        Frame[] frames = JFrame.getFrames();
+        if (frames.length == 1) {
+            System.exit(0);
+        } else {
+            dispose();
+        }
     }
 
     public void fileOperation(FileOperationEvent evt) {
@@ -611,7 +628,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             final File file = chooser.getSelectedFile();
             if (file != null && file.isFile()) {
                 //close();
-                openFileAsync(file);
+                openFileAsync(file, null);
             }
         }
     }
@@ -626,7 +643,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         busyPanel.remove(progressBar);
     }
 
-    public void openFileAsync(final File file) {
+    public void openFileAsync(final File file, final Bookmark target) {
         setProgressBar(Res.getString("WAIT_LOADING_FILE"));
         CursorToolkit.startWaitCursor(tbBold);
 
@@ -656,7 +673,11 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                     SwingUtilities.invokeLater(new Runnable() {
 
                         public void run() {
-                            viewPanel.goToFirstPage();
+                            if (target != null) {
+                                followBookmarkInView(target);
+                            } else {
+                                viewPanel.goToFirstPage();
+                            }
                         }
                     });
                 } catch (Exception ex) {
@@ -1704,7 +1725,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
             if (f != null && f.isFile()) {
                 //close();
-                openFileAsync(f);
+                openFileAsync(f, null);
             } else {
                 showErrorMessage(Res.getString("ERROR_OPENING_FILE") + " " + f.getName());
             }
@@ -2283,6 +2304,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
         centralSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                 true, leftTabbedPane, centralPanel);
+        centralSplit.setTransferHandler(new FilesTransferHandler());
         centralSplit.setDividerLocation(userPrefs.getSplitterLocation());
         add(centralSplit, BorderLayout.CENTER);
 
@@ -2297,6 +2319,25 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
         lblSelectedNode.setText(Res.getString("SELECTED_BOOKMARK") + ": " +
                 bookmark.getDescription(userPrefs.getUseThousandths()));
+
+        if (bookmark.isRemoteDestination()) {
+            JPanel message = new JPanel();
+            message.setLayout(new BoxLayout(message, BoxLayout.Y_AXIS));
+            message.add(new JLabel(Res.getString("BOOKMARK_TO_REMOTE_FILE")));
+            message.add(Box.createRigidArea(new Dimension(0, 5)));
+            message.add(new JLabel(bookmark.getDescription(true)));
+            message.add(Box.createRigidArea(new Dimension(0, 5)));
+            message.add(new JLabel(Res.getString("ASK_OPEN_IN_NEW_WINDOW")));
+            int response = JOptionPane.showConfirmDialog(this, message, title,
+                    JOptionPane.YES_NO_OPTION);
+            if (response == JOptionPane.YES_OPTION) {
+                Bookmark b = new Bookmark();
+                b.cloneDestination(bookmark);
+                b.setRemoteDestination(false);
+                JPdfBookmarks.launchNewGuiInstance(bookmark.getRemoteFilePath(), b);
+            }
+            return;
+        }
 
         if (bookmark.getType() == BookmarkType.Named) {
             followBookmarkInView(bookmark.getNamedTarget());
@@ -2437,5 +2478,55 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                 }
             }
         }
+    }
+
+    private class FilesTransferHandler extends TransferHandler {
+
+        @Override
+        public boolean canImport(JComponent c, DataFlavor[] flavors) {
+            for (DataFlavor flavor : flavors) {
+                if (flavor.equals(DataFlavor.javaFileListFlavor)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public boolean importData(JComponent c, Transferable t) {
+            DataFlavor[] flavors = t.getTransferDataFlavors();
+            for (DataFlavor flavor : flavors) {
+                if (flavor.equals(DataFlavor.javaFileListFlavor)) {
+                    try {
+                        List filesList = (List) t.getTransferData(DataFlavor.javaFileListFlavor);
+                        Iterator i = filesList.iterator();
+                        if (i.hasNext()) {
+                            File f = (File) i.next();
+                            if (!askCloseWithoutSave()) {
+                                return false;
+                            }
+                            fileOperator.close();
+
+                            if (f != null && f.isFile()) {
+                                //close();
+                                openFileAsync(f, null);
+                                return true;
+                            } else {
+                                showErrorMessage(Res.getString("ERROR_OPENING_FILE") + " " + f.getName());
+                                return false;
+                            }
+                        }
+                    } catch (UnsupportedFlavorException ex) {
+                    } catch (IOException ex) {
+                    }
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    private class BookmarksTransferHandler extends TransferHandler {
+        
     }
 }
