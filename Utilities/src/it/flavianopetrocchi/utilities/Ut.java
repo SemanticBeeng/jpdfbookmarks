@@ -19,7 +19,6 @@
  * You should have received a copy of the GNU General Public License
  * along with JPdfBookmarks.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package it.flavianopetrocchi.utilities;
 
 import java.awt.Component;
@@ -27,6 +26,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
@@ -38,86 +40,138 @@ import javax.swing.UIManager.LookAndFeelInfo;
  */
 public class Ut {
 
-	/**
-	 * Get the class name for the current look and feel. The returned string can
-	 * be used by UIManager.setLookAndFeel(className)
-	 * @return The class name for the current Look & Fell
-	 */
-	public static String getClassNameForCurrentLAF() {
-		String className = null;
-		String currentLAF = UIManager.getLookAndFeel().getName();
-		LookAndFeelInfo[] infoArray = UIManager.getInstalledLookAndFeels();
-		for (LookAndFeelInfo info : infoArray) {
-			if (currentLAF.equals(info.getName())) {
-				className = info.getClassName();
-			}
-		}
-		return className;
-	}
+    /**
+     * Get the class name for the current look and feel. The returned string can
+     * be used by UIManager.setLookAndFeel(className)
+     * @return The class name for the current Look & Fell
+     */
+    public static String getClassNameForCurrentLAF() {
+        String className = null;
+        String currentLAF = UIManager.getLookAndFeel().getName();
+        LookAndFeelInfo[] infoArray = UIManager.getInstalledLookAndFeels();
+        for (LookAndFeelInfo info : infoArray) {
+            if (currentLAF.equals(info.getName())) {
+                className = info.getClassName();
+            }
+        }
+        return className;
+    }
 
-	/**
-	 * Try to change the Look & Feel of a user interface.
-	 * @param laf The class name of the Look & Feel to apply.
-	 * @param c The Component at the root of the interface, generally the main 
-	 * window.
-	 * @return True for sucess false for fail.
-	 */
-	public static boolean changeLAF(String laf, Component c) {
-		boolean success = true;
-		try {
-			UIManager.setLookAndFeel(laf);
-			SwingUtilities.updateComponentTreeUI(c);
-		} catch (Exception ex) {
-			success = false;
-		}
-		return success;
-	}
+    /**
+     * Try to change the Look & Feel of a user interface.
+     * @param laf The class name of the Look & Feel to apply.
+     * @param c The Component at the root of the interface, generally the main
+     * window.
+     * @return True for sucess false for fail.
+     */
+    public static boolean changeLAF(String laf, Component c) {
+        boolean success = true;
+        try {
+            UIManager.setLookAndFeel(laf);
+            SwingUtilities.updateComponentTreeUI(c);
+        } catch (Exception ex) {
+            success = false;
+        }
+        return success;
+    }
 
-	/**
-	 * Change the enabled state of the actions passed as parameters.
-	 * @param enabled The state to change to.
-	 * @param actions The actions to change.
-	 */
-	public static void enableActions(boolean enabled, Action... actions) {
-		for (Action action : actions) {
-			action.setEnabled(enabled);
-		}
-	}
+    /**
+     * Change the enabled state of the actions passed as parameters.
+     * @param enabled The state to change to.
+     * @param actions The actions to change.
+     */
+    public static void enableActions(boolean enabled, Action... actions) {
+        for (Action action : actions) {
+            action.setEnabled(enabled);
+        }
+    }
 
-	/**
-	 * Change the enabled state of the components passed as parameters.
-	 * @param enabled The state to change to.
-	 * @param components The components to change.
-	 */
-	public static void enableComponents(boolean enabled, JComponent... components) {
-		for (JComponent component : components) {
-			component.setEnabled(enabled);
-		}
-	}
+    /**
+     * Change the enabled state of the components passed as parameters.
+     * @param enabled The state to change to.
+     * @param components The components to change.
+     */
+    public static void enableComponents(boolean enabled, JComponent... components) {
+        for (JComponent component : components) {
+            component.setEnabled(enabled);
+        }
+    }
 
-	public static byte[] getBytesFromFile(File file) throws IOException {
-		InputStream is = new FileInputStream(file);
+    public static byte[] getBytesFromFile(File file) throws IOException {
+        InputStream is = new FileInputStream(file);
 
-		long length = file.length();
+        long length = file.length();
 
-		if (length > Integer.MAX_VALUE) {
-			throw new IOException("Could not completely read file " + file.getName());
-		}
+        if (length > Integer.MAX_VALUE) {
+            throw new IOException("Could not completely read file " + file.getName());
+        }
 
-		byte[] bytes = new byte[(int) length];
+        byte[] bytes = new byte[(int) length];
 
-		int offset = 0;
-		int numRead = 0;
-		while (offset < bytes.length &&
-				(numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) {
-			offset += numRead;
-		}
+        int offset = 0;
+        int numRead = 0;
+        while (offset < bytes.length &&
+                (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) {
+            offset += numRead;
+        }
 
-		if (offset < bytes.length) {
-			throw new IOException("Could not completely read file " + file.getName());
-		}
+        if (offset < bytes.length) {
+            throw new IOException("Could not completely read file " + file.getName());
+        }
 
-		is.close();
-		return bytes;
-	}
+        is.close();
+        return bytes;
+    }
+
+    public static File createRelativePath(File base, File target) {
+        File relativeFile = target;
+        ArrayList<File> baseDirectories = new ArrayList<File>();
+        ArrayList<File> targetDirectories = new ArrayList<File>();
+        try {
+            File baseCanonical = base.getCanonicalFile();
+            File targetCanonical = target.getCanonicalFile();
+            File parent = baseCanonical.getParentFile();
+            while (parent != null) {
+                baseDirectories.add(parent);
+                parent = parent.getParentFile();
+            }
+            parent = targetCanonical.getParentFile();
+            while (parent != null) {
+                targetDirectories.add(parent);
+                parent = parent.getParentFile();
+            }
+            
+            File commonBaseDir = null;
+
+            int baseIndex = baseDirectories.size() - 1;
+            int targetIndex = targetDirectories.size() - 1;
+            for ( ; baseIndex >= 0 && targetIndex >= 0; baseIndex--, targetIndex--) {
+                if (baseDirectories.get(baseIndex).equals(targetDirectories.get(targetIndex))) {
+                    commonBaseDir = baseDirectories.get(baseIndex);
+                } else {
+                    break;
+                }
+            }
+
+            int upDirectories = baseIndex + 1;
+
+            StringBuilder path = new StringBuilder();
+            for (int j = 0; j < upDirectories; j++) {
+                path.append("..");
+                path.append(File.separator);
+            }
+            for ( ; targetIndex >= 0; targetIndex--) {
+                path.append(targetDirectories.get(targetIndex).getName());
+                path.append(File.separator);
+            }
+            path.append(target.getName());
+            relativeFile = new File(path.toString());
+
+        } catch (IOException ex) {
+        }
+
+        return relativeFile;
+    }
+
+
 }
