@@ -46,6 +46,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -147,11 +149,11 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
 
     public JPedalViewPanel() {
         vbar = getVerticalScrollBar();
-        //vbar.addAdjustmentListener(new VerticalScrollListener());
         rendererPanel = new PdfRenderPanel();
         viewport.setBackground(Color.gray);
         setViewportView(rendererPanel);
         rendererPanel.addKeyListener(new PdfViewKeyListener());
+        addMouseWheelListener(new PdfViewMouseWheelListener());
         addComponentListener(new ResizeListener());
         PdfDecoder.useTextExtraction();
 
@@ -164,8 +166,34 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
 
     }
 
+    class PdfViewMouseWheelListener implements MouseWheelListener {
+        int oldValue = -1;
+
+        @Override
+        public void mouseWheelMoved(MouseWheelEvent e) {
+
+            int newValue = vbar.getValue();
+            if (newValue == oldValue) {
+                Point location = rendererPanel.getLocation();
+                int panelY = Math.abs(location.y);
+                int panelHeight = rendererPanel.getSize().height;
+                int viewportHeight = viewport.getSize().height;
+                if (panelY == (panelHeight - viewportHeight)) {
+                    goToNextPage();
+                    location.y = 0;
+                    rendererPanel.setLocation(location);
+                } else if (panelY == 0) {
+                    goToPreviousPage();
+                }
+                oldValue = -1;
+            } else {
+                oldValue = newValue;
+            }
+        }
+
+    }
+
     class PdfViewKeyListener implements KeyListener {
-        int oldValue = - 1;
 
         @Override
         public void keyTyped(KeyEvent e) {
@@ -176,17 +204,23 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
             int key = e.getKeyCode();
             switch (key) {
                 case KeyEvent.VK_PAGE_DOWN:
-                    System.out.println("PAGE DOWN PRESSED");
-                    System.out.println("max: " + vbar.getMaximum() + " value: " + vbar.getValue());
-                    int newValue = vbar.getValue();
-                    if (oldValue == newValue) {
+                case KeyEvent.VK_DOWN:
+                    Point location = rendererPanel.getLocation();
+                    int panelY = Math.abs(location.y);
+                    int panelHeight = rendererPanel.getSize().height;
+                    int viewportHeight = viewport.getSize().height;
+                    if (panelY == (panelHeight - viewportHeight)) {
                         goToNextPage();
-                        oldValue = -1;
-                    } else {
-                        oldValue = newValue;
+                        location.y = 0;
+                        rendererPanel.setLocation(location);
                     }
                     break;
                 case KeyEvent.VK_PAGE_UP:
+                case KeyEvent.VK_UP:
+                    panelY = Math.abs(rendererPanel.getLocation().y);
+                    if (panelY == 0) {
+                        goToPreviousPage();
+                    }
                     break;
             }
         }
@@ -194,18 +228,6 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
         @Override
         public void keyReleased(KeyEvent e) {
         }
-
-    }
-
-    class VerticalScrollListener implements AdjustmentListener {
-
-        @Override
-        public void adjustmentValueChanged(AdjustmentEvent e) {
-            Adjustable adjust = e.getAdjustable();
-            System.out.println("max: " + adjust.getMaximum() + " value: " + e.getValue());
-
-        }
-
     }
 
     public JPedalViewPanel(FitType fitType) {
@@ -777,7 +799,7 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
                         if (textSelectionActive) {
                             g2CloneImg.setColor(new Color(0, 0, 255, 50));
                             g2CloneImg.fillRect(drawingRect.x, drawingRect.y, drawingRect.width,
-                                drawingRect.height);
+                                    drawingRect.height);
                         }
                     } else {
                         if (!textSelectionActive) {
