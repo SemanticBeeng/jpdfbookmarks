@@ -21,7 +21,6 @@
  */
 package it.flavianopetrocchi.jpdfbookmarks;
 
-import com.sun.xml.internal.stream.util.BufferAllocator;
 import it.flavianopetrocchi.colors.Colors;
 import java.awt.Color;
 import java.io.BufferedReader;

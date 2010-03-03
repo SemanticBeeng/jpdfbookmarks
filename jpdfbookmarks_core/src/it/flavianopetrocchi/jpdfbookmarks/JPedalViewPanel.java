@@ -22,6 +22,7 @@
 package it.flavianopetrocchi.jpdfbookmarks;
 
 import it.flavianopetrocchi.utilities.Ut;
+import java.awt.Adjustable;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -37,8 +38,12 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -50,9 +55,12 @@ import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.Scrollable;
 import javax.swing.SwingUtilities;
+import javax.swing.plaf.ScrollBarUI;
+import javax.swing.plaf.basic.BasicScrollBarUI;
 import org.jpedal.PdfDecoder;
 import org.jpedal.exception.PdfException;
 import org.jpedal.grouping.PdfGroupingAlgorithms;
@@ -101,6 +109,7 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
     private Boolean textSelectionActive = false;
     private String copiedText;
     private Boolean connectToClipboard = false;// </editor-fold>
+    JScrollBar vbar;
 
     @Override
     public void open(File file) throws Exception {
@@ -137,9 +146,12 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
     }
 
     public JPedalViewPanel() {
+        vbar = getVerticalScrollBar();
+        //vbar.addAdjustmentListener(new VerticalScrollListener());
         rendererPanel = new PdfRenderPanel();
         viewport.setBackground(Color.gray);
         setViewportView(rendererPanel);
+        rendererPanel.addKeyListener(new PdfViewKeyListener());
         addComponentListener(new ResizeListener());
         PdfDecoder.useTextExtraction();
 
@@ -149,6 +161,50 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
         rectRedCur = toolkit.createCustomCursor(image, hotSpot, "rect-red");
         image = Res.getIcon(getClass(), "gfx32/rect-blue.png").getImage();
         rectBlueCur = toolkit.createCustomCursor(image, hotSpot, "rect-blue");
+
+    }
+
+    class PdfViewKeyListener implements KeyListener {
+        int oldValue = - 1;
+
+        @Override
+        public void keyTyped(KeyEvent e) {
+        }
+
+        @Override
+        public void keyPressed(KeyEvent e) {
+            int key = e.getKeyCode();
+            switch (key) {
+                case KeyEvent.VK_PAGE_DOWN:
+                    System.out.println("PAGE DOWN PRESSED");
+                    System.out.println("max: " + vbar.getMaximum() + " value: " + vbar.getValue());
+                    int newValue = vbar.getValue();
+                    if (oldValue == newValue) {
+                        goToNextPage();
+                        oldValue = -1;
+                    } else {
+                        oldValue = newValue;
+                    }
+                    break;
+                case KeyEvent.VK_PAGE_UP:
+                    break;
+            }
+        }
+
+        @Override
+        public void keyReleased(KeyEvent e) {
+        }
+
+    }
+
+    class VerticalScrollListener implements AdjustmentListener {
+
+        @Override
+        public void adjustmentValueChanged(AdjustmentEvent e) {
+            Adjustable adjust = e.getAdjustable();
+            System.out.println("max: " + adjust.getMaximum() + " value: " + e.getValue());
+
+        }
 
     }
 

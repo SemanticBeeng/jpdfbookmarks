@@ -42,7 +42,13 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.GridLayout;
+import java.awt.Point;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.FlavorEvent;
+import java.awt.datatransfer.FlavorListener;
+import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
@@ -53,6 +59,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
@@ -76,11 +84,13 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.CellEditor;
+import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
@@ -135,6 +145,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     // <editor-fold defaultstate="collapsed" desc="Members">
     private final int ZOOM_STEP = 10;
     private int windowState;
+    private Clipboard clipboard;
     private JSplitPane centralSplit;
     private String title = "JPdfBookmarks";
     private Prefs userPrefs = new Prefs();
@@ -147,6 +158,9 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     private IPdfView viewPanel;
     private JToolBar navigationToolbar;
     private ButtonGroup zoomMenuItemsGroup;
+    private JMenuItem cutMenuItem;
+    private JMenuItem copyMenuItem;
+    private JMenuItem pasteMenuItem;
     private JRadioButtonMenuItem rbFitWidth;
     private JRadioButtonMenuItem rbFitHeight;
     private JRadioButtonMenuItem rbFitPage;
@@ -190,7 +204,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     private VerticalLabel lblInheritLeft;
     private JMenu openRecent;
     private JToggleButton tbSelectText;
-    private JToggleButton tbConnectToClipboard;// </editor-fold>
+    private JToggleButton tbConnectToClipboard;
+    private JPanel bookmarksPanel;// </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Actions">
     private Action quitAction;
     //File actions
@@ -239,7 +254,10 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     private Action readOnlineManualAction;
     private Action goToAuthorBlog;
     private Action selectText;
-    private Action connectToClipboard;// </editor-fold>
+    private Action connectToClipboard;
+    private Action cutAction;
+    private Action copyAction;
+    private Action pasteAction;// </editor-fold>
 
     private void saveWindowState() {
         userPrefs.setWindowState(windowState);
@@ -262,8 +280,15 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
     public JPdfBookmarksGui() {
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-
         Authenticator.setDefault(new ProxyAuthenticator(this, true));
+        clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        clipboard.addFlavorListener(new FlavorListener() {
+
+            @Override
+            public void flavorsChanged(FlavorEvent e) {
+                JPdfBookmarksGui.this.flavorsChanged();
+            }
+        });
 
         undoManager = new ExtendedUndoManager();
         undoSupport = new UndoableEditSupport(this);
@@ -308,6 +333,15 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
         addWindowListener(wndCloser);
         addWindowStateListener(wndCloser);
+    }
+
+    public void flavorsChanged() {
+        DataFlavor[] flavors = clipboard.getAvailableDataFlavors();
+        for (DataFlavor flavor : flavors) {
+            if (flavor.equals(DataFlavor.stringFlavor) && (fileOperator.getFilePath() != null)) {
+                pasteMenuItem.setEnabled(true);
+            }
+        }
     }
 
     public boolean askCloseWithoutSave() {
@@ -527,6 +561,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         Ut.enableActions((bookmark != null), addChildAction, deleteAction,
                 setBoldAction, setItalicAction, renameAction, changeColorAction,
                 setDestFromViewAction, addWebLinkAction, applyPageOffset);
+        Ut.enableComponents((bookmark != null), cutMenuItem, copyMenuItem);
         if (bookmark != null) {
             updateStyleButtons(bookmark);
         }
@@ -565,9 +600,11 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         }
     }
 
+    @Override
     public void editingCanceled(ChangeEvent e) {
     }
 
+    @Override
     public void renderingStart(RenderingStartEvent evt) {
         lblStatus.setText("Rendering page " + evt.getPageNumber() + " wait ...");
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -1245,6 +1282,10 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     }
 
     private void createActions() {
+
+        cutAction = TransferHandler.getCutAction();
+        copyAction = TransferHandler.getCopyAction();
+        pasteAction = TransferHandler.getPasteAction();
 
         quitAction = new ActionBuilder("ACTION_QUIT", "ACTION_QUIT_DESCR",
                 "alt F4", "system-log-out.png", true) {
@@ -1973,6 +2014,36 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         item = treeMenu.add(addChildAction);
         item.setMnemonic(Res.mnemonicFromRes("MENU_ADD_CHILD_MNEMONIC"));
         treeMenu.addSeparator();
+
+        ActionListener actionListener = new TransferActionListener();
+        cutMenuItem = new JMenuItem(Res.getString("ACTION_CUT"),
+                Res.getIcon(getClass(), "gfx16/edit-cut.png"));
+        cutMenuItem.setActionCommand((String) cutAction.getValue(Action.NAME));
+        cutMenuItem.addActionListener(actionListener);
+        cutMenuItem.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.CTRL_MASK));
+        cutMenuItem.setEnabled(false);
+        treeMenu.add(cutMenuItem);
+
+        copyMenuItem = new JMenuItem(Res.getString("ACTION_COPY"),
+                Res.getIcon(getClass(), "gfx16/edit-copy.png"));
+        copyMenuItem.setActionCommand((String) copyAction.getValue(Action.NAME));
+        copyMenuItem.addActionListener(actionListener);
+        copyMenuItem.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
+        copyMenuItem.setEnabled(false);
+        treeMenu.add(copyMenuItem);
+
+        pasteMenuItem = new JMenuItem(Res.getString("ACTION_PASTE"),
+                Res.getIcon(getClass(), "gfx16/edit-paste.png"));
+        pasteMenuItem.setActionCommand((String) pasteAction.getValue(Action.NAME));
+        pasteMenuItem.addActionListener(actionListener);
+        pasteMenuItem.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK));
+        pasteMenuItem.setEnabled(false);
+        treeMenu.add(pasteMenuItem);
+        flavorsChanged();
+
         item = treeMenu.add(renameAction);
         item.setMnemonic(Res.mnemonicFromRes("MENU_RENAME_MNEMONIC"));
         item = treeMenu.add(deleteAction);
@@ -2161,6 +2232,28 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                 Res.getString("NO_PDF_LOADED"));
         bookmarksTreeModel = new DefaultTreeModel(top);
         bookmarksTree = new BookmarksTree();
+
+        bookmarksTree.setTransferHandler(new BookmarksTransferHandler());
+
+        ActionMap map = bookmarksTree.getActionMap();
+        map.put(TransferHandler.getCutAction().getValue(Action.NAME),
+                TransferHandler.getCutAction());
+        map.put(TransferHandler.getCopyAction().getValue(Action.NAME),
+                TransferHandler.getCopyAction());
+        map.put(TransferHandler.getPasteAction().getValue(Action.NAME),
+                TransferHandler.getPasteAction());
+
+//        InputMap imap = bookmarksTree.getInputMap();
+//        imap.put(KeyStroke.getKeyStroke("ctrl X"),
+//                TransferHandler.getCutAction().getValue(Action.NAME));
+//        imap.put(KeyStroke.getKeyStroke("ctrl C"),
+//                TransferHandler.getCopyAction().getValue(Action.NAME));
+//        imap.put(KeyStroke.getKeyStroke("ctrl V"),
+//                TransferHandler.getPasteAction().getValue(Action.NAME));
+
+
+//        bookmarksTree.setDragEnabled(true);
+
         bookmarksTree.getSelectionModel().setSelectionMode(
                 TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
         bookmarksTree.setShowsRootHandles(true);
@@ -2183,7 +2276,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     }
 
     private JPanel createBookmarksPanel() {
-        JPanel bookmarksPanel = new JPanel(new BorderLayout());
+        bookmarksPanel = new JPanel(new BorderLayout());
+//        bookmarksPanel.setTransferHandler(new BookmarksTransferHandler());
         JPanel toolbarsPanel = new JPanel(new WrapFlowLayout(
                 WrapFlowLayout.LEFT));
 
@@ -2331,10 +2425,19 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             int response = JOptionPane.showConfirmDialog(this, message, title,
                     JOptionPane.YES_NO_OPTION);
             if (response == JOptionPane.YES_OPTION) {
-                Bookmark b = new Bookmark();
-                b.cloneDestination(bookmark);
-                b.setRemoteDestination(false);
-                JPdfBookmarks.launchNewGuiInstance(bookmark.getRemoteFilePath(), b);
+                    Bookmark b = new Bookmark();
+                    b.cloneDestination(bookmark);
+                    b.setRemoteDestination(false);
+                    File f = fileOperator.getFile();
+                    File absoluteFile = f.getAbsoluteFile();
+                    String target = absoluteFile.getParent() + File.separator + bookmark.getRemoteFilePath();
+                    f = new File(target);
+                try {
+                    String targetCanonical = f.getCanonicalPath();
+                    JPdfBookmarks.launchNewGuiInstance(targetCanonical, b);
+                } catch (IOException ex) {
+                    JPdfBookmarks.launchNewGuiInstance(target, b);
+                }
             }
             return;
         }
@@ -2527,6 +2630,116 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     }
 
     private class BookmarksTransferHandler extends TransferHandler {
-        
+        Bookmark selectedBookmark;
+
+        // <editor-fold defaultstate="collapsed" desc="Export Methods">
+        @Override
+        public int getSourceActions(JComponent c) {
+            return COPY_OR_MOVE;
+        }
+
+        @Override
+        public Transferable createTransferable(JComponent c) {
+            selectedBookmark = getSelectedBookmark();
+            if (selectedBookmark == null) {
+                return null;
+            }
+            String attrSep = userPrefs.getAttributesSeparator();
+            StringBuilder descr = new StringBuilder(selectedBookmark.getExtendedDescription(userPrefs.getPageSeparator(),
+                    attrSep, userPrefs.getUseThousandths()));
+            if (selectedBookmark.isRemoteDestination() == false) {
+                descr.append(attrSep);
+                descr.append(BookmarkType.GoToFile.toString());
+                descr.append(attrSep);
+                descr.append(fileOperator.getFilePath());
+            }
+            return new StringSelection(descr.toString());
+        }
+
+        @Override
+        public void exportDone(JComponent c, Transferable t, int action) {
+            if (action == MOVE) {
+                ArrayList<Bookmark> deleteList = new ArrayList<Bookmark>();
+                deleteList.add(selectedBookmark);
+
+                UndoableDeleteBookmark undoableDelete =
+                        new UndoableDeleteBookmark(
+                        bookmarksTreeModel, deleteList);
+
+                undoableDelete.doEdit();
+                recreateNodesOpenedState();
+                undoSupport.postEdit(undoableDelete);
+            }
+        }
+        // </editor-fold>
+
+        // <editor-fold defaultstate="collapsed" desc="Import Methods">
+        @Override
+        public boolean canImport(JComponent c, DataFlavor[] flavors) {
+            for (DataFlavor flavor : flavors) {
+                if (flavor.equals(DataFlavor.stringFlavor)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public boolean importData(JComponent c, Transferable t) {
+            DataFlavor[] flavors = t.getTransferDataFlavors();
+            for (DataFlavor flavor : flavors) {
+                if (flavor.equals(DataFlavor.stringFlavor)) {
+                    try {
+                        IBookmarksConverter bookmarksConverter = new iTextBookmarksConverter(fileOperator.getFilePath());
+                        Bookmark bookmark = Bookmark.bookmarkFromString(bookmarksConverter, (String) t.getTransferData(DataFlavor.stringFlavor), userPrefs.getIndentationString(), userPrefs.getPageSeparator(), userPrefs.getAttributesSeparator());
+                        bookmarksConverter.close();
+                        String remotePath = bookmark.getRemoteFilePath();
+                        File openedFile = fileOperator.getFile();
+                        File remoteFile = new File(remotePath);
+                        File relativeFile = Ut.createRelativePath(openedFile, remoteFile);
+                        if (openedFile.equals(remoteFile)) {
+                            bookmark.setRemoteDestination(false);
+                            bookmark.setRemoteFilePath(null);
+                        } else {
+                            bookmark.setRemoteFilePath(relativeFile.getPath());
+                        }
+                        Bookmark selected = getSelectedBookmark();
+                        Bookmark parent;
+                        if (selected == null) {
+                            parent = (Bookmark) bookmarksTreeModel.getRoot();
+                            parent.add(bookmark);
+                        } else {
+                            parent = (Bookmark) selected.getParent();
+                            int selectedPosition = parent.getIndex(selected);
+                            parent.insert(bookmark, selectedPosition + 1);
+                        }
+                        bookmarksTreeModel.nodeStructureChanged(parent);
+                        recreateNodesOpenedState();
+                        bookmarksTree.startEditingAtPath(
+                                new TreePath(bookmark.getPath()));
+                        fileOperator.setFileChanged(true);
+                        return true;
+                    } catch (Exception ex) {
+                        return false;
+                    }
+                }
+            }
+            return false;
+        }
+        // </editor-fold>
+    }
+
+    //this calss is used to address the the actions cut copy and paste to
+    //the correct component
+    public class TransferActionListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String action = (String) e.getActionCommand();
+            Action a = bookmarksTree.getActionMap().get(action);
+            a.actionPerformed(new ActionEvent(bookmarksTree,
+                    ActionEvent.ACTION_PERFORMED,
+                    action));
+        }
     }
 }
