@@ -167,30 +167,33 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
     }
 
     class PdfViewMouseWheelListener implements MouseWheelListener {
+
         int oldValue = -1;
 
         @Override
         public void mouseWheelMoved(MouseWheelEvent e) {
-
             int newValue = vbar.getValue();
             if (newValue == oldValue) {
-                Point location = rendererPanel.getLocation();
-                int panelY = Math.abs(location.y);
-                int panelHeight = rendererPanel.getSize().height;
-                int viewportHeight = viewport.getSize().height;
-                if (panelY == (panelHeight - viewportHeight)) {
-                    goToNextPage();
-                    location.y = 0;
-                    rendererPanel.setLocation(location);
-                } else if (panelY == 0) {
-                    goToPreviousPage();
-                }
+                scrollToAnotherPage();
                 oldValue = -1;
             } else {
                 oldValue = newValue;
             }
         }
+    }
 
+    private void scrollToAnotherPage() {
+        Point location = rendererPanel.getLocation();
+        int panelY = Math.abs(location.y);
+        int panelHeight = rendererPanel.getSize().height;
+        int viewportHeight = viewport.getSize().height;
+        if (panelY == (panelHeight - viewportHeight)) {
+            goToNextPage();
+            vbar.setValue(vbar.getMinimum());
+        } else if (panelY == 0) {
+            goToPreviousPage();
+            vbar.setValue(vbar.getMaximum());
+        }
     }
 
     class PdfViewKeyListener implements KeyListener {
@@ -211,15 +214,16 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
                     int viewportHeight = viewport.getSize().height;
                     if (panelY == (panelHeight - viewportHeight)) {
                         goToNextPage();
-                        location.y = 0;
-                        rendererPanel.setLocation(location);
+                        vbar.setValue(vbar.getMinimum());
                     }
                     break;
                 case KeyEvent.VK_PAGE_UP:
                 case KeyEvent.VK_UP:
-                    panelY = Math.abs(rendererPanel.getLocation().y);
+                    location = rendererPanel.getLocation();
+                    panelY = Math.abs(location.y);
                     if (panelY == 0) {
                         goToPreviousPage();
+                        vbar.setValue(vbar.getMaximum());
                     }
                     break;
             }
