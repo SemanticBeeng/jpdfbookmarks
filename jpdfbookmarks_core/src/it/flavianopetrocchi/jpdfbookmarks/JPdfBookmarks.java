@@ -56,6 +56,7 @@ class JPdfBookmarks {
         HELP,
         GUI,
         VERSION,
+        SHOW_ON_OPEN,
     }
     // <editor-fold defaultstate="expanded" desc="Member variables">
     public static final String VERSION = "2.1.0";
@@ -82,7 +83,8 @@ class JPdfBookmarks {
     private String attributesSeparator = ",";
     private String indentationString = "\t";
     private Bookmark firstTargetBookmark = null;
-    private String firstTargetString = null;// </editor-fold>
+    private String firstTargetString = null;
+    private String showOnOpenArg = null;// </editor-fold>
 
 
     //<editor-fold defaultstate="expanded" desc="public methods">
@@ -138,7 +140,31 @@ class JPdfBookmarks {
                                 buffer.toString(), indentationString, pageSeparator, attributesSeparator);
                     }
                 }
-                if (mode == Mode.DUMP) {
+
+                if (mode == Mode.SHOW_ON_OPEN) {
+                    if (showOnOpenArg.equalsIgnoreCase("CHECK") || showOnOpenArg.equalsIgnoreCase("c")) {
+//                        PrintWriter out = new PrintWriter(System.out, true);
+                        if (pdf.showBookmarksOnOpen()) {
+                            out.println("YES");
+                        } else {
+                            out.println("NO");
+                        }
+                    } else {
+                        if (showOnOpenArg.equalsIgnoreCase("yes") || showOnOpenArg.equalsIgnoreCase("y")) {
+                            pdf.setShowBookmarksOnOpen(true);
+                        } else if (showOnOpenArg.equalsIgnoreCase("no") || showOnOpenArg.equalsIgnoreCase("n")) {
+                            pdf.setShowBookmarksOnOpen(false);
+                        }
+                        if (outputFilePath == null || outputFilePath.equals(inputFilePath)) {
+                            if (getYesOrNo(Res.getString(
+                                    "ERR_INFILE_EQUAL_OUTFILE"))) {
+                                pdf.save(inputFilePath);
+                            }
+                        } else {
+                            pdf.save(outputFilePath);
+                        }
+                    }
+                } else if (mode == Mode.DUMP) {
                     Dumper dumper = new Dumper(pdf, indentationString,
                             pageSeparator, attributesSeparator);
                     dumper.printBookmarks();
@@ -146,10 +172,10 @@ class JPdfBookmarks {
                     Applier applier = new Applier(pdf, indentationString,
                             pageSeparator, attributesSeparator);
                     applier.loadBookmarksFile(bookmarksFilePath);
-                    if (outputFilePath.equals(inputFilePath)) {
+                    if (outputFilePath == null || outputFilePath.equals(inputFilePath)) {
                         if (getYesOrNo(Res.getString(
                                 "ERR_INFILE_EQUAL_OUTFILE"))) {
-                            applier.save(outputFilePath);
+                            applier.save(inputFilePath);
                         }
                     } else {
                         applier.save(outputFilePath);
@@ -211,8 +237,9 @@ class JPdfBookmarks {
     public void printHelpMessage() {
         HelpFormatter help = new HelpFormatter();
         String header = Res.getString("APP_DESCR");
-        String syntax = "jpdfbookmarks [--dump | --apply <bookmarks.txt> " +
-                "--out <output.pdf> | --help | --version] [input.pdf]";
+        String syntax = "jpdfbookmarks <input.pdf> " + 
+                "[--dump | --apply <bookmarks.txt> | --show-on-open <YES | NO | CHECK> " +
+                "| --help | --version] [--out <output.pdf>]";
         int width = 80;
         int leftPad = 1, descPad = 2;
         String footer = Res.getString("BOOKMARKS_DESCR");
@@ -237,14 +264,23 @@ class JPdfBookmarks {
                 mode = Mode.HELP;
             } else if (cmd.hasOption('v')) {
                 mode = Mode.VERSION;
+            } else if (cmd.hasOption('w')) {
+                mode = Mode.SHOW_ON_OPEN;
+                showOnOpenArg = cmd.getOptionValue('w');
+                if (cmd.hasOption('o')) {
+                    outputFilePath = cmd.getOptionValue('o');
+                } else {
+                    outputFilePath = null;
+                }
             } else if (cmd.hasOption('a')) {
                 mode = Mode.APPLY;
                 bookmarksFilePath = cmd.getOptionValue('a');
                 if (cmd.hasOption('o')) {
                     outputFilePath = cmd.getOptionValue('o');
                 } else {
-                    throw new ParseException(
-                            Res.getString("ERR_NO_OUT_FOR_APPLY"));
+                    outputFilePath = null;
+//                    throw new ParseException(
+//                            Res.getString("ERR_NO_OUT_FOR_APPLY"));
                 }
             } else if (cmd.hasOption('d')) {
                 mode = Mode.DUMP;
@@ -337,6 +373,9 @@ class JPdfBookmarks {
         appOptions.addOption(OptionBuilder.withLongOpt("dump").withDescription(Res.getString("DUMP_DESCR")).create('d'));
         appOptions.addOption(OptionBuilder.withLongOpt("apply").hasArg(true).withArgName("bookmarks.txt").withDescription(Res.getString("APPLY_DESCR")).create('a'));
         appOptions.addOption(OptionBuilder.withLongOpt("out").hasArg(true).withArgName("output.pdf").withDescription(Res.getString("OUT_DESCR")).create('o'));
+//        appOptions.addOption(OptionBuilder.withLongOpt("show-on-open").hasArg(true)
+//                .withArgName("YES | NO | CHECK")
+//                .withDescription(Res.getString("SHOW_ON_OPEN_DESCR")).create('w'));
 
         appOptions.addOption("b", "bookmark", true, 
                 Res.getString("BOOKMARK_ARG_DESCR"));
@@ -346,6 +385,8 @@ class JPdfBookmarks {
                 Res.getString("ATTRIBUTES_SEP_DESCR"));
         appOptions.addOption("i", "indentation", true,
                 Res.getString("INDENTATION_STRING_DESCR"));
+        appOptions.addOption("w", "show-on-open", true,
+                Res.getString("SHOW_ON_OPEN_DESCR"));
 
         return appOptions;
     }

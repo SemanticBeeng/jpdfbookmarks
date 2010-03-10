@@ -110,8 +110,8 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
     private Cursor rectRedCur, rectBlueCur;
     private Boolean textSelectionActive = false;
     private String copiedText;
-    private Boolean connectToClipboard = false;// </editor-fold>
-    JScrollBar vbar;
+    private Boolean connectToClipboard = false;
+    private JScrollBar vbar;// </editor-fold>
 
     @Override
     public void open(File file) throws Exception {
@@ -172,9 +172,10 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
 
         @Override
         public void mouseWheelMoved(MouseWheelEvent e) {
+            int wheelRotations = e.getWheelRotation();
             int newValue = vbar.getValue();
             if (newValue == oldValue) {
-                scrollToAnotherPage();
+                scrollToAnotherPage(wheelRotations);
                 oldValue = -1;
             } else {
                 oldValue = newValue;
@@ -182,15 +183,29 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
         }
     }
 
-    private void scrollToAnotherPage() {
+    private void scrollToAnotherPage(int wheelRotations) {
+        if (fitType.equals(FitType.FitHeight)) {
+            return;
+        }
+
+        if (fitType.equals(FitType.FitPage)) {
+            if (wheelRotations < 0 && currentPage > 0) {
+                goToPreviousPage();
+            } else if (wheelRotations > 0  && currentPage < (numberOfPages - 1)) {
+                goToNextPage();
+            }
+            return;
+        }
+
         Point location = rendererPanel.getLocation();
         int panelY = Math.abs(location.y);
         int panelHeight = rendererPanel.getSize().height;
         int viewportHeight = viewport.getSize().height;
-        if (panelY == (panelHeight - viewportHeight)) {
+        if (panelY == (panelHeight - viewportHeight) &&
+                currentPage < (numberOfPages - 1)) {
             goToNextPage();
             vbar.setValue(vbar.getMinimum());
-        } else if (panelY == 0) {
+        } else if (panelY == 0 && currentPage > 0) {
             goToPreviousPage();
             vbar.setValue(vbar.getMaximum());
         }
@@ -212,7 +227,8 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
                     int panelY = Math.abs(location.y);
                     int panelHeight = rendererPanel.getSize().height;
                     int viewportHeight = viewport.getSize().height;
-                    if (panelY == (panelHeight - viewportHeight)) {
+                    if (panelY == (panelHeight - viewportHeight) &&
+                            currentPage < (numberOfPages - 1)) {
                         goToNextPage();
                         vbar.setValue(vbar.getMinimum());
                     }
@@ -221,7 +237,7 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
                 case KeyEvent.VK_UP:
                     location = rendererPanel.getLocation();
                     panelY = Math.abs(location.y);
-                    if (panelY == 0) {
+                    if (panelY == 0 && currentPage > 0) {
                         goToPreviousPage();
                         vbar.setValue(vbar.getMaximum());
                     }
