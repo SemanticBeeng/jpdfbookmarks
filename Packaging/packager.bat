@@ -25,9 +25,10 @@ REM
 SET BATDIR=%~dp0
 PUSHD %BATDIR%
 
-REM Customize this path as needed to point to 7zip folder
+REM Customize this path as needed to point to 7zip and subversion folders
 SET PATH7ZIP="D:\LiberKey\Apps\7Zip\App\7-Zip"
-SET PATH=%PATH7ZIP%;%PATH%
+SET PATHSVN="D:\LiberKey\MyApps\svn-win32-1.6.6\bin"
+SET PATH=%PATHSVN%;%PATH7ZIP%;%PATH%
 
 SET /p VERSION=<..\VERSION
 SET NAME=jpdfbookmarks-%VERSION%
