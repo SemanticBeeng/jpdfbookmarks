@@ -71,7 +71,7 @@ class JPdfBookmarks {
     public static final String LAST_VERSION_PROPERTIES_URL =
             "http://jpdfbookmarks.altervista.org/version/jpdfbookmarks.properties";
     public static final String MANUAL_URL = "http://sourceforge.net/apps/mediawiki/jpdfbookmarks/";
-            //"http://jpdfbookmarks.altervista.org";
+    //"http://jpdfbookmarks.altervista.org";
     private Mode mode = Mode.GUI;
     private Options options = createOptions();
     private final PrintWriter out = new PrintWriter(System.out, true);
@@ -86,14 +86,12 @@ class JPdfBookmarks {
     private String firstTargetString = null;
     private String showOnOpenArg = null;// </editor-fold>
 
-
     //<editor-fold defaultstate="expanded" desc="public methods">
     public static void main(String[] args) {
         //java.util.Locale.setDefault(java.util.Locale.ENGLISH);
         JPdfBookmarks app = new JPdfBookmarks();
         app.start(args);
     }
-
 
     static void launchNewGuiInstance(String path, Bookmark bookmark) {
 
@@ -194,13 +192,19 @@ class JPdfBookmarks {
                 if (mode == Mode.GUI) {
                     EventQueue.invokeLater(new GuiLauncher(inputFilePath, firstTargetBookmark));
                 } else {
-                    err.println(ex.getMessage());
+                    if (inputFilePath != null) {
+                        err.println(Res.getString("ERROR_OPENING_FILE") + " " +
+                                inputFilePath);
+                    } else {
+                        err.println(Res.getString("ERROR_STARTING_JPDFBOOKMARKS"));
+                    }
                 }
             }
         }
     }
 
     private static class GuiLauncher implements Runnable {
+
         private Bookmark firstTarget;
         private String inputPath;
 
@@ -237,7 +241,7 @@ class JPdfBookmarks {
     public void printHelpMessage() {
         HelpFormatter help = new HelpFormatter();
         String header = Res.getString("APP_DESCR");
-        String syntax = "jpdfbookmarks <input.pdf> " + 
+        String syntax = "jpdfbookmarks <input.pdf> " +
                 "[--dump | --apply <bookmarks.txt> | --show-on-open <YES | NO | CHECK> " +
                 "| --help | --version] [--out <output.pdf>]";
         int width = 80;
@@ -377,7 +381,7 @@ class JPdfBookmarks {
 //                .withArgName("YES | NO | CHECK")
 //                .withDescription(Res.getString("SHOW_ON_OPEN_DESCR")).create('w'));
 
-        appOptions.addOption("b", "bookmark", true, 
+        appOptions.addOption("b", "bookmark", true,
                 Res.getString("BOOKMARK_ARG_DESCR"));
         appOptions.addOption("p", "page-sep", true,
                 Res.getString("PAGE_SEP_DESCR"));

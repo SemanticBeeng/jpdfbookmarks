@@ -105,11 +105,13 @@ This is not particularly efficient so I suggest to create links to start the
 program in a folder on your PATH environment variable like /usr/local/bin for
 example with the root commands:
 
-# ln -s /home/user/jpdfbookmarks/link_this_in_linux_path.sh /user/local/bin/jpdfbookmarks
+# cd /usr/local/bin
+
+# ln -s /home/user/jpdfbookmarks/link_this_in_linux_path.sh jpdfbookmarks
 
 or
 
-# ln -s /home/user/jpdfbookmarks/link_this_in_linux_path_cli.sh /user/local/bin/jpdfbookmarks
+# ln -s /home/user/jpdfbookmarks/link_this_in_linux_path_cli.sh jpdfbookmarks_cli
 
 Now you are able to run jpdfbookmarks from any position just typing jpdfbookmars
 or to create a launcher icon in any desktop easily.

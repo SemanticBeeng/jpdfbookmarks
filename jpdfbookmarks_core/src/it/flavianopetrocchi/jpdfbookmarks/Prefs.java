@@ -61,11 +61,10 @@ public class Prefs {
 	private final String CHECK_UPDATES_ON_START = "CHECK_UPDATES_ON_START";
         private final String CONFIRM_WEB_ACCESS = "CONFIRM_WEB_ACCESS";
 
-	private Dimension screenSize;
+	private Dimension screenSize = null;
 
 
 	Prefs() {
-		screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 	}
 	
 	public boolean getUseProxy() {
@@ -213,6 +212,7 @@ public class Prefs {
 	}
 
 	public Point getLocation() {
+		screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		int x = userPrefs.getInt(LOCATION_X, (int)(screenSize.width * 0.10));
 		int y = userPrefs.getInt(LOCATION_Y, (int)(screenSize.height * 0.10));
 		return new Point(x, y);
@@ -237,6 +237,7 @@ public class Prefs {
 	}
 
 	public Dimension getSize() {
+		screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		int width = userPrefs.getInt(SIZE_WIDTH,
 				(int)(screenSize.width * 0.80));
 		int height = userPrefs.getInt(SIZE_HEIGHT,
