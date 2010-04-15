@@ -205,7 +205,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     private JMenu openRecent;
     private JToggleButton tbSelectText;
     private JToggleButton tbConnectToClipboard;
-    private JPanel bookmarksPanel;// </editor-fold>
+    private JPanel bookmarksPanel;
+    JPanel tabToolbars = new JPanel(new WrapFlowLayout(WrapFlowLayout.LEFT));// </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Actions">
     private Action quitAction;
     //File actions
@@ -2278,26 +2279,25 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     private JPanel createBookmarksPanel() {
         bookmarksPanel = new JPanel(new BorderLayout());
 //        bookmarksPanel.setTransferHandler(new BookmarksTransferHandler());
-        JPanel toolbarsPanel = new JPanel(new WrapFlowLayout(
-                WrapFlowLayout.LEFT));
+
 
         bookmarksScroller = new JScrollPane();
         setEmptyBookmarksTree();
 
         bookmarksPanel.add(bookmarksScroller, BorderLayout.CENTER);
-        bookmarksPanel.add(toolbarsPanel, BorderLayout.NORTH);
+        // bookmarksPanel.add(toolbarsPanel, BorderLayout.NORTH);
 
-        JToolBar addToolbar = new JToolBar();
+        JToolBar addToolbar = new JToolBar(JToolBar.VERTICAL);
         addToolbar.add(addSiblingAction);
         addToolbar.add(addChildAction);
 //		addToolbar.add(setDestFromViewAction);
 //		addToolbar.add(addWebLinkAction);
 
-        JToolBar changeToolbar = new JToolBar();
+        JToolBar changeToolbar = new JToolBar(JToolBar.VERTICAL);
         changeToolbar.add(renameAction);
         changeToolbar.add(deleteAction);
 
-        JToolBar styleToolbar = new JToolBar();
+        JToolBar styleToolbar = new JToolBar(JToolBar.VERTICAL);
         tbBold = new JToggleButton(setBoldAction);
         tbBold.setText("");
         styleToolbar.add(tbBold);
@@ -2306,14 +2306,14 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         styleToolbar.add(tbItalic);
         styleToolbar.add(changeColorAction);
 
-        JToolBar setDestToolbar = new JToolBar();
+        JToolBar setDestToolbar = new JToolBar(JToolBar.VERTICAL);
         setDestToolbar.add(addWebLinkAction);
         setDestToolbar.add(setDestFromViewAction);
 
-        toolbarsPanel.add(addToolbar);
-        toolbarsPanel.add(changeToolbar);
-        toolbarsPanel.add(styleToolbar);
-        toolbarsPanel.add(setDestToolbar);
+        tabToolbars.add(addToolbar);
+        tabToolbars.add(changeToolbar);
+        tabToolbars.add(styleToolbar);
+        tabToolbars.add(setDestToolbar);
 
         return bookmarksPanel;
     }
@@ -2333,9 +2333,10 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         JPanel toolbarsPanel = createToolbarsPanel();
         add(toolbarsPanel, BorderLayout.NORTH);
 
-        leftTabbedPane = new JTabbedPane();
+        leftTabbedPane = new JTabbedPane(JTabbedPane.LEFT);
         leftTabbedPane.add(Res.getString("BOOKMARKS_TAB_TITLE"),
                 createBookmarksPanel());
+        leftTabbedPane.setTabComponentAt(0, tabToolbars);
 
         JPanel centralPanel = new JPanel(new BorderLayout());
         centralPanel.add((Component) viewPanel, BorderLayout.CENTER);
@@ -2397,7 +2398,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 //		lblInheritZoom.setLabelFor(checkInheritZoom);
 
         centralSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                true, leftTabbedPane, centralPanel);
+                false, leftTabbedPane, centralPanel);
+        centralSplit.setOneTouchExpandable(true);
         centralSplit.setTransferHandler(new FilesTransferHandler());
         centralSplit.setDividerLocation(userPrefs.getSplitterLocation());
         add(centralSplit, BorderLayout.CENTER);
@@ -2425,13 +2427,13 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             int response = JOptionPane.showConfirmDialog(this, message, title,
                     JOptionPane.YES_NO_OPTION);
             if (response == JOptionPane.YES_OPTION) {
-                    Bookmark b = new Bookmark();
-                    b.cloneDestination(bookmark);
-                    b.setRemoteDestination(false);
-                    File f = fileOperator.getFile();
-                    File absoluteFile = f.getAbsoluteFile();
-                    String target = absoluteFile.getParent() + File.separator + bookmark.getRemoteFilePath();
-                    f = new File(target);
+                Bookmark b = new Bookmark();
+                b.cloneDestination(bookmark);
+                b.setRemoteDestination(false);
+                File f = fileOperator.getFile();
+                File absoluteFile = f.getAbsoluteFile();
+                String target = absoluteFile.getParent() + File.separator + bookmark.getRemoteFilePath();
+                f = new File(target);
                 try {
                     String targetCanonical = f.getCanonicalPath();
                     JPdfBookmarks.launchNewGuiInstance(targetCanonical, b);
@@ -2630,6 +2632,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     }
 
     private class BookmarksTransferHandler extends TransferHandler {
+
         Bookmark selectedBookmark;
 
         // <editor-fold defaultstate="collapsed" desc="Export Methods">
