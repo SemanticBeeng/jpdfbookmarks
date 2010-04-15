@@ -2077,6 +2077,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         public void actionPerformed(ActionEvent arg0) {
             Ut.changeLAF(laf, JPdfBookmarksGui.this);
             lblInheritLeft.setUI(new VerticalLabelUI(false));
+            JOptionPane.showMessageDialog(JPdfBookmarksGui.this,
+                    Res.getString("LAF_CHANGED_RESTART_MANUALLY"));
             userPrefs.setLAF(laf);
         }
     }
@@ -2091,9 +2093,9 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         fileToolbar.add(saveAsAction);
         fileToolbar.add(closeAction);
 
-        JToolBar undoToolbar = new JToolBar();
-        undoToolbar.add(undoAction);
-        undoToolbar.add(redoAction);
+//        JToolBar undoToolbar = new JToolBar();
+//        undoToolbar.add(undoAction);
+//        undoToolbar.add(redoAction);
 
         navigationToolbar = new JToolBar();
         JButton btn = navigationToolbar.add(goFirstPageAction);
@@ -2191,7 +2193,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         webToolbar.add(readOnlineManualAction);
 
         toolbarsPanel.add(fileToolbar);
-        toolbarsPanel.add(undoToolbar);
+        //toolbarsPanel.add(undoToolbar);
         toolbarsPanel.add(fitTypeToolbar);
         toolbarsPanel.add(zoomToolbar);
         toolbarsPanel.add(navigationToolbar);
@@ -2259,7 +2261,11 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                 TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
         bookmarksTree.setShowsRootHandles(true);
         bookmarksTree.setRootVisible(true);
-        bookmarksScroller.setViewportView(bookmarksTree);
+        JPanel bookmarksScrollerPanel = new JPanel(new BorderLayout());
+        bookmarksScrollerPanel.add(bookmarksTree, BorderLayout.CENTER);
+        bookmarksScrollerPanel.add(tabToolbars, BorderLayout.WEST);
+        //bookmarksScroller.setViewportView(bookmarksTree);
+        bookmarksScroller.setViewportView(bookmarksScrollerPanel);
 
         MouseAdapter mouseAdapter = new MouseOverTree();
         bookmarksTree.addMouseMotionListener(mouseAdapter);
@@ -2284,6 +2290,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         bookmarksScroller = new JScrollPane();
         setEmptyBookmarksTree();
 
+//        bookmarksPanel.add(tabToolbarsScroller, BorderLayout.WEST);
         bookmarksPanel.add(bookmarksScroller, BorderLayout.CENTER);
         // bookmarksPanel.add(toolbarsPanel, BorderLayout.NORTH);
 
@@ -2296,6 +2303,10 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         JToolBar changeToolbar = new JToolBar(JToolBar.VERTICAL);
         changeToolbar.add(renameAction);
         changeToolbar.add(deleteAction);
+
+        JToolBar undoToolbar = new JToolBar(JToolBar.VERTICAL);
+        undoToolbar.add(undoAction);
+        undoToolbar.add(redoAction);
 
         JToolBar styleToolbar = new JToolBar(JToolBar.VERTICAL);
         tbBold = new JToggleButton(setBoldAction);
@@ -2312,6 +2323,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
         tabToolbars.add(addToolbar);
         tabToolbars.add(changeToolbar);
+        tabToolbars.add(undoToolbar);
         tabToolbars.add(styleToolbar);
         tabToolbars.add(setDestToolbar);
 
@@ -2333,10 +2345,10 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         JPanel toolbarsPanel = createToolbarsPanel();
         add(toolbarsPanel, BorderLayout.NORTH);
 
-        leftTabbedPane = new JTabbedPane(JTabbedPane.LEFT);
+        leftTabbedPane = new JTabbedPane(JTabbedPane.TOP);
         leftTabbedPane.add(Res.getString("BOOKMARKS_TAB_TITLE"),
                 createBookmarksPanel());
-        leftTabbedPane.setTabComponentAt(0, tabToolbars);
+//        leftTabbedPane.setTabComponentAt(0, tabToolbars);
 
         JPanel centralPanel = new JPanel(new BorderLayout());
         centralPanel.add((Component) viewPanel, BorderLayout.CENTER);
