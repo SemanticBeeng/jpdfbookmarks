@@ -36,8 +36,6 @@ public class Prefs {
 
 	private Preferences userPrefs = Preferences.userNodeForPackage(getClass());
 
-	private final String LANGUAGE = "LANGUAGE";
-	private final String COUNTRY = "COUNTRY";
 	private final String WINDOW_STATE = "WINDOW_STATE";
 	private final String MAXIMIZED = "MAXIMIZED";
 	private final String LAF = "LAF";
@@ -61,12 +59,34 @@ public class Prefs {
 	private final String CHECK_UPDATES_ON_START = "CHECK_UPDATES_ON_START";
         private final String CONFIRM_WEB_ACCESS = "CONFIRM_WEB_ACCESS";
 
+        public static final String SHOW_FILE_TB = "SHOW_FILE_TB";
+        public static final String SHOW_FITTYPE_TB = "SHOW_FITTYPE_TB";
+        public static final String SHOW_ZOOM_TB = "SHOW_ZOOM_TB";
+        public static final String SHOW_NAVIGATION_TB = "SHOW_NAVIGATION_TB";
+        public static final String SHOW_OTHERS_TB = "SHOW_OTHERS_TB";
+        public static final String SHOW_WEB_TB = "SHOW_WEB_TB";
+        
+        public static final String SHOW_ADD_TB = "SHOW_ADD_TB";
+        public static final String SHOW_CHANGE_TB = "SHOW_CHANGE_TB";
+        public static final String SHOW_STYLE_TB = "SHOW_STYLE_TB";
+        public static final String SHOW_UNDO_TB = "SHOW_UNDO_TB";
+        public static final String SHOW_SETDEST_TB = "SHOW_SETDEST_TB";
+
+
 	private Dimension screenSize = null;
 
 
 	Prefs() {
 	}
-	
+
+        public boolean getShowToolbar(String name) {
+            return userPrefs.getBoolean(name, true);
+        }
+
+        public void setShowToolbar(String name, boolean value) {
+            userPrefs.putBoolean(name, value);
+        }
+
 	public boolean getUseProxy() {
 		return userPrefs.getBoolean(USE_PROXY, false);
 	}

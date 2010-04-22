@@ -21,24 +21,39 @@
  */
 package it.flavianopetrocchi.jpdfbookmarks;
 
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.JOptionPane;
+import javax.swing.JToolBar;
+import javax.swing.SwingUtilities;
 
 public class OptionsDlg extends javax.swing.JDialog {
+    public final static int GENERAL_PANEL = 0;
+    public final static int PROXY_PANEL = 1;
+    public final static int TOOLBARS_PANEL = 2;
 
-    Prefs userPrefs = new Prefs();
-    GeneralOptionsPanel generalOptions = new GeneralOptionsPanel(userPrefs);
-    ConnectionOptionsPanel connectionOptions = new ConnectionOptionsPanel(userPrefs);
+    private Prefs userPrefs = new Prefs();
+    private GeneralOptionsPanel generalOptions = new GeneralOptionsPanel(userPrefs);
+    private ConnectionOptionsPanel connectionOptions = new ConnectionOptionsPanel(userPrefs);
+    private ToolbarsOptionsPanel toolbarsOptions = new ToolbarsOptionsPanel(userPrefs);
+    private JPdfBookmarksGui gui;
+
 
     /** Creates new form OptionsDlg */
     public OptionsDlg(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
-
+        gui = (JPdfBookmarksGui) parent;
         mainTabPane.addTab(Res.getString("TAB_GENERAL_OPTIONS"), generalOptions);
         mainTabPane.setMnemonicAt(0, Res.mnemonicFromRes("TAB_GENERAL_OPTIONS_MNEMONIC"));
         mainTabPane.addTab(Res.getString("TAB_CONNECTION_OPTIONS"), connectionOptions);
         mainTabPane.setMnemonicAt(0, Res.mnemonicFromRes("TAB_CONNECTION_OPTIONS_MNEMONIC"));
+        mainTabPane.add(Res.getString("TAB_TOOLBARS_MANAGER"), toolbarsOptions);
         pack();
+    }
+
+    public void setVisibleTab(int tab) {
+        mainTabPane.setSelectedIndex(tab);
     }
 
     private boolean checkDifferentValuesAndEmptyValues() {
@@ -158,6 +173,9 @@ public class OptionsDlg extends javax.swing.JDialog {
 
             userPrefs.setNeverAskWebAccess(connectionOptions.neverAskWebAccess());
 
+            toolbarsOptions.saveToolbarPreferences();
+            gui.updateToolbars();
+            
             dispose();
 	}//GEN-LAST:event_btnOkActionPerformed
 
@@ -165,25 +183,6 @@ public class OptionsDlg extends javax.swing.JDialog {
             dispose();
 	}//GEN-LAST:event_btnCancelActionPerformed
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-
-            public void run() {
-                OptionsDlg dialog = new OptionsDlg(new javax.swing.JFrame(), true);
-                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-
-                    @Override
-                    public void windowClosing(java.awt.event.WindowEvent e) {
-                        System.exit(0);
-                    }
-                });
-                dialog.setVisible(true);
-            }
-        });
-    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCancel;
     private javax.swing.JButton btnOk;

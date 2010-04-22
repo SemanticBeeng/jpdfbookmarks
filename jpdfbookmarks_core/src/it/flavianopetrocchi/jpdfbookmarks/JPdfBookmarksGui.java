@@ -76,8 +76,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -120,6 +122,7 @@ import javax.swing.SwingWorker;
 import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.TreeExpansionEvent;
@@ -206,7 +209,12 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     private JToggleButton tbSelectText;
     private JToggleButton tbConnectToClipboard;
     private JPanel bookmarksPanel;
-    JPanel tabToolbars = new JPanel(new WrapFlowLayout(WrapFlowLayout.LEFT));// </editor-fold>
+    private JPanel bookmarksToolbarsPanel = new JPanel(new WrapFlowLayout(WrapFlowLayout.LEFT));
+    private HashMap<String, JToolBar> mainToolbars = new HashMap<String, JToolBar>();
+    private HashMap<String, JToolBar> bookmarksToolbars = new HashMap<String, JToolBar>();
+    private JPanel mainToolbarsPanel = new JPanel(new WrapFlowLayout(WrapFlowLayout.LEFT));// </editor-fold>
+
+
     // <editor-fold defaultstate="collapsed" desc="Actions">
     private Action quitAction;
     //File actions
@@ -1671,6 +1679,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                 OptionsDlg optionsDlg = new OptionsDlg(JPdfBookmarksGui.this,
                         true);
                 optionsDlg.setLocationRelativeTo(JPdfBookmarksGui.this);
+                //optionsDlg.setVisibleTab(OptionsDlg.TOOLBARS_PANEL);
                 optionsDlg.setVisible(true);
             }
         };
@@ -1976,6 +1985,14 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         JMenu menuWindow = new JMenu(Res.getString("MENU_WINDOW"));
         menuWindow.setMnemonic(Res.mnemonicFromRes("MENU_WINDOW_MNEMONIC"));
         menuWindow.add(menuSetLAF);
+//        menuWindow.addSeparator();
+//        JMenu menuShowMainToolbars = new JMenu(Res.getString("MENU_SHOW_MAIN_TOOLBARS"));
+//        menuShowMainToolbars.setMnemonic(Res.mnemonicFromRes("MENU_SHOW_MAIN_TOOLBARS_MNEMONIC"));
+//        menuWindow.add(menuShowMainToolbars);
+//
+//        JMenu menuShowBookmarksToolbars = new JMenu(Res.getString("MENU_SHOW_BOOKMARKS_TOOLBARS"));
+//        menuShowBookmarksToolbars.setMnemonic(Res.mnemonicFromRes("MENU_SHOW_BOOKMARKS_TOOLBARS_MNEMONIC"));
+//        menuWindow.add(menuShowBookmarksToolbars);
 
         menuBar.add(menuWindow);
 
@@ -2074,6 +2091,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             laf = lookAndFeelClass;
         }
 
+        @Override
         public void actionPerformed(ActionEvent arg0) {
             Ut.changeLAF(laf, JPdfBookmarksGui.this);
             lblInheritLeft.setUI(new VerticalLabelUI(false));
@@ -2084,14 +2102,14 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     }
 
     private JPanel createToolbarsPanel() {
-        JPanel toolbarsPanel = new JPanel(
-                new WrapFlowLayout(WrapFlowLayout.LEFT));
+        
 
         JToolBar fileToolbar = new JToolBar();
         fileToolbar.add(openAction);
         fileToolbar.add(saveAction);
         fileToolbar.add(saveAsAction);
         fileToolbar.add(closeAction);
+        mainToolbars.put(Prefs.SHOW_FILE_TB, fileToolbar);
 
 //        JToolBar undoToolbar = new JToolBar();
 //        undoToolbar.add(undoAction);
@@ -2100,6 +2118,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         navigationToolbar = new JToolBar();
         JButton btn = navigationToolbar.add(goFirstPageAction);
         btn = navigationToolbar.add(goPreviousPageAction);
+        mainToolbars.put(Prefs.SHOW_NAVIGATION_TB, navigationToolbar);
 
         txtGoToPage = new IntegerTextField(4);
         txtGoToPage.setText("0");
@@ -2120,7 +2139,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         btn = navigationToolbar.add(goLastPageAction);
 
         JToolBar fitTypeToolbar = new JToolBar();
-
+        mainToolbars.put(Prefs.SHOW_FITTYPE_TB, fitTypeToolbar);
         zoomButtonsGroup = new ButtonGroup();
 
         tbFitWidth = new JToggleButton(fitWidthAction);
@@ -2154,6 +2173,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         zoomButtonsGroup.add(tbFitRect);
 
         JToolBar zoomToolbar = new JToolBar();
+        mainToolbars.put(Prefs.SHOW_ZOOM_TB, zoomToolbar);
         btn = zoomToolbar.add(zoomInAction);
         txtZoom = new IntegerTextField(4);
         txtZoom.setText("0");
@@ -2173,6 +2193,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         btn = zoomToolbar.add(zoomOutAction);
 
         JToolBar othersToolbar = new JToolBar();
+        mainToolbars.put(Prefs.SHOW_OTHERS_TB, othersToolbar);
         tbSelectText = new JToggleButton(selectText);
         tbSelectText.setText("");
         othersToolbar.add(tbSelectText);
@@ -2188,19 +2209,53 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         othersToolbar.add(applyPageOffset);
 
         JToolBar webToolbar = new JToolBar();
+        mainToolbars.put(Prefs.SHOW_WEB_TB, webToolbar);
         webToolbar.add(checkUpdatesAction);
         webToolbar.add(goToAuthorBlog);
         webToolbar.add(readOnlineManualAction);
 
-        toolbarsPanel.add(fileToolbar);
+        mainToolbarsPanel.add(fileToolbar);
         //toolbarsPanel.add(undoToolbar);
-        toolbarsPanel.add(fitTypeToolbar);
-        toolbarsPanel.add(zoomToolbar);
-        toolbarsPanel.add(navigationToolbar);
-        toolbarsPanel.add(othersToolbar);
-        toolbarsPanel.add(webToolbar);
+        mainToolbarsPanel.add(fitTypeToolbar);
+        mainToolbarsPanel.add(zoomToolbar);
+        mainToolbarsPanel.add(navigationToolbar);
+        mainToolbarsPanel.add(othersToolbar);
+        mainToolbarsPanel.add(webToolbar);
 
-        return toolbarsPanel;
+        return mainToolbarsPanel;
+    }
+
+    public void updateToolbars() {
+        for (Map.Entry<String, JToolBar> e : mainToolbars.entrySet()) {
+            JToolBar toolbar = e.getValue();
+            String prefsKey = e.getKey();
+            toolbar.setVisible(userPrefs.getShowToolbar(prefsKey));
+        }
+        
+        boolean foundVisibleToolbar = false;
+        for (JToolBar toolbar : mainToolbars.values()) {
+            if (toolbar.isVisible()) {
+                foundVisibleToolbar = true;
+                break;
+            }
+        }      
+        mainToolbarsPanel.setVisible(foundVisibleToolbar);
+
+        for (Map.Entry<String, JToolBar> e : bookmarksToolbars.entrySet()) {
+            JToolBar toolbar = e.getValue();
+            String prefsKey = e.getKey();
+            toolbar.setVisible(userPrefs.getShowToolbar(prefsKey));
+        }
+
+        foundVisibleToolbar = false;
+        for (JToolBar toolbar : bookmarksToolbars.values()) {
+            if (toolbar.isVisible()) {
+                foundVisibleToolbar = true;
+                break;
+            }
+        }
+        bookmarksToolbarsPanel.setVisible(foundVisibleToolbar);
+
     }
 
     private JPanel createStatusBar() {
@@ -2263,7 +2318,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         bookmarksTree.setRootVisible(true);
         JPanel bookmarksScrollerPanel = new JPanel(new BorderLayout());
         bookmarksScrollerPanel.add(bookmarksTree, BorderLayout.CENTER);
-        bookmarksScrollerPanel.add(tabToolbars, BorderLayout.WEST);
+        bookmarksScrollerPanel.add(bookmarksToolbarsPanel, BorderLayout.WEST);
         //bookmarksScroller.setViewportView(bookmarksTree);
         bookmarksScroller.setViewportView(bookmarksScrollerPanel);
 
@@ -2295,20 +2350,24 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         // bookmarksPanel.add(toolbarsPanel, BorderLayout.NORTH);
 
         JToolBar addToolbar = new JToolBar(JToolBar.VERTICAL);
+        bookmarksToolbars.put(Prefs.SHOW_ADD_TB, addToolbar);
         addToolbar.add(addSiblingAction);
         addToolbar.add(addChildAction);
 //		addToolbar.add(setDestFromViewAction);
 //		addToolbar.add(addWebLinkAction);
 
         JToolBar changeToolbar = new JToolBar(JToolBar.VERTICAL);
+        bookmarksToolbars.put(Prefs.SHOW_CHANGE_TB, changeToolbar);
         changeToolbar.add(renameAction);
         changeToolbar.add(deleteAction);
 
         JToolBar undoToolbar = new JToolBar(JToolBar.VERTICAL);
+        bookmarksToolbars.put(Prefs.SHOW_UNDO_TB, undoToolbar);
         undoToolbar.add(undoAction);
         undoToolbar.add(redoAction);
 
         JToolBar styleToolbar = new JToolBar(JToolBar.VERTICAL);
+        bookmarksToolbars.put(Prefs.SHOW_STYLE_TB, styleToolbar);
         tbBold = new JToggleButton(setBoldAction);
         tbBold.setText("");
         styleToolbar.add(tbBold);
@@ -2318,14 +2377,16 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         styleToolbar.add(changeColorAction);
 
         JToolBar setDestToolbar = new JToolBar(JToolBar.VERTICAL);
+        bookmarksToolbars.put(Prefs.SHOW_SETDEST_TB, setDestToolbar);
+
         setDestToolbar.add(addWebLinkAction);
         setDestToolbar.add(setDestFromViewAction);
 
-        tabToolbars.add(addToolbar);
-        tabToolbars.add(changeToolbar);
-        tabToolbars.add(undoToolbar);
-        tabToolbars.add(styleToolbar);
-        tabToolbars.add(setDestToolbar);
+        bookmarksToolbarsPanel.add(addToolbar);
+        bookmarksToolbarsPanel.add(changeToolbar);
+        bookmarksToolbarsPanel.add(undoToolbar);
+        bookmarksToolbarsPanel.add(styleToolbar);
+        bookmarksToolbarsPanel.add(setDestToolbar);
 
         return bookmarksPanel;
     }
@@ -2418,6 +2479,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
         add(createStatusBar(), BorderLayout.SOUTH);
 
+        updateToolbars();
     }
 
     private void followBookmarkInView(Bookmark bookmark) {

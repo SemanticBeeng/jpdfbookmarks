@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
@@ -95,6 +96,13 @@ public class Ut {
         for (JComponent component : components) {
             component.setEnabled(enabled);
         }
+    }
+
+    public static void setSelectedButtons(boolean selected, AbstractButton... buttons) {
+        for (AbstractButton button : buttons) {
+            button.setSelected(selected);
+        }
+
     }
 
     public static byte[] getBytesFromFile(File file) throws IOException {
