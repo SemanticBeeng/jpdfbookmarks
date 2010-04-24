@@ -198,6 +198,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     private ExtendedUndoManager undoManager;
     private UndoableEditSupport undoSupport;
     private JPopupMenu treeMenu;
+    private JPopupMenu toolbarsPanelsMenu;
     private JColorChooser colorChooser;
     private JProgressBar progressBar;
     private Box busyPanel;
@@ -212,9 +213,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     private JPanel bookmarksToolbarsPanel = new JPanel(new WrapFlowLayout(WrapFlowLayout.LEFT));
     private HashMap<String, JToolBar> mainToolbars = new HashMap<String, JToolBar>();
     private HashMap<String, JToolBar> bookmarksToolbars = new HashMap<String, JToolBar>();
-    private JPanel mainToolbarsPanel = new JPanel(new WrapFlowLayout(WrapFlowLayout.LEFT));// </editor-fold>
-
-
+    private JPanel mainToolbarsPanel = new JPanel(new WrapFlowLayout(WrapFlowLayout.LEFT));
+    private ToolbarsPopupListener toolbarsPopupListener = new ToolbarsPopupListener();// </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Actions">
     private Action quitAction;
     //File actions
@@ -2021,7 +2021,40 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
         menuBar.add(menuHelp);
 
+        toolbarsPanelsMenu = new JPopupMenu();
+        JMenuItem toolbarsManagerItem = new JMenuItem(Res.getString("TAB_TOOLBARS_MANAGER") + "...");
+        toolbarsManagerItem.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                OptionsDlg optionsDlg = new OptionsDlg(JPdfBookmarksGui.this,
+                        true);
+                optionsDlg.setLocationRelativeTo(JPdfBookmarksGui.this);
+                optionsDlg.setVisibleTab(OptionsDlg.TOOLBARS_PANEL);
+                optionsDlg.setVisible(true);
+            }
+        });
+        toolbarsPanelsMenu.add(toolbarsManagerItem);
+
         return menuBar;
+    }
+
+    private class ToolbarsPopupListener extends MouseAdapter {
+
+        public void mousePressed(MouseEvent e) {
+            maybeShowPopup(e);
+        }
+
+        public void mouseReleased(MouseEvent e) {
+            maybeShowPopup(e);
+        }
+
+        private void maybeShowPopup(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                toolbarsPanelsMenu.show(e.getComponent(),
+                        e.getX(), e.getY());
+            }
+        }
     }
 
     private void createTreeMenu() {
@@ -2102,7 +2135,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     }
 
     private JPanel createToolbarsPanel() {
-        
+
 
         JToolBar fileToolbar = new JToolBar();
         fileToolbar.add(openAction);
@@ -2222,6 +2255,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         mainToolbarsPanel.add(othersToolbar);
         mainToolbarsPanel.add(webToolbar);
 
+        mainToolbarsPanel.addMouseListener(toolbarsPopupListener);
+
         return mainToolbarsPanel;
     }
 
@@ -2231,14 +2266,14 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             String prefsKey = e.getKey();
             toolbar.setVisible(userPrefs.getShowToolbar(prefsKey));
         }
-        
+
         boolean foundVisibleToolbar = false;
         for (JToolBar toolbar : mainToolbars.values()) {
             if (toolbar.isVisible()) {
                 foundVisibleToolbar = true;
                 break;
             }
-        }      
+        }
         mainToolbarsPanel.setVisible(foundVisibleToolbar);
 
         for (Map.Entry<String, JToolBar> e : bookmarksToolbars.entrySet()) {
@@ -2387,6 +2422,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         bookmarksToolbarsPanel.add(undoToolbar);
         bookmarksToolbarsPanel.add(styleToolbar);
         bookmarksToolbarsPanel.add(setDestToolbar);
+
+        bookmarksToolbarsPanel.addMouseListener(toolbarsPopupListener);
 
         return bookmarksPanel;
     }
