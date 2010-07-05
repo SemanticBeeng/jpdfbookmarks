@@ -210,7 +210,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     private JToggleButton tbSelectText;
     private JToggleButton tbConnectToClipboard;
     private JPanel bookmarksPanel;
-    private JPanel bookmarksToolbarsPanel = new JPanel(new WrapFlowLayout(WrapFlowLayout.LEFT));
+    private JPanel bookmarksToolbarsPanel = new JPanel(/*new WrapFlowLayout(WrapFlowLayout.LEFT)*/);
     private HashMap<String, JToolBar> mainToolbars = new HashMap<String, JToolBar>();
     private HashMap<String, JToolBar> bookmarksToolbars = new HashMap<String, JToolBar>();
     private JPanel mainToolbarsPanel = new JPanel(new WrapFlowLayout(WrapFlowLayout.LEFT));
@@ -2353,8 +2353,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         bookmarksTree.setRootVisible(true);
         JPanel bookmarksScrollerPanel = new JPanel(new BorderLayout());
         bookmarksScrollerPanel.add(bookmarksTree, BorderLayout.CENTER);
-        bookmarksScrollerPanel.add(bookmarksToolbarsPanel, BorderLayout.WEST);
-        //bookmarksScroller.setViewportView(bookmarksTree);
+        //bookmarksScrollerPanel.add(bookmarksToolbarsPanel, BorderLayout.WEST);
         bookmarksScroller.setViewportView(bookmarksScrollerPanel);
 
         MouseAdapter mouseAdapter = new MouseOverTree();
@@ -2380,9 +2379,9 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         bookmarksScroller = new JScrollPane();
         setEmptyBookmarksTree();
 
-//        bookmarksPanel.add(tabToolbarsScroller, BorderLayout.WEST);
         bookmarksPanel.add(bookmarksScroller, BorderLayout.CENTER);
-        // bookmarksPanel.add(toolbarsPanel, BorderLayout.NORTH);
+        bookmarksToolbarsPanel.setLayout(new BoxLayout(bookmarksToolbarsPanel, BoxLayout.Y_AXIS));
+        bookmarksPanel.add(bookmarksToolbarsPanel, BorderLayout.WEST);
 
         JToolBar addToolbar = new JToolBar(JToolBar.VERTICAL);
         bookmarksToolbars.put(Prefs.SHOW_ADD_TB, addToolbar);
