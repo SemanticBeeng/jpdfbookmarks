@@ -37,10 +37,10 @@ public class Applier extends OutlinePresentation {
 		super(pdf, indent, pageSep, attributesSep);
 	}
 
-	void loadBookmarksFile(String bookmarksFilePath) 
+	void loadBookmarksFile(String bookmarksFilePath, String charset)
 			throws FileNotFoundException, IOException {
 		root = Bookmark.outlineFromFile(pdf, bookmarksFilePath,
-				getIndentationString(), getPageSep(), getAttributesSep());
+				getIndentationString(), getPageSep(), getAttributesSep(), charset);
 	}
 
 	void save(String outputFilePath) throws IOException {

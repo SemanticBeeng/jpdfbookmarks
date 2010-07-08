@@ -62,10 +62,13 @@ import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.net.Authenticator;
 import java.net.HttpURLConnection;
@@ -1085,7 +1088,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             Bookmark root = Bookmark.outlineFromFile(converter,
                     file.getAbsolutePath(), userPrefs.getIndentationString(),
                     userPrefs.getPageSeparator(),
-                    userPrefs.getAttributesSeparator());
+                    userPrefs.getAttributesSeparator(), userPrefs.getCharsetEncoding());
             converter.close();
             UndoableLoadBookmarks undoableLoad = new UndoableLoadBookmarks(
                     bookmarksTreeModel, bookmarksTree, root);
@@ -1288,12 +1291,18 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         String hierarchy = dumper.getBookmarks(
                 (Bookmark) bookmarksTreeModel.getRoot());
 
-        FileWriter writer = null;
+        //FileWriter writer = null;
         try {
-            writer = new FileWriter(f);
-            writer.append(hierarchy);
-            writer.flush();
-            writer.close();
+            FileOutputStream fos = new FileOutputStream(f);
+            OutputStreamWriter outStream = new OutputStreamWriter(fos, userPrefs.getCharsetEncoding());
+            BufferedWriter bufWrite = new BufferedWriter(outStream);
+            //writer = new FileWriter(f);
+//            writer.append(hierarchy);
+//            writer.flush();
+//            writer.close();
+            bufWrite.append(hierarchy);
+            bufWrite.flush();
+            bufWrite.close();
         } catch (Exception exc) {
             JOptionPane.showMessageDialog(this,
                     Res.getString("ERROR_SAVING_FILE"),

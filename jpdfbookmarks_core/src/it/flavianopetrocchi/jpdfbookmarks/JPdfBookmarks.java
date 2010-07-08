@@ -30,8 +30,10 @@ import java.io.PrintWriter;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
 import java.security.Security;
 import java.util.List;
+import java.util.Map;
 import javax.swing.JOptionPane;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -87,11 +89,11 @@ class JPdfBookmarks {
     private Bookmark firstTargetBookmark = null;
     private String firstTargetString = null;
     private boolean silentMode = false;
+    private String charset = Charset.defaultCharset().displayName();
     private String showOnOpenArg = null;// </editor-fold>
 
     //<editor-fold defaultstate="expanded" desc="public methods">
     public static void main(String[] args) {
-        //java.util.Locale.setDefault(java.util.Locale.ENGLISH);
         JPdfBookmarks app = new JPdfBookmarks();
         app.start(args);
     }
@@ -176,7 +178,7 @@ class JPdfBookmarks {
                 } else if (mode == Mode.APPLY) {
                     Applier applier = new Applier(pdf, indentationString,
                             pageSeparator, attributesSeparator);
-                    applier.loadBookmarksFile(bookmarksFilePath);
+                    applier.loadBookmarksFile(bookmarksFilePath, charset);
                     if (outputFilePath == null || outputFilePath.equals(inputFilePath)) {
                         if (getYesOrNo(Res.getString(
                                 "ERR_INFILE_EQUAL_OUTFILE"))) {
@@ -332,6 +334,13 @@ class JPdfBookmarks {
             if (cmd.hasOption("f")) {
                 silentMode = true;
             }
+            if (cmd.hasOption("e")) {
+                charset = cmd.getOptionValue("e");
+                if (!Charset.isSupported(charset)) {
+                    throw new ParseException(
+                            Res.getString("ERR_CHARSET_NOT_SUPPORTED"));
+                }
+            }
 
             if (pageSeparator.equals(indentationString)
                     || pageSeparator.equals(attributesSeparator)
@@ -395,6 +404,7 @@ class JPdfBookmarks {
         appOptions.addOption(OptionBuilder.withLongOpt("dump").withDescription(Res.getString("DUMP_DESCR")).create('d'));
         appOptions.addOption(OptionBuilder.withLongOpt("apply").hasArg(true).withArgName("bookmarks.txt").withDescription(Res.getString("APPLY_DESCR")).create('a'));
         appOptions.addOption(OptionBuilder.withLongOpt("out").hasArg(true).withArgName("output.pdf").withDescription(Res.getString("OUT_DESCR")).create('o'));
+        appOptions.addOption(OptionBuilder.withLongOpt("encoding").hasArg(true).withArgName("UTF-8").withDescription(Res.getString("ENCODING_DESCR")).create('e'));
 //        appOptions.addOption(OptionBuilder.withLongOpt("show-on-open").hasArg(true)
 //                .withArgName("YES | NO | CHECK")
 //                .withDescription(Res.getString("SHOW_ON_OPEN_DESCR")).create('w'));

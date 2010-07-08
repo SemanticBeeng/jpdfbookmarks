@@ -25,9 +25,11 @@ import it.flavianopetrocchi.colors.Colors;
 import it.flavianopetrocchi.utilities.Ut;
 import java.awt.Color;
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -645,14 +647,9 @@ public class Bookmark extends DefaultMutableTreeNode {
         return bookmark;
     }
 
-    public static Bookmark outlineFromFile(IBookmarksConverter converter, String bookmarksFile)
-            throws FileNotFoundException, IOException {
-        return outlineFromFile(converter, bookmarksFile, "\t", "/", ",");
-    }
-
     public static Bookmark outlineFromFile(IBookmarksConverter converter,
             String bookmarksFile, String indentation, String pageSeparator,
-            String attributesSeparator)
+            String attributesSeparator, String charset)
             throws FileNotFoundException, IOException {
 
         ArrayList<Bookmark> fathers = new ArrayList<Bookmark>(8);
@@ -661,7 +658,9 @@ public class Bookmark extends DefaultMutableTreeNode {
         Bookmark newOutline = new Bookmark();
         fathers.add(newOutline);
 
-        BufferedReader br = new BufferedReader(new FileReader(bookmarksFile));
+        //BufferedReader br = new BufferedReader(new FileReader(bookmarksFile));
+        BufferedReader br = new BufferedReader(new InputStreamReader(
+                new FileInputStream(bookmarksFile), charset));
 
         String line;
         int fatherIndex = 0;

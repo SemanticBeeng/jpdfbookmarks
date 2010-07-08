@@ -36,6 +36,7 @@ public class OptionsDlg extends javax.swing.JDialog {
     private GeneralOptionsPanel generalOptions = new GeneralOptionsPanel(userPrefs);
     private ConnectionOptionsPanel connectionOptions = new ConnectionOptionsPanel(userPrefs);
     private ToolbarsOptionsPanel toolbarsOptions = new ToolbarsOptionsPanel(userPrefs);
+//    private EncodingOptionsPanel encodingOptions = new EncodingOptionsPanel(userPrefs);
     private JPdfBookmarksGui gui;
 
 
@@ -49,6 +50,8 @@ public class OptionsDlg extends javax.swing.JDialog {
         mainTabPane.addTab(Res.getString("TAB_CONNECTION_OPTIONS"), connectionOptions);
         mainTabPane.setMnemonicAt(0, Res.mnemonicFromRes("TAB_CONNECTION_OPTIONS_MNEMONIC"));
         mainTabPane.add(Res.getString("TAB_TOOLBARS_MANAGER"), toolbarsOptions);
+//        mainTabPane.setMnemonicAt(0, Res.mnemonicFromRes("TAB_ENCODING_OPTIONS_MNEMONIC"));
+//        mainTabPane.add(Res.getString("TAB_ENCODING_OPTIONS"), encodingOptions);
         pack();
     }
 
@@ -163,6 +166,7 @@ public class OptionsDlg extends javax.swing.JDialog {
             userPrefs.setAttributesSeparator(sep);
             userPrefs.setConvertNamedDestinations(generalOptions.convertNamedDestinations());
             userPrefs.setUseThousandths(generalOptions.useThousandths());
+            userPrefs.setCharsetEncoding(generalOptions.getCharsetEncoding());
 
             userPrefs.setUseProxy(connectionOptions.useProxy());
             userPrefs.setProxyType(connectionOptions.getProxyType());

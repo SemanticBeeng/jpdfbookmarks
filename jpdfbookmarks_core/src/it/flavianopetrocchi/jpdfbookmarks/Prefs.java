@@ -25,6 +25,7 @@ package it.flavianopetrocchi.jpdfbookmarks;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Toolkit;
+import java.nio.charset.Charset;
 import java.util.prefs.Preferences;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
@@ -72,12 +73,23 @@ public class Prefs {
         public static final String SHOW_UNDO_TB = "SHOW_UNDO_TB";
         public static final String SHOW_SETDEST_TB = "SHOW_SETDEST_TB";
 
+        public static final String CHARSET_ENCODING = "CHARSET_ENCODING";
+
 
 	private Dimension screenSize = null;
 
 
 	Prefs() {
 	}
+
+        public String getCharsetEncoding() {
+            return userPrefs.get(CHARSET_ENCODING,
+                    Charset.defaultCharset().displayName());
+        }
+
+        public void setCharsetEncoding(String value) {
+            userPrefs.put(CHARSET_ENCODING, value);
+        }
 
         public boolean getShowToolbar(String name) {
             return userPrefs.getBoolean(name, true);

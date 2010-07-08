@@ -21,10 +21,13 @@
  */
 package it.flavianopetrocchi.jpdfbookmarks;
 
+import java.nio.charset.Charset;
+import java.util.Map;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import sun.awt.datatransfer.DataTransferer.CharsetComparator;
 
 public class GeneralOptionsPanel extends javax.swing.JPanel {
 
@@ -33,6 +36,9 @@ public class GeneralOptionsPanel extends javax.swing.JPanel {
             "\tParagraph 1/5,Red,bold,italic,closed,FitWidth,120\n" +
             "\t\tParagraph 1.1/9,Black,notBold,notItalic,closed,FitWidth,500\n" +
             "\tParagraph 2/13,Black,bold,italic,closed,FitWidth,250";
+    int defCharsetIndex = 0;
+    String defCharset = Charset.defaultCharset().displayName();
+    String defCharsetDecorated = defCharset + " (" + Res.getString("SYSTEM_DEFAULT") + ")";
 
     /** Creates new form GeneralOptionsPanel */
     public GeneralOptionsPanel(Prefs userPrefs) {
@@ -55,6 +61,28 @@ public class GeneralOptionsPanel extends javax.swing.JPanel {
         txtPageSeparator.getDocument().addDocumentListener(textListener);
         txtAttributesSeparator.getDocument().addDocumentListener(textListener);
         txtIndentationString.getDocument().addDocumentListener(textListener);
+        Map<String, Charset> charsets = Charset.availableCharsets();
+        for (String csName : charsets.keySet()) {
+            if (csName.equalsIgnoreCase(defCharset)) {
+                charsetsCombo.addItem(defCharsetDecorated);
+            } else {
+                charsetsCombo.addItem(csName);
+            }
+        }
+        String userCharset = userPrefs.getCharsetEncoding();
+        if (userCharset.equalsIgnoreCase(defCharset)) {
+            charsetsCombo.setSelectedItem(defCharsetDecorated);
+        } else {
+            charsetsCombo.setSelectedItem(userCharset);
+        }
+    }
+
+    public String getCharsetEncoding() {
+        String selection = (String) charsetsCombo.getSelectedItem();
+       if (selection.equalsIgnoreCase(defCharsetDecorated)) {
+           return defCharset;
+       }
+       return selection;
     }
 
     public String getAttributesSeparator() {
@@ -175,6 +203,8 @@ public class GeneralOptionsPanel extends javax.swing.JPanel {
         jLabel6 = new javax.swing.JLabel();
         checkConvertNamedDestinations = new javax.swing.JCheckBox();
         checkUseThousandthsUnits = new javax.swing.JCheckBox();
+        charsetsCombo = new javax.swing.JComboBox();
+        jLabel7 = new javax.swing.JLabel();
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("it/flavianopetrocchi/jpdfbookmarks/locales/localizedText"); // NOI18N
         valueSeparatorsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(bundle.getString("OPTIONS_SEPARATORS"))); // NOI18N
@@ -263,6 +293,8 @@ public class GeneralOptionsPanel extends javax.swing.JPanel {
         checkUseThousandthsUnits.setText(bundle.getString("CHECK_USE_THOUSANDTHS")); // NOI18N
         checkUseThousandthsUnits.setEnabled(false);
 
+        jLabel7.setText(bundle.getString("SELECT_ENCODING")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -270,13 +302,20 @@ public class GeneralOptionsPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(valueSeparatorsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
                         .addGap(20, 20, 20)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(checkUseThousandthsUnits)
-                            .addComponent(checkConvertNamedDestinations)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(valueSeparatorsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(checkConvertNamedDestinations)
+                                .addGap(14, 14, 14)
+                                .addComponent(checkUseThousandthsUnits)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 150, Short.MAX_VALUE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel7)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(charsetsCombo, 0, 345, Short.MAX_VALUE)))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -285,9 +324,13 @@ public class GeneralOptionsPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(valueSeparatorsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(checkConvertNamedDestinations)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(checkUseThousandthsUnits)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(checkConvertNamedDestinations)
+                    .addComponent(checkUseThousandthsUnits))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel7)
+                    .addComponent(charsetsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -302,6 +345,7 @@ public class GeneralOptionsPanel extends javax.swing.JPanel {
                     JOptionPane.WARNING_MESSAGE);
 }//GEN-LAST:event_checkConvertNamedDestinationsActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox charsetsCombo;
     private javax.swing.JCheckBox checkConvertNamedDestinations;
     private javax.swing.JCheckBox checkUseThousandthsUnits;
     private javax.swing.JLabel jLabel1;
@@ -310,6 +354,7 @@ public class GeneralOptionsPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextField txtAttributesSeparator;
     private javax.swing.JTextField txtIndentationString;
