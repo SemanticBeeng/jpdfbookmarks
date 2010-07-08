@@ -602,8 +602,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         UndoableCellEdit undoableCellEdit = new UndoableCellEdit(
                 bookmarksTreeModel, treeNode, value);
         undoableCellEdit.doEdit();
-        if (oldValue.equals(value) ||
-                oldValue.equals(Res.getString("DEFAULT_TITLE").trim())) {
+        if (oldValue.equals(value)
+                || oldValue.equals(Res.getString("DEFAULT_TITLE").trim())) {
         } else {
             undoSupport.postEdit(undoableCellEdit);
         }
@@ -682,11 +682,13 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     private void setProgressBar(String message) {
         lblStatus.setText(message);
         busyPanel.add(progressBar);
+        busyPanel.repaint();
     }
 
     private void removeProgressBar() {
         lblStatus.setText(" ");
         busyPanel.remove(progressBar);
+        busyPanel.repaint();
     }
 
     public void openFileAsync(final File file, final Bookmark target) {
@@ -727,8 +729,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                         }
                     });
                 } catch (Exception ex) {
-                    showErrorMessage(Res.getString("ERROR_OPENING_FILE") + " " +
-                            file.getName());
+                    showErrorMessage(Res.getString("ERROR_OPENING_FILE") + " "
+                            + file.getName());
                 } finally {
                     CursorToolkit.stopWaitCursor(tbBold);
                     removeProgressBar();
@@ -954,9 +956,55 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                 JOptionPane.ERROR_MESSAGE);
     }
 
+    private void saveAsync() {
+        setProgressBar(Res.getString("WAIT_SAVING_FILE"));
+        CursorToolkit.startWaitCursor(tbBold);
+
+        SwingWorker saver = new SwingWorker<Void, Void>() {
+
+            @Override
+            protected Void doInBackground() throws Exception {
+                if (!fileOperator.save((Bookmark) bookmarksTreeModel.getRoot())) {
+                    showErrorMessage(Res.getString("ERROR_SAVING_FILE"));
+                }
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                CursorToolkit.stopWaitCursor(tbBold);
+                removeProgressBar();
+            }
+        };
+        saver.execute();
+
+    }
+
     private void save() {
         if (!fileOperator.save((Bookmark) bookmarksTreeModel.getRoot())) {
             showErrorMessage(Res.getString("ERROR_SAVING_FILE"));
+        }
+    }
+
+    private class AsyncSaveAs extends SwingWorker {
+
+        File f;
+
+        public AsyncSaveAs(File f) {
+            this.f = f;
+        }
+
+        @Override
+        protected Object doInBackground() throws Exception {
+            fileOperator.saveAs((Bookmark) bookmarksTreeModel.getRoot(),
+                    f.getAbsolutePath());
+            return null;
+        }
+
+        @Override
+        protected void done() {
+            CursorToolkit.stopWaitCursor(tbBold);
+            removeProgressBar();
         }
     }
 
@@ -968,8 +1016,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         chooser.setCurrentDirectory(fileOperator.getFile().getParentFile());
 
 
-        if (chooser.showSaveDialog(JPdfBookmarksGui.this) !=
-                JFileChooser.APPROVE_OPTION) {
+        if (chooser.showSaveDialog(JPdfBookmarksGui.this)
+                != JFileChooser.APPROVE_OPTION) {
             return;
         }
 
@@ -997,8 +1045,11 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             }
         }
 
-        fileOperator.saveAs((Bookmark) bookmarksTreeModel.getRoot(),
-                f.getAbsolutePath());
+        setProgressBar(Res.getString("WAIT_SAVING_FILE"));
+        CursorToolkit.startWaitCursor(tbBold);
+        new AsyncSaveAs(f).execute();
+//        fileOperator.saveAs((Bookmark) bookmarksTreeModel.getRoot(),
+//                f.getAbsolutePath());
     }
 
     private void close() {
@@ -1018,8 +1069,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
         chooser.setDialogTitle(Res.getString("LOAD_DIALOG_TITLE"));
 
-        if (chooser.showOpenDialog(this) !=
-                JFileChooser.APPROVE_OPTION) {
+        if (chooser.showOpenDialog(this)
+                != JFileChooser.APPROVE_OPTION) {
             return;
         }
 
@@ -1160,8 +1211,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                 String[] newVersionNumbers = inputLine.split("\\.");
                 String[] thisVersionNumbers = JPdfBookmarks.VERSION.split("\\.");
                 for (int i = 0; i < newVersionNumbers.length; i++) {
-                    if (Integer.parseInt(newVersionNumbers[i]) >
-                            Integer.parseInt(thisVersionNumbers[i])) {
+                    if (Integer.parseInt(newVersionNumbers[i])
+                            > Integer.parseInt(thisVersionNumbers[i])) {
                         newVersionAvailable = true;
                     }
                 }
@@ -1203,8 +1254,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         chooser.setCurrentDirectory(fileOperator.getFile().getParentFile());
 
         chooser.setDialogTitle(Res.getString("DUMP_DIALOG_TITLE"));
-        if (chooser.showSaveDialog(this) !=
-                JFileChooser.APPROVE_OPTION) {
+        if (chooser.showSaveDialog(this)
+                != JFileChooser.APPROVE_OPTION) {
             return;
         }
         File f = chooser.getSelectedFile();
@@ -1317,7 +1368,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                 "ctrl S", "document-save.png", false) {
 
             public void actionPerformed(ActionEvent e) {
-                save();
+                //save();
+                saveAsync();
             }
         };
 
@@ -2523,8 +2575,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             return;
         }
 
-        lblSelectedNode.setText(Res.getString("SELECTED_BOOKMARK") + ": " +
-                bookmark.getDescription(userPrefs.getUseThousandths()));
+        lblSelectedNode.setText(Res.getString("SELECTED_BOOKMARK") + ": "
+                + bookmark.getDescription(userPrefs.getUseThousandths()));
 
         if (bookmark.isRemoteDestination()) {
             JPanel message = new JPanel();
@@ -2634,8 +2686,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             Object obj = overPath.getLastPathComponent();
             if (obj != null && obj instanceof Bookmark) {
                 Bookmark bookmark = (Bookmark) obj;
-                lblMouseOverNode.setText(Res.getString("MOUSE_OVER_BOOKMARK") +
-                        ": " + bookmark.getDescription(userPrefs.getUseThousandths()));
+                lblMouseOverNode.setText(Res.getString("MOUSE_OVER_BOOKMARK")
+                        + ": " + bookmark.getDescription(userPrefs.getUseThousandths()));
             }
         }
 
@@ -2659,8 +2711,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                 return;
             }
 
-            if (path != null && !e.isControlDown() && !e.isAltDown() &&
-                    !e.isShiftDown()) {
+            if (path != null && !e.isControlDown() && !e.isAltDown()
+                    && !e.isShiftDown()) {
                 Bookmark bookmark = null;
                 try {
                     bookmark = (Bookmark) path.getLastPathComponent();
