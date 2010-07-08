@@ -30,6 +30,7 @@ import java.io.PrintWriter;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.net.URISyntaxException;
+import java.security.Security;
 import java.util.List;
 import javax.swing.JOptionPane;
 import org.apache.commons.cli.CommandLine;
@@ -39,6 +40,7 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 /**
  * This is the main class of the application. It parses the command line and
@@ -84,6 +86,7 @@ class JPdfBookmarks {
     private String indentationString = "\t";
     private Bookmark firstTargetBookmark = null;
     private String firstTargetString = null;
+    private boolean silentMode = false;
     private String showOnOpenArg = null;// </editor-fold>
 
     //<editor-fold defaultstate="expanded" desc="public methods">
@@ -159,7 +162,11 @@ class JPdfBookmarks {
                                 pdf.save(inputFilePath);
                             }
                         } else {
-                            pdf.save(outputFilePath);
+                            File f = new File(outputFilePath);
+                            if (!f.exists()
+                                    || getYesOrNo(Res.getString("WARNING_OVERWRITE_CMD"))) {
+                                pdf.save(outputFilePath);
+                            }
                         }
                     }
                 } else if (mode == Mode.DUMP) {
@@ -176,7 +183,11 @@ class JPdfBookmarks {
                             applier.save(inputFilePath);
                         }
                     } else {
-                        applier.save(outputFilePath);
+                        File f = new File(outputFilePath);
+                        if (!f.exists()
+                                || getYesOrNo(Res.getString("WARNING_OVERWRITE_CMD"))) {
+                            applier.save(outputFilePath);
+                        }
                     }
                 } else if (mode == Mode.GUI) {
                     if (pdf != null) {
@@ -193,8 +204,8 @@ class JPdfBookmarks {
                     EventQueue.invokeLater(new GuiLauncher(inputFilePath, firstTargetBookmark));
                 } else {
                     if (inputFilePath != null) {
-                        err.println(Res.getString("ERROR_OPENING_FILE") + " " +
-                                inputFilePath);
+                        err.println(Res.getString("ERROR_OPENING_FILE") + " "
+                                + inputFilePath);
                     } else {
                         err.println(Res.getString("ERROR_STARTING_JPDFBOOKMARKS"));
                     }
@@ -241,9 +252,9 @@ class JPdfBookmarks {
     public void printHelpMessage() {
         HelpFormatter help = new HelpFormatter();
         String header = Res.getString("APP_DESCR");
-        String syntax = "jpdfbookmarks <input.pdf> " +
-                "[--dump | --apply <bookmarks.txt> | --show-on-open <YES | NO | CHECK> " +
-                "| --help | --version] [--out <output.pdf>]";
+        String syntax = "jpdfbookmarks <input.pdf> "
+                + "[--dump | --apply <bookmarks.txt> | --show-on-open <YES | NO | CHECK> "
+                + "| --help | --version] [--out <output.pdf>]";
         int width = 80;
         int leftPad = 1, descPad = 2;
         String footer = Res.getString("BOOKMARKS_DESCR");
@@ -318,10 +329,13 @@ class JPdfBookmarks {
             } else {
                 attributesSeparator = userPrefs.getAttributesSeparator();
             }
+            if (cmd.hasOption("f")) {
+                silentMode = true;
+            }
 
-            if (pageSeparator.equals(indentationString) ||
-                    pageSeparator.equals(attributesSeparator) ||
-                    indentationString.equals(attributesSeparator)) {
+            if (pageSeparator.equals(indentationString)
+                    || pageSeparator.equals(attributesSeparator)
+                    || indentationString.equals(attributesSeparator)) {
                 throw new ParseException(
                         Res.getString("ERR_OPTIONS_CONTRAST"));
             }
@@ -342,15 +356,17 @@ class JPdfBookmarks {
      * @param question Question to the user.
      * @return Yes will return true and No will return false.
      */
-    private static boolean getYesOrNo(String question) {
-
+    private boolean getYesOrNo(String question) {
+        if (silentMode) {
+            return true;
+        }
         BufferedReader in = new BufferedReader(
                 new InputStreamReader(System.in));
-        PrintWriter out = new PrintWriter(System.out, true);
+        PrintWriter cout = new PrintWriter(System.out, true);
         boolean answer = false;
         boolean validInput = false;
         while (!validInput) {
-            out.println(question);
+            cout.println(question);
             try {
                 String line = in.readLine();
                 if (line.equalsIgnoreCase("y") || line.equalsIgnoreCase("yes")) {
@@ -370,6 +386,8 @@ class JPdfBookmarks {
     private Options createOptions() {
         Options appOptions = new Options();
 
+        appOptions.addOption("f", "force", false,
+                Res.getString("FORCE_DESCR"));
         appOptions.addOption("v", "version", false,
                 Res.getString("VERSION_DESCR"));
         appOptions.addOption("h", "help", false,

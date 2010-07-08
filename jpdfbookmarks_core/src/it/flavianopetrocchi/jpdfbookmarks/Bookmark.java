@@ -22,6 +22,7 @@
 package it.flavianopetrocchi.jpdfbookmarks;
 
 import it.flavianopetrocchi.colors.Colors;
+import it.flavianopetrocchi.utilities.Ut;
 import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -670,7 +671,8 @@ public class Bookmark extends DefaultMutableTreeNode {
         int numLine = 0;
         while ((line = br.readLine()) != null) {
             numLine++;
-            if (line.trim().isEmpty()) {
+            line = Ut.rtrim(line);
+            if (line.isEmpty()) {
                 continue;
             }
             if (line.lastIndexOf(indentation) <= 0) {

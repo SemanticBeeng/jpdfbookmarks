@@ -145,10 +145,11 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
             close();
         }
         this.filePath = pdfPath;
-        byte[] fileBytes = Ut.getBytesFromFile(new File(pdfPath));
+        //byte[] fileBytes = Ut.getBytesFromFile(new File(pdfPath));
         //random access seems to slow down loading a lot
         //reader = new PdfReader(new RandomAccessFileOrArray(fileBytes), null);
-        reader = new PdfReader(fileBytes);
+        //reader = new PdfReader(fileBytes);
+        reader = new PdfReader(pdfPath);
         //reader = new PdfReader(new RandomAccessFileOrArray(this.filePath), null);
         int preferences = reader.getSimpleViewerPreferences();
         if ((preferences & PdfWriter.PageModeUseOutlines) == 0) {
@@ -294,7 +295,11 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
 
     public void save(String filePath) throws IOException {
         try {
-            stamper = new PdfStamper(reader, new FileOutputStream(filePath));
+            File tmp = File.createTempFile("jpdf", ".pdf");
+            tmp.deleteOnExit();
+            Ut.copyFile(this.filePath, tmp.getPath());
+            PdfReader tmpReader = new PdfReader(tmp.getPath());
+            stamper = new PdfStamper(tmpReader, new FileOutputStream(filePath));
             if (outline != null) {
                 stamper.setOutlines(outline);
             }
@@ -306,6 +311,7 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
             }
             stamper.setViewerPreferences(preferences);
             stamper.close();
+            tmp.delete();
         } catch (DocumentException ex) {
         }
     }

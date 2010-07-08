@@ -24,8 +24,11 @@ package it.flavianopetrocchi.utilities;
 import java.awt.Component;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,6 +59,38 @@ public class Ut {
             }
         }
         return className;
+    }
+
+    public static void copyFile(String srcPath, String dstPath)
+            throws FileNotFoundException, IOException {
+        File f1 = new File(srcPath);
+        File f2 = new File(dstPath);
+        InputStream in = new FileInputStream(f1);
+        OutputStream out = new FileOutputStream(f2);
+
+        byte[] buf = new byte[1024];
+        int len;
+        while ((len = in.read(buf)) > 0) {
+            out.write(buf, 0, len);
+        }
+        in.close();
+        out.close();
+    }
+
+    public static String rtrim(String s) {
+
+        StringBuffer sb = new StringBuffer(s);
+        
+        for (int i = sb.length() - 1; i >= 0; i--) {
+            char c = sb.charAt(i);
+            if (Character.isWhitespace(c)) {
+                sb.deleteCharAt(i);
+            } else {
+                break;
+            }
+        }
+        
+        return sb.toString();
     }
 
     /**
@@ -118,8 +153,8 @@ public class Ut {
 
         int offset = 0;
         int numRead = 0;
-        while (offset < bytes.length &&
-                (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) {
+        while (offset < bytes.length
+                && (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) {
             offset += numRead;
         }
 
@@ -148,12 +183,12 @@ public class Ut {
                 targetDirectories.add(parent);
                 parent = parent.getParentFile();
             }
-            
+
             File commonBaseDir = null;
 
             int baseIndex = baseDirectories.size() - 1;
             int targetIndex = targetDirectories.size() - 1;
-            for ( ; baseIndex >= 0 && targetIndex >= 0; baseIndex--, targetIndex--) {
+            for (; baseIndex >= 0 && targetIndex >= 0; baseIndex--, targetIndex--) {
                 if (baseDirectories.get(baseIndex).equals(targetDirectories.get(targetIndex))) {
                     commonBaseDir = baseDirectories.get(baseIndex);
                 } else {
@@ -168,7 +203,7 @@ public class Ut {
                 path.append("..");
                 path.append(File.separator);
             }
-            for ( ; targetIndex >= 0; targetIndex--) {
+            for (; targetIndex >= 0; targetIndex--) {
                 path.append(targetDirectories.get(targetIndex).getName());
                 path.append(File.separator);
             }
@@ -180,6 +215,4 @@ public class Ut {
 
         return relativeFile;
     }
-
-
 }
