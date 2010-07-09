@@ -23,9 +23,12 @@ package it.flavianopetrocchi.jpdfbookmarks;
 
 import java.awt.EventQueue;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
@@ -63,7 +66,7 @@ class JPdfBookmarks {
         SHOW_ON_OPEN,
     }
     // <editor-fold defaultstate="expanded" desc="Member variables">
-    public static final String VERSION = "2.2.1";
+    public static final String VERSION = "2.3.0";
     public static final String APP_NAME = "JPdfBookmarks";
     public static final String DOWNLOAD_URL =
             "http://flavianopetrocchi.blogspot.com/2008/07/jpsdbookmarks-download-page.html";
@@ -174,7 +177,21 @@ class JPdfBookmarks {
                 } else if (mode == Mode.DUMP) {
                     Dumper dumper = new Dumper(pdf, indentationString,
                             pageSeparator, attributesSeparator);
-                    dumper.printBookmarks();
+                    if (outputFilePath == null) {
+                        dumper.printBookmarks();
+                    } else {
+                        File f = new File(outputFilePath);
+                        if (!f.exists()
+                                || getYesOrNo(Res.getString("WARNING_OVERWRITE_CMD"))) {
+
+                            FileOutputStream fos = new FileOutputStream(outputFilePath);
+                            OutputStreamWriter outStream = new OutputStreamWriter(fos, charset);
+                            BufferedWriter bufWrite = new BufferedWriter(outStream);
+                            bufWrite.append(dumper.getBookmarks());
+                            bufWrite.flush();
+                            bufWrite.close();
+                        }
+                    }
                 } else if (mode == Mode.APPLY) {
                     Applier applier = new Applier(pdf, indentationString,
                             pageSeparator, attributesSeparator);
@@ -292,13 +309,6 @@ class JPdfBookmarks {
             } else if (cmd.hasOption('a')) {
                 mode = Mode.APPLY;
                 bookmarksFilePath = cmd.getOptionValue('a');
-                if (cmd.hasOption('o')) {
-                    outputFilePath = cmd.getOptionValue('o');
-                } else {
-                    outputFilePath = null;
-//                    throw new ParseException(
-//                            Res.getString("ERR_NO_OUT_FOR_APPLY"));
-                }
             } else if (cmd.hasOption('d')) {
                 mode = Mode.DUMP;
             } else {
@@ -306,6 +316,13 @@ class JPdfBookmarks {
                 if (cmd.hasOption('b')) {
                     firstTargetString = cmd.getOptionValue('b');
                 }
+            }
+
+
+            if (cmd.hasOption('o')) {
+                outputFilePath = cmd.getOptionValue('o');
+            } else {
+                outputFilePath = null;
             }
 
             String[] leftOverArgs = cmd.getArgs();
