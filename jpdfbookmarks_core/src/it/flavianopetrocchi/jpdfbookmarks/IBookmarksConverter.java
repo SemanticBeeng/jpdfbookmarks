@@ -30,7 +30,8 @@ public interface IBookmarksConverter {
 	void close() throws IOException;
 
 	/**
-	 * Get the root bookmark of the pdf or null if there are no bookmarks.
+	 * Constructs the bookmarks hierarchy and returns the root bookmark of the pdf
+         * or null if there are no bookmarks.
 	 *
 	 * @return The root bookmark of the pdf, or null if the pdf has no bookmarks.
 	 */

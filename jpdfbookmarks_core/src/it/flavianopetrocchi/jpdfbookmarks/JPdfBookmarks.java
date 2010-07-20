@@ -178,7 +178,7 @@ class JPdfBookmarks {
                     Dumper dumper = new Dumper(pdf, indentationString,
                             pageSeparator, attributesSeparator);
                     if (outputFilePath == null) {
-                        dumper.printBookmarks();
+                        dumper.printBookmarksIterative(new OutputStreamWriter(System.out));
                     } else {
                         File f = new File(outputFilePath);
                         if (!f.exists()
@@ -186,10 +186,8 @@ class JPdfBookmarks {
 
                             FileOutputStream fos = new FileOutputStream(outputFilePath);
                             OutputStreamWriter outStream = new OutputStreamWriter(fos, charset);
-                            BufferedWriter bufWrite = new BufferedWriter(outStream);
-                            bufWrite.append(dumper.getBookmarks());
-                            bufWrite.flush();
-                            bufWrite.close();
+                            dumper.printBookmarksIterative(outStream);
+                            outStream.close();
                         }
                     }
                 } else if (mode == Mode.APPLY) {

@@ -21,8 +21,11 @@
  */
 package it.flavianopetrocchi.jpdfbookmarks;
 
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.util.Enumeration;
 import java.util.NoSuchElementException;
+import java.util.Stack;
 
 /**
  * This class implements the --dump functionality of JPdfBookmarks.
@@ -30,6 +33,7 @@ import java.util.NoSuchElementException;
 public class Dumper extends OutlinePresentation {
 
     private static final int BUFF_CAPACITY = 2048;
+    Prefs userPrefs = new Prefs();
 
     public Dumper() {
     }
@@ -60,42 +64,73 @@ public class Dumper extends OutlinePresentation {
     /**
      * Print the bookmarks hierarchy to standard output.
      */
-    public void printBookmarks() {
-        String bookmarks = getBookmarks();
-        PrintWriter out = new PrintWriter(System.out, true);
-        out.println(bookmarks.toString());
-    }
-
-    public String getBookmarks(Bookmark root) {
-        String bookmarks;
-        if (root != null) {
-            try {
-                Bookmark firstChild = (Bookmark) root.getFirstChild();
-                StringBuffer buffer = new StringBuffer(BUFF_CAPACITY);
-                getBookmarkRecursive(buffer, firstChild, "");
-                bookmarks = buffer.toString();
-            } catch (NoSuchElementException exc) {
-                bookmarks = Res.getString("EMPTY_OUTLINE_FOUND");
-            }
-        } else {
-            bookmarks = Res.getString("NO_BOOKMARK_FOUND");
-        }
-
-        return bookmarks;
-    }
-
+//    public void printBookmarks() {
+//        String bookmarks = getBookmarks();
+//        PrintWriter out = new PrintWriter(System.out, true);
+//        out.println(bookmarks.toString());
+//    }
+//    public String getBookmarks(Bookmark root) {
+//        String bookmarks;
+//        if (root != null) {
+//            try {
+//                Bookmark firstChild = (Bookmark) root.getFirstChild();
+//                StringBuffer buffer = new StringBuffer(BUFF_CAPACITY);
+//                getBookmarkRecursive(buffer, firstChild, "");
+//                bookmarks = buffer.toString();
+//            } catch (NoSuchElementException exc) {
+//                bookmarks = Res.getString("EMPTY_OUTLINE_FOUND");
+//            }
+//        } else {
+//            bookmarks = Res.getString("NO_BOOKMARK_FOUND");
+//        }
+//
+//        return bookmarks;
+//    }
     /**
-     * Use to get a text presentation ok the bookmarks hierarchy.
+     * Use to get a text presentation of the bookmarks hierarchy.
      *
      * @return String containing a text presentation ok the bookmarks hierarchy.
      */
-    public String getBookmarks() {
+//    public String getBookmarks() {
+//        IBookmarksConverter converter = super.getPdf();
+//        if (converter == null) {
+//            return "";
+//        }
+//        Bookmark root = converter.getRootBookmark();
+//        return getBookmarks(root);
+//    }
+    /**
+     * Print the bookmarks hierarchy to the output stream starting from root
+     * it needs that the Dumper has been created passing a valid IBookmarksConverter
+     *
+     * @param out The OutputStreamWriter where to print the bookmarks
+     */
+    public void printBookmarksIterative(OutputStreamWriter out) {
         IBookmarksConverter converter = super.getPdf();
         if (converter == null) {
-            return "";
+            return;
         }
         Bookmark root = converter.getRootBookmark();
-        return getBookmarks(root);
+        if (root != null) {
+            Enumeration preOrder = root.preorderEnumeration();
+            printEnumeration(out, preOrder);
+        }
+    }
+
+    /**
+     * Print the bookmarks hierarchy to the output stream starting from the root passed 
+     * as argument. It can be used with a Dumper created with a null IBookmarksConverter
+     * for cases where a hierarchy of Bookmark types is already available. 
+     * 
+     * @param out The OutputStreamWriter where to print the bookmarks
+     * @param root Bookmark from where to start printing the hierarchy
+     */
+    public void printBookmarksIterative(OutputStreamWriter out, Bookmark root) {
+
+        if (root != null) {
+            Enumeration preOrder = root.preorderEnumeration();
+            printEnumeration(out, preOrder);
+        }
     }
 
     /**
@@ -107,30 +142,48 @@ public class Dumper extends OutlinePresentation {
      * @param indentation Indentation increased from parent to child. An empty
      * string on the first call.
      */
-    private void getBookmarkRecursive(StringBuffer buffer, Bookmark bookmark,
-            String indentation) {
+//    private void getBookmarkRecursive(StringBuffer buffer, Bookmark bookmark,
+//            String indentation) {
+//
+//        buffer.append(indentation);
+//        buffer.append(bookmark.getExtendedDescription(super.getPageSep(),
+//                super.getAttributesSep(), userPrefs.getUseThousandths()));
+//        buffer.append(NEWLINE);
+//
+//        Bookmark firstChild = null;
+//        try {
+//            firstChild = (Bookmark) bookmark.getFirstChild();
+//        } catch (NoSuchElementException exc) {
+//        }
+//
+//        if (firstChild != null) {
+//            getBookmarkRecursive(buffer, firstChild, indentation
+//                    + super.getIndentationString());
+//        }
+//        Bookmark sibling = null;
+//        sibling = (Bookmark) bookmark.getNextSibling();
+//        if (sibling != null) {
+//            getBookmarkRecursive(buffer, sibling, indentation);
+//        }
+//    }
+    private void printEnumeration(OutputStreamWriter out, Enumeration e) {
+        PrintWriter printer = new PrintWriter(out, true);
+        boolean useThousandths = userPrefs.getUseThousandths();
+        String psep = getPageSep();
+        String asep = getAttributesSep();
+        String indent = getIndentationString();
 
-        Prefs userPrefs = new Prefs();
-
-        buffer.append(indentation);
-        buffer.append(bookmark.getExtendedDescription(super.getPageSep(),
-                super.getAttributesSep(), userPrefs.getUseThousandths()));
-        buffer.append(NEWLINE);
-
-        Bookmark firstChild = null;
-        try {
-            firstChild = (Bookmark) bookmark.getFirstChild();
-        } catch (NoSuchElementException exc) {
+        //just skip the root element
+        if (e.hasMoreElements()) {
+            e.nextElement();
         }
 
-        if (firstChild != null) {
-            getBookmarkRecursive(buffer, firstChild, indentation +
-                    super.getIndentationString());
-        }
-        Bookmark sibling = null;
-        sibling = (Bookmark) bookmark.getNextSibling();
-        if (sibling != null) {
-            getBookmarkRecursive(buffer, sibling, indentation);
+        while (e.hasMoreElements()) {
+            Bookmark b = (Bookmark) e.nextElement();
+            for (int i = 0; i < (b.getLevel() - 1); i++) {
+                printer.print(indent);
+            }
+            printer.println(b.getExtendedDescription(psep, asep, useThousandths));
         }
     }
 }

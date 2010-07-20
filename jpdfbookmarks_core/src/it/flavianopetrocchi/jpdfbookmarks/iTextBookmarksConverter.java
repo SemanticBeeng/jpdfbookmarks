@@ -97,6 +97,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 
 public class iTextBookmarksConverter implements IBookmarksConverter {
 
@@ -114,6 +115,7 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
         open(string);
     }
 
+    @Override
     public void close() throws IOException {
         if (reader != null) {
             reader.close();
@@ -126,6 +128,7 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
         namesAsString = null;
     }
 
+    @Override
     public Bookmark getRootBookmark() {
         if (rootBookmark == null) {
             if (new Prefs().getConvertNamedDestinations()) {
@@ -136,10 +139,12 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
         return rootBookmark;
     }
 
+    @Override
     public boolean isEncryped() {
         return reader.isEncrypted();
     }
 
+    @Override
     public void open(String pdfPath) throws IOException {
         if (reader != null) {
             close();
@@ -159,6 +164,7 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
         }
     }
 
+    @Override
     public void rebuildBookmarksFromTreeNodes(Bookmark root) {
         Bookmark current;
         try {
@@ -213,8 +219,8 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
 
         if (bookmark.getColor().equals(Color.black) == false) {
             float[] rgb = bookmark.getColor().getRGBColorComponents(null);
-            map.put("Color", String.valueOf(rgb[0]) + " " +
-                    String.valueOf(rgb[1]) + " " + String.valueOf(rgb[2]));
+            map.put("Color", String.valueOf(rgb[0]) + " "
+                    + String.valueOf(rgb[1]) + " " + String.valueOf(rgb[2]));
         }
         String style = "";
         if (bookmark.isBold()) {
@@ -257,7 +263,7 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
                 StringBuffer pageDest = new StringBuffer();
                 if (bookmark.isRemoteDestination()) {
                     pageDest.append(
-                            String.valueOf(bookmark.getPageNumber() -  1));
+                            String.valueOf(bookmark.getPageNumber() - 1));
                 } else {
                     pageDest.append(
                             String.valueOf(bookmark.getPageNumber()));
@@ -293,6 +299,7 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
         return map;
     }
 
+    @Override
     public void save(String filePath) throws IOException {
         try {
             File tmp = File.createTempFile("jpdf", ".pdf");
@@ -332,144 +339,201 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
 
         Bookmark root = new Bookmark();
         root.setTitle("Root Bookmark");
-        bookmarkDepth(reader, root,
+        bookmarkDepth(root,
                 (PdfDictionary) PdfReader.getPdfObjectRelease(
                 outlines.get(PdfName.FIRST)));
+//        bookmarkDepthIterative(root, outlines);
         return root;
     }
 
-    private void bookmarkDepth(PdfReader reader, Bookmark father,
-            PdfDictionary outline) {
-        Bookmark bookmark = null;
-        while (outline != null) {
-            bookmark = new Bookmark();
-            PdfString title = (PdfString) PdfReader.getPdfObjectRelease(
-                    outline.get(PdfName.TITLE));
-            bookmark.setTitle(title.toUnicodeString());
-            PdfArray color = (PdfArray) PdfReader.getPdfObjectRelease(
-                    outline.get(PdfName.C));
-            if (color != null && color.size() == 3) {
-                ByteBuffer out = new ByteBuffer();
-                out.append(color.getAsNumber(0).floatValue()).append(' ');
-                out.append(color.getAsNumber(1).floatValue()).append(' ');
-                out.append(color.getAsNumber(2).floatValue());
-                bookmark.setColor(new Color(color.getAsNumber(0).floatValue(),
-                        color.getAsNumber(1).floatValue(),
-                        color.getAsNumber(2).floatValue()));
+    private Bookmark bookmarkFromDictionary(PdfDictionary outline) {
+        if (outline == null) {
+            return null;
+        }
+        Bookmark bookmark = new Bookmark();
+        PdfString title = (PdfString) PdfReader.getPdfObjectRelease(
+                outline.get(PdfName.TITLE));
+        bookmark.setTitle(title.toUnicodeString());
+        PdfArray color = (PdfArray) PdfReader.getPdfObjectRelease(
+                outline.get(PdfName.C));
+        if (color != null && color.size() == 3) {
+            ByteBuffer out = new ByteBuffer();
+            out.append(color.getAsNumber(0).floatValue()).append(' ');
+            out.append(color.getAsNumber(1).floatValue()).append(' ');
+            out.append(color.getAsNumber(2).floatValue());
+            bookmark.setColor(new Color(color.getAsNumber(0).floatValue(),
+                    color.getAsNumber(1).floatValue(),
+                    color.getAsNumber(2).floatValue()));
+        }
+        PdfNumber style = (PdfNumber) PdfReader.getPdfObjectRelease(
+                outline.get(PdfName.F));
+        if (style != null) {
+            int f = style.intValue();
+            if ((f & 1) != 0) {
+                bookmark.setItalic(true);
             }
-            PdfNumber style = (PdfNumber) PdfReader.getPdfObjectRelease(
-                    outline.get(PdfName.F));
-            if (style != null) {
-                int f = style.intValue();
-                if ((f & 1) != 0) {
-                    bookmark.setItalic(true);
-                }
-                if ((f & 2) != 0) {
-                    bookmark.setBold(true);
-                }
+            if ((f & 2) != 0) {
+                bookmark.setBold(true);
             }
-            PdfNumber count = (PdfNumber) PdfReader.getPdfObjectRelease(
-                    outline.get(PdfName.COUNT));
-            if (count != null && count.intValue() < 0) {
-                bookmark.setOpened(false);
+        }
+        PdfNumber count = (PdfNumber) PdfReader.getPdfObjectRelease(
+                outline.get(PdfName.COUNT));
+        if (count != null && count.intValue() < 0) {
+            bookmark.setOpened(false);
+        } else {
+            bookmark.setOpened(true);
+        }
+        try {
+            PdfObject dest = PdfReader.getPdfObjectRelease(
+                    outline.get(PdfName.DEST));
+            if (dest != null) {
+                mapGotoBookmark(bookmark, dest);
             } else {
-                bookmark.setOpened(true);
-            }
-            try {
-                PdfObject dest = PdfReader.getPdfObjectRelease(
-                        outline.get(PdfName.DEST));
-                if (dest != null) {
-                    mapGotoBookmark(bookmark, dest);
-                } else {
-                    PdfDictionary action = (PdfDictionary) PdfReader.getPdfObjectRelease(
-                            outline.get(PdfName.A));
-                    if (action != null) {
-                        if (PdfName.GOTO.equals(
-                                PdfReader.getPdfObjectRelease(
-                                action.get(PdfName.S)))) {
-                            dest = PdfReader.getPdfObjectRelease(
-                                    action.get(PdfName.D));
-                            if (dest != null) {
-                                mapGotoBookmark(bookmark, dest);
+                PdfDictionary action = (PdfDictionary) PdfReader.getPdfObjectRelease(
+                        outline.get(PdfName.A));
+                if (action != null) {
+                    if (PdfName.GOTO.equals(
+                            PdfReader.getPdfObjectRelease(
+                            action.get(PdfName.S)))) {
+                        dest = PdfReader.getPdfObjectRelease(
+                                action.get(PdfName.D));
+                        if (dest != null) {
+                            mapGotoBookmark(bookmark, dest);
+                        }
+                    } else if (PdfName.URI.equals(
+                            PdfReader.getPdfObjectRelease(
+                            action.get(PdfName.S)))) {
+                        bookmark.setType(BookmarkType.Uri);
+                        bookmark.setUri(((PdfString) PdfReader.getPdfObjectRelease(
+                                action.get(PdfName.URI))).toUnicodeString());
+                    } else if (PdfName.GOTOR.equals(
+                            PdfReader.getPdfObjectRelease(
+                            action.get(PdfName.S)))) {
+                        dest = PdfReader.getPdfObjectRelease(
+                                action.get(PdfName.D));
+                        if (dest != null) {
+                            if (dest.isString()) {
+                                bookmark.setNamedDestination(dest.toString());
+                            } else if (dest.isName()) {
+                                bookmark.setNamedDestination(
+                                        PdfName.decodeName(dest.toString()));
+                                bookmark.setNamedAsName(true);
+                            } else if (dest.isArray()) {
+                                PdfArray arr = (PdfArray) dest;
+                                makeBookmarkParam(bookmark, arr, null);
                             }
-                        } else if (PdfName.URI.equals(
-                                PdfReader.getPdfObjectRelease(
-                                action.get(PdfName.S)))) {
-                            bookmark.setType(BookmarkType.Uri);
-                            bookmark.setUri(((PdfString) PdfReader.getPdfObjectRelease(
-                                    action.get(PdfName.URI))).toUnicodeString());
-                        } else if (PdfName.GOTOR.equals(
-                                PdfReader.getPdfObjectRelease(
-                                action.get(PdfName.S)))) {
-                            dest = PdfReader.getPdfObjectRelease(
-                                    action.get(PdfName.D));
-                            if (dest != null) {
-                                if (dest.isString()) {
-                                    bookmark.setNamedDestination(dest.toString());
-                                } else if (dest.isName()) {
-                                    bookmark.setNamedDestination(
-                                            PdfName.decodeName(dest.toString()));
-                                    bookmark.setNamedAsName(true);
-                                } else if (dest.isArray()) {
-                                    PdfArray arr = (PdfArray) dest;
-                                    makeBookmarkParam(bookmark, arr, null);
-                                }
-                            }
-                            bookmark.setRemoteDestination(true);
-                            PdfObject file = PdfReader.getPdfObjectRelease(
-                                    action.get(PdfName.F));
-                            if (file != null) {
+                        }
+                        bookmark.setRemoteDestination(true);
+                        PdfObject file = PdfReader.getPdfObjectRelease(
+                                action.get(PdfName.F));
+                        if (file != null) {
+                            if (file.isString()) {
+                                bookmark.setRemoteFilePath(
+                                        ((PdfString) file).toUnicodeString());
+                            } else if (file.isDictionary()) {
+                                file = PdfReader.getPdfObject(
+                                        ((PdfDictionary) file).get(PdfName.F));
                                 if (file.isString()) {
                                     bookmark.setRemoteFilePath(
                                             ((PdfString) file).toUnicodeString());
-                                } else if (file.isDictionary()) {
-                                    file = PdfReader.getPdfObject(
-                                            ((PdfDictionary) file).get(PdfName.F));
-                                    if (file.isString()) {
-                                        bookmark.setRemoteFilePath(
-                                                ((PdfString) file).toUnicodeString());
-                                    }
                                 }
                             }
-                            PdfObject newWindow =
-                                    PdfReader.getPdfObjectRelease(
-                                    action.get(PdfName.NEWWINDOW));
-                            if (newWindow != null) {
-                                bookmark.setNewWindow(
-                                        ((PdfBoolean) newWindow).booleanValue());
-                            }
-                        } else if (PdfName.LAUNCH.equals(
-                                PdfReader.getPdfObjectRelease(action.get(PdfName.S)))) {
-                            bookmark.setType(BookmarkType.Launch);
-                            PdfObject file = PdfReader.getPdfObjectRelease(
-                                    action.get(PdfName.F));
-                            if (file == null) {
+                        }
+                        PdfObject newWindow =
+                                PdfReader.getPdfObjectRelease(
+                                action.get(PdfName.NEWWINDOW));
+                        if (newWindow != null) {
+                            bookmark.setNewWindow(
+                                    ((PdfBoolean) newWindow).booleanValue());
+                        }
+                    } else if (PdfName.LAUNCH.equals(
+                            PdfReader.getPdfObjectRelease(action.get(PdfName.S)))) {
+                        bookmark.setType(BookmarkType.Launch);
+                        PdfObject file = PdfReader.getPdfObjectRelease(
+                                action.get(PdfName.F));
+                        if (file == null) {
+                            file = PdfReader.getPdfObjectRelease(
+                                    action.get(PdfName.WIN));
+                        }
+                        if (file != null) {
+                            if (file.isString()) {
+                                bookmark.setFileToLaunch(
+                                        ((PdfString) file).toUnicodeString());
+                            } else if (file.isDictionary()) {
                                 file = PdfReader.getPdfObjectRelease(
-                                        action.get(PdfName.WIN));
-                            }
-                            if (file != null) {
+                                        ((PdfDictionary) file).get(PdfName.F));
                                 if (file.isString()) {
                                     bookmark.setFileToLaunch(
                                             ((PdfString) file).toUnicodeString());
-                                } else if (file.isDictionary()) {
-                                    file = PdfReader.getPdfObjectRelease(
-                                            ((PdfDictionary) file).get(PdfName.F));
-                                    if (file.isString()) {
-                                        bookmark.setFileToLaunch(
-                                                ((PdfString) file).toUnicodeString());
-                                    }
                                 }
                             }
                         }
                     }
                 }
-            } catch (Exception e) {
-                //empty on purpose
             }
+        } catch (Exception e) {
+            //empty on purpose
+        }
+        return bookmark;
+    }
+
+//    private void bookmarkDepthIterative(Bookmark root,
+//            PdfDictionary outlineDict) {
+//        Stack<Bookmark> fathers = new Stack<Bookmark>();
+//        Stack<PdfDictionary> fathersDict = new Stack<PdfDictionary>();
+//        Bookmark bookmark = null;
+//        PdfDictionary dict = null;
+//
+//        fathers.push(root);
+//        //fathersDict.push(outlineDict);
+//
+//        //Bookmark fatherBkmk = fathers.peek();
+//        dict = (PdfDictionary) PdfReader.getPdfObjectRelease(
+//                    outlineDict.get(PdfName.FIRST));
+//
+//        //iterate brothers
+//        while (dict != null) {
+//            fathersDict.push(dict); //presume it's a father
+//            fathers.push(bookmarkFromDictionary(dict));
+//
+//            //try to get its child
+//            dict = (PdfDictionary) PdfReader.getPdfObjectRelease(
+//                    dict.get(PdfName.FIRST));
+//            //iterate children
+//            while (dict != null) {
+//                //presume the child is a father
+//                fathersDict.push(dict);
+//                fathers.push(bookmarkFromDictionary(dict));
+//
+//                dict = (PdfDictionary) PdfReader.getPdfObjectRelease(
+//                        dict.get(PdfName.FIRST));
+//            }
+//
+//            dict = fathersDict.pop();
+//            bookmark = fathers.pop();
+//            fathers.peek().add(bookmark);
+//
+//            dict = (PdfDictionary) PdfReader.getPdfObjectRelease(
+//                    dict.get(PdfName.NEXT));
+//            while (dict == null && !fathersDict.isEmpty()) {
+//                dict = fathersDict.pop();
+//                bookmark = fathers.pop();
+//                fathers.peek().add(bookmark);
+//                dict = (PdfDictionary) PdfReader.getPdfObjectRelease(
+//                    dict.get(PdfName.NEXT));
+//            }
+//        }
+//    }
+
+    private void bookmarkDepth( Bookmark father,
+            PdfDictionary outline) {
+        Bookmark bookmark = null;
+        while (outline != null) {
+            bookmark = bookmarkFromDictionary(outline);
             PdfDictionary first = (PdfDictionary) PdfReader.getPdfObjectRelease(
                     outline.get(PdfName.FIRST));
             if (first != null) {
-                bookmarkDepth(reader, bookmark, first);
+                bookmarkDepth(bookmark, first);
             }
             father.add(bookmark);
             outline = (PdfDictionary) PdfReader.getPdfObjectRelease(
@@ -657,8 +721,8 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
         int thousandths = -1;
         if (x != -1) {
             try {
-                thousandths = (int) (x * 1000.0f /
-                        pageRect.getWidth());
+                thousandths = (int) (x * 1000.0f
+                        / pageRect.getWidth());
             } catch (Exception exc) {
             }
         }
@@ -676,24 +740,29 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
         return thousandths;
     }
 
+    @Override
     public boolean showBookmarksOnOpen() {
         return showOnOpen;
     }
 
+    @Override
     public void setShowBookmarksOnOpen(boolean show) {
         showOnOpen = show;
     }
 
+    @Override
     public float getPageWidth(int pageNumber) {
         Rectangle pageSize = reader.getPageSize(pageNumber);
         return pageSize.getWidth();
     }
 
+    @Override
     public float getPageHeight(int pageNumber) {
         Rectangle pageSize = reader.getPageSize(pageNumber);
         return pageSize.getHeight();
     }
 
+    @Override
     public int getCountOfPages() {
         return reader.getNumberOfPages();
     }

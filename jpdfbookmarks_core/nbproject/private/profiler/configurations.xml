@@ -12,7 +12,7 @@
 <entry key="1_profiler.settings.thread.cpu.timer.on">false</entry>
 <entry key="1_profiler.settings.instrumentation.root.methods.size">0</entry>
 <entry key="2_profiler.settings.override">false</entry>
-<entry key="profiler.settings.lastselected">2</entry>
+<entry key="profiler.settings.lastselected">1</entry>
 <entry key="2_profiler.settings.instrument.spawned.threads">false</entry>
 <entry key="0_profiler.settings.threads.monitoring.enabled">false</entry>
 <entry key="0_profiler.settings.istrument.getter.setter.methods">false</entry>
@@ -68,7 +68,7 @@
 <entry key="1_profiler.settings.cpu.quick.filterprofiler.simple.filter.type">1</entry>
 <entry key="1_profiler.settings.cpu.profiling.type">0</entry>
 <entry key="1_profiler.settings.override.jvm.args"/>
-<entry key="2_profiler.settings.obj.alloc.stack.sampling.depth">0</entry>
+<entry key="2_profiler.settings.obj.alloc.stack.sampling.depth">-10</entry>
 <entry key="1_profiler.settings.instrument.empty.methods">false</entry>
 <entry key="0_profiler.settings.cpu.quick.filterprofiler.filter.type">profiler.simple.filter</entry>
 <entry key="1_profiler.settings.cpu.quick.filterprofiler.simple.filter.name">Quick filter...</entry>

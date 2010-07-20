@@ -1288,21 +1288,12 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
         Dumper dumper = new Dumper(null, userPrefs.getIndentationString(),
                 userPrefs.getPageSeparator(), userPrefs.getAttributesSeparator());
-        String hierarchy = dumper.getBookmarks(
-                (Bookmark) bookmarksTreeModel.getRoot());
 
-        //FileWriter writer = null;
         try {
             FileOutputStream fos = new FileOutputStream(f);
             OutputStreamWriter outStream = new OutputStreamWriter(fos, userPrefs.getCharsetEncoding());
-            BufferedWriter bufWrite = new BufferedWriter(outStream);
-            //writer = new FileWriter(f);
-//            writer.append(hierarchy);
-//            writer.flush();
-//            writer.close();
-            bufWrite.append(hierarchy);
-            bufWrite.flush();
-            bufWrite.close();
+            dumper.printBookmarksIterative(outStream, (Bookmark) bookmarksTreeModel.getRoot());
+            outStream.close();
         } catch (Exception exc) {
             JOptionPane.showMessageDialog(this,
                     Res.getString("ERROR_SAVING_FILE"),
