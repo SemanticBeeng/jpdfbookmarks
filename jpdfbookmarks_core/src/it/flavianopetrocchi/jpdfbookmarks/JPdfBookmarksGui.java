@@ -42,7 +42,6 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.GridLayout;
-import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
@@ -59,13 +58,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -84,8 +79,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
@@ -95,7 +88,6 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.CellEditor;
-import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
@@ -125,7 +117,6 @@ import javax.swing.SwingWorker;
 import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.TreeExpansionEvent;
@@ -394,6 +385,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         }
     }
 
+    @Override
     public void fileOperation(FileOperationEvent evt) {
         if (evt.getOperation() == FileOperationEvent.Operation.FILE_OPENED) {
             setTitle(title + ": " + evt.getPathToFile());
@@ -471,6 +463,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         }
     }
 
+    @Override
     public void pageChanged(PageChangedEvent evt) {
         int currentPage = evt.getCurrentPage();
         txtGoToPage.setInteger(currentPage);
@@ -494,6 +487,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         checkInheritZoom.setEnabled(zoom);
     }
 
+    @Override
     public void viewChanged(ViewChangedEvent evt) {
         FitType fitType = evt.getFitType();
         float scale = evt.getScale();
@@ -537,6 +531,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         }
     }
 
+    @Override
     public void treeExpanded(TreeExpansionEvent event) {
         TreePath path = event.getPath();
         Bookmark bookmark = (Bookmark) path.getLastPathComponent();
@@ -547,6 +542,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         recreateNodesOpenedState();
     }
 
+    @Override
     public void treeCollapsed(TreeExpansionEvent event) {
         TreePath path = event.getPath();
         Bookmark bookmark = (Bookmark) path.getLastPathComponent();
@@ -556,6 +552,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         }
     }
 
+    @Override
     public void undoableEditHappened(UndoableEditEvent e) {
         UndoableEdit[] undoableEdits = undoManager.getUndoableEdits();
         if (undoableEdits.length > 0) {
@@ -568,6 +565,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         fileOperator.setFileChanged(true);
     }
 
+    @Override
     public void valueChanged(TreeSelectionEvent e) {
         Bookmark bookmark = getSelectedBookmark();
         Ut.enableActions((bookmark != null), addChildAction, deleteAction,
@@ -593,6 +591,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         return treeNode;
     }
 
+    @Override
     public void editingStopped(ChangeEvent e) {
         Bookmark treeNode = getSelectedBookmark();
         if (treeNode == null) {
@@ -723,6 +722,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                     bookmarksTree.treeDidChange();
                     SwingUtilities.invokeLater(new Runnable() {
 
+                        @Override
                         public void run() {
                             if (target != null) {
                                 followBookmarkInView(target);
@@ -747,6 +747,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
         bookmarksTree.visitAllNodes(new Visitor<Bookmark>() {
 
+            @Override
             public void process(Bookmark bookmark) {
                 TreePath path = new TreePath(bookmark.getPath());
                 if (bookmark.isOpened() && bookmarksTree.isVisible(path)) {
@@ -758,6 +759,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
     private class ColorChooserListener implements ActionListener {
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             TreePath[] paths = bookmarksTree.getSelectionPaths();
             for (TreePath path : paths) {
@@ -1350,6 +1352,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         quitAction = new ActionBuilder("ACTION_QUIT", "ACTION_QUIT_DESCR",
                 "alt F4", "system-log-out.png", true) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 exitApplication();
             }
@@ -1359,6 +1362,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         openAction = new ActionBuilder("ACTION_OPEN", "ACTION_OPEN_DESCR",
                 "ctrl O", "document-open.png", true) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 openDialog();
             }
@@ -1367,6 +1371,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         saveAction = new ActionBuilder("ACTION_SAVE", "ACTION_SAVE_DESCR",
                 "ctrl S", "document-save.png", false) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 //save();
                 saveAsync();
@@ -1376,6 +1381,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         saveAsAction = new ActionBuilder("ACTION_SAVE_AS", "ACTION_SAVE_AS_DESCR",
                 "ctrl A", "document-save-as.png", false) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 saveAs();
             }
@@ -1384,6 +1390,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         closeAction = new ActionBuilder("ACTION_CLOSE", "ACTION_CLOSE_DESCR",
                 "ctrl F4", "process-stop.png", false) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 close();
             }
@@ -1392,6 +1399,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         showOnOpenAction = new ActionBuilder("ACTION_SHOW_ON_OPEN",
                 "ACTION_SHOW_ON_OPEN_DESCR", null, "show-on-open.png", false) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 if (e.getSource().equals(tbShowOnOpen)) {
                     cbShowOnOpen.setSelected(tbShowOnOpen.isSelected());
@@ -1406,6 +1414,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         dumpAction = new ActionBuilder("ACTION_DUMP", "ACTION_DUMP_DESCR",
                 "ctrl alt D", "dump.png", false) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 dump();
             }
@@ -1414,6 +1423,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         loadAction = new ActionBuilder("ACTION_LOAD", "ACTION_LOAD_DESCR",
                 "ctrl alt L", "load.png", false) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 load();
             }
@@ -1423,6 +1433,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         undoAction = new ActionBuilder("ACTION_UNDO", "ACTION_UNDO_DESCR",
                 "ctrl Z", "edit-undo.png", false) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 undo();
             }
@@ -1431,6 +1442,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         redoAction = new ActionBuilder("ACTION_REDO", "ACTION_REDO_DESCR",
                 "ctrl shift Z", "edit-redo.png", false) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 redo();
             }
@@ -1440,6 +1452,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                 "ACTION_ADD_SIBLING_DESCR",
                 "ctrl alt S", "add-sibling.png", false) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 addSibling();
             }
@@ -1448,6 +1461,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         addChildAction = new ActionBuilder("ACTION_ADD_CHILD",
                 "ACTION_ADD_CHILD_DESCR", "ctrl alt F", "add-child.png", false) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 addChild();
             }
@@ -1456,6 +1470,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         addWebLinkAction = new ActionBuilder("ACTION_ADD_WEB_LINK",
                 "ACTION_ADD_WEB_LINK_DESCR", "ctrl alt W", "bookmark-web.png", false) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 setWebLink();
             }
@@ -1464,6 +1479,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         deleteAction = new ActionBuilder("ACTION_DELETE", "ACTION_DELETE_DESCR",
                 "ctrl DELETE", "user-trash.png", false) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 delete();
             }
@@ -1472,6 +1488,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         setBoldAction = new ActionBuilder("ACTION_SET_BOLD", "ACTION_SET_BOLD_DESCR",
                 "ctrl G", "format-text-bold.png", false) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 AbstractButton btn = (AbstractButton) e.getSource();
                 setBold(btn.isSelected());
@@ -1481,6 +1498,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         setItalicAction = new ActionBuilder("ACTION_SET_ITALIC", "ACTION_SET_ITALIC_DESCR",
                 "ctrl I", "format-text-italic.png", false) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 AbstractButton btn = (AbstractButton) e.getSource();
                 setItalic(btn.isSelected());
@@ -1491,6 +1509,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                 "ACTION_CHANGE_COLOR_DESCR", null, "applications-graphics.png",
                 false) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 changeColor();
             }
@@ -1499,6 +1518,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         renameAction = new ActionBuilder("ACTION_RENAME", "ACTION_RENAME_DESCR",
                 null, "edit-select-all.png", false) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 rename();
             }
@@ -1508,6 +1528,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                 "ACTION_DEST_FROM_VIEW_DESCR", "ctrl alt A",
                 "dest-from-view.png", false) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 destFromView();
             }
@@ -1516,6 +1537,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         applyPageOffset = new ActionBuilder("ACTION_PAGE_OFFSET",
                 "ACTION_PAGE_OFFSET_DESCR", null, "page-offset.png", false) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 applyPageOffsetDialog();
             }
@@ -1555,6 +1577,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         goNextPageAction = new ActionBuilder("ACTION_GO_NEXT",
                 "ACTION_GO_NEXT_DESCR", "ctrl alt RIGHT", "go-next.png", false) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 viewPanel.goToNextPage();
             }
@@ -1563,6 +1586,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         goFirstPageAction = new ActionBuilder("ACTION_GO_FIRST",
                 "ACTION_GO_FIRST_DESCR", "ctrl alt HOME", "go-first.png", false) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 viewPanel.goToFirstPage();
             }
@@ -1571,6 +1595,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         goLastPageAction = new ActionBuilder("ACTION_GO_LAST",
                 "ACTION_GO_LAST_DESCR", "ctrl alt END", "go-last.png", false) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 viewPanel.goToLastPage();
             }
@@ -1579,6 +1604,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         goPreviousPageAction = new ActionBuilder("ACTION_GO_PREV",
                 "ACTION_GO_PREV_DESCR", "ctrl alt LEFT", "go-previous.png", false) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 viewPanel.goToPreviousPage();
             }
@@ -1587,6 +1613,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         goToPageAction = new ActionBuilder("ACTION_GO_PAGE",
                 "ACTION_GO_PAGE_DESCR", "ctrl alt INSERT", null, false) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 goToPageDialog();
             }
@@ -1597,6 +1624,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                 "ACTION_FIT_RECT_DESCR", "ctrl R", "fit-rect.png",
                 false) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 if (e.getSource() instanceof JToggleButton) {
                     rbFitRect.setSelected(true);
@@ -1611,6 +1639,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                 "ACTION_FIT_WIDTH_DESCR", "ctrl W", "fit-width.png",
                 false) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 if (e.getSource() instanceof JToggleButton) {
                     rbFitWidth.setSelected(true);
@@ -1626,6 +1655,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                 "ACTION_FIT_HEIGHT_DESCR", "ctrl H", "fit-height.png",
                 false) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 if (e.getSource() instanceof JToggleButton) {
                     rbFitHeight.setSelected(true);
@@ -1641,6 +1671,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                 "ACTION_FIT_NATIVE_DESCR", "ctrl N", "fit-native.png",
                 false) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 if (e.getSource() instanceof JToggleButton) {
                     rbFitNative.setSelected(true);
@@ -1656,6 +1687,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                 "ACTION_FIT_PAGE_DESCR", "ctrl G", "fit-page.png",
                 false) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 if (e.getSource() instanceof JToggleButton) {
                     rbFitPage.setSelected(true);
@@ -1671,6 +1703,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                 "ACTION_TOP_LEFT_ZOOM_DESCR", null, "top-left-zoom.png",
                 false) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 if (e.getSource() instanceof JToggleButton) {
                     rbTopLeftZoom.setSelected(true);
@@ -1695,6 +1728,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         zoomOutAction = new ActionBuilder("ACTION_ZOOM_OUT",
                 "ACTION_ZOOM_OUT_DESCR", "alt -", "zoom-out.png", false) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 float scale = (txtZoom.getInteger() - ZOOM_STEP) / 100f;
                 viewPanel.setTopLeftZoom(-1, -1, scale);
@@ -1704,6 +1738,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         expandAllAction = new ActionBuilder("ACTION_EXPAND_ALL",
                 "ACTION_EXPAND_ALL_DESCR", "ctrl E", null, false) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 for (int i = 0; i < bookmarksTree.getRowCount(); i++) {
                     bookmarksTree.expandRow(i);
@@ -1714,6 +1749,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         collapseAllAction = new ActionBuilder("ACTION_COLLAPSE_ALL",
                 "ACTION_COLLAPSE_ALL_DESCR", "ctrl P", null, false) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 for (int i = 0; i < bookmarksTree.getRowCount(); i++) {
                     bookmarksTree.collapseRow(i);
@@ -1725,6 +1761,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                 "ACTION_OPTIONS_DIALOG_DESCR", "ctrl alt O",
                 "preferences-system.png", true) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
 //				OptionsDialog optionsDlg =
 //						new OptionsDialog(JPdfBookmarksGui.this, true);
@@ -1740,6 +1777,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                 "ACTION_CHECK_UPDATES_DESCR", null,
                 "system-software-update.png", true) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 checkUpdates(false);
             }
@@ -1748,6 +1786,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         readOnlineManualAction = new ActionBuilder("ACTION_READ_MANUAL",
                 "ACTION_READ_MANUAL_DESCR", null, "help-browser.png", true) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 goToWebLink(JPdfBookmarks.MANUAL_URL);
             }
@@ -1756,6 +1795,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         goToAuthorBlog = new ActionBuilder("ACTION_GO_TO_BLOG",
                 "ACTION_GO_TO_BLOG_DESCR", null, "internet-web-browser.png", true) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 goToWebLink(JPdfBookmarks.BLOG_URL);
             }
@@ -1820,6 +1860,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             this.f = f;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             if (!askCloseWithoutSave()) {
                 return;
@@ -2017,6 +2058,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         checkItem.setSelected(userPrefs.getConvertNamedDestinations());
         checkItem.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
                 userPrefs.setConvertNamedDestinations(item.isSelected());
@@ -2063,6 +2105,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         item.setMnemonic(Res.mnemonicFromRes("MENU_ABOUT_BOX_MNEMONIC"));
         item.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 AboutBox aboutBox = new AboutBox(JPdfBookmarksGui.this, true);
                 aboutBox.setLocationRelativeTo(JPdfBookmarksGui.this);
@@ -2093,10 +2136,12 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
     private class ToolbarsPopupListener extends MouseAdapter {
 
+        @Override
         public void mousePressed(MouseEvent e) {
             maybeShowPopup(e);
         }
 
+        @Override
         public void mouseReleased(MouseEvent e) {
             maybeShowPopup(e);
         }
@@ -2211,6 +2256,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         txtGoToPage.setHorizontalAlignment(JTextField.CENTER);
         txtGoToPage.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 viewPanel.goToPage(txtGoToPage.getInteger());
             }
@@ -2266,6 +2312,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         txtZoom.setHorizontalAlignment(JTextField.CENTER);
         txtZoom.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 float scale = txtZoom.getInteger() / 100f;
                 viewPanel.setTopLeftZoom(-1, -1, scale);
@@ -2894,7 +2941,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         // </editor-fold>
     }
 
-    //this calss is used to address the the actions cut copy and paste to
+    //this calss is used to address the actions cut copy and paste to
     //the correct component
     public class TransferActionListener implements ActionListener {
 
