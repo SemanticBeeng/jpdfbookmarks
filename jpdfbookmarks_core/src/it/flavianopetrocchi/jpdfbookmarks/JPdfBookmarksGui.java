@@ -74,6 +74,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -772,6 +773,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     private void undo() {
         try {
             undoManager.undo();
+            fileOperator.setFileChanged(true);
         } catch (CannotUndoException ex) {
         } finally {
             updateUndoRedoPresentation();
@@ -782,6 +784,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     private void redo() {
         try {
             undoManager.redo();
+            fileOperator.setFileChanged(true);
         } catch (CannotUndoException ex) {
         } finally {
             updateUndoRedoPresentation();
@@ -2853,19 +2856,40 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         @Override
         public Transferable createTransferable(JComponent c) {
             selectedBookmark = getSelectedBookmark();
+
             if (selectedBookmark == null) {
                 return null;
             }
-            String attrSep = userPrefs.getAttributesSeparator();
-            StringBuilder descr = new StringBuilder(selectedBookmark.getExtendedDescription(userPrefs.getPageSeparator(),
-                    attrSep, userPrefs.getUseThousandths()));
-            if (selectedBookmark.isRemoteDestination() == false) {
-                descr.append(attrSep);
-                descr.append(BookmarkType.GoToFile.toString());
-                descr.append(attrSep);
-                descr.append(fileOperator.getFilePath());
+            int selectedLevel = selectedBookmark.getLevel();
+
+            StringBuilder buffer = new StringBuilder();
+            Enumeration e = selectedBookmark.preorderEnumeration();
+
+            boolean useThousandths = userPrefs.getUseThousandths();
+            String psep = userPrefs.getPageSeparator();
+            String asep = userPrefs.getAttributesSeparator();
+            String indent = userPrefs.getIndentationString();
+            String nl = System.getProperty("line.separator");
+
+            while (e.hasMoreElements()) {
+                Bookmark b = (Bookmark) e.nextElement();
+                for (int i = selectedLevel; i < b.getLevel(); i++) {
+                    buffer.append(indent);
+                }
+                buffer.append(b.getExtendedDescription(psep, asep, useThousandths));
+                //always add the file informatin to allow pasting bookmarks from one
+                //file to another, this must be taken into account when pasting,
+                //if the bookmark is actually a remote destination the remote file is
+                //already in the description
+                if (b.isRemoteDestination() == false) {
+                    buffer.append(asep);
+                    buffer.append(BookmarkType.GoToFile.toString());
+                    buffer.append(asep);
+                    buffer.append(fileOperator.getFilePath());
+                }
+                buffer.append(nl);
             }
-            return new StringSelection(descr.toString());
+            return new StringSelection(buffer.toString());
         }
 
         @Override
@@ -2902,18 +2926,30 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             for (DataFlavor flavor : flavors) {
                 if (flavor.equals(DataFlavor.stringFlavor)) {
                     try {
-                        IBookmarksConverter bookmarksConverter = new iTextBookmarksConverter(fileOperator.getFilePath());
-                        Bookmark bookmark = Bookmark.bookmarkFromString(bookmarksConverter, (String) t.getTransferData(DataFlavor.stringFlavor), userPrefs.getIndentationString(), userPrefs.getPageSeparator(), userPrefs.getAttributesSeparator());
-                        bookmarksConverter.close();
+                        //IBookmarksConverter bookmarksConverter = new iTextBookmarksConverter(fileOperator.getFilePath());
+//                        Bookmark bookmark = Bookmark.bookmarkFromString(
+//                                bookmarksConverter, (String) t.getTransferData(DataFlavor.stringFlavor),
+//                                userPrefs.getIndentationString(), userPrefs.getPageSeparator(),
+//                                userPrefs.getAttributesSeparator());
+                        Bookmark bookmark = Bookmark.outlineFromString(
+                                (String) t.getTransferData(DataFlavor.stringFlavor),
+                                userPrefs.getIndentationString(), userPrefs.getPageSeparator(),
+                                userPrefs.getAttributesSeparator());
+                        //bookmarksConverter.close();
+                        bookmark = (Bookmark)bookmark.getFirstChild();
+                        bookmark.removeFromParent();
                         String remotePath = bookmark.getRemoteFilePath();
-                        File openedFile = fileOperator.getFile();
-                        File remoteFile = new File(remotePath);
-                        File relativeFile = Ut.createRelativePath(openedFile, remoteFile);
-                        if (openedFile.equals(remoteFile)) {
-                            bookmark.setRemoteDestination(false);
-                            bookmark.setRemoteFilePath(null);
-                        } else {
-                            bookmark.setRemoteFilePath(relativeFile.getPath());
+                        if (remotePath != null) {
+                            File openedFile = fileOperator.getFile();
+                            File remoteFile = new File(remotePath);
+                            File relativeFile = Ut.createRelativePath(openedFile, remoteFile);
+                            if (openedFile.equals(remoteFile)) {
+                                bookmark.setRemoteDestination(false);
+                                bookmark.setRemoteFilePath(null);
+                            } else {
+                                bookmark.setRemoteDestination(true);
+                                bookmark.setRemoteFilePath(relativeFile.getPath());
+                            }
                         }
                         Bookmark selected = getSelectedBookmark();
                         Bookmark parent;

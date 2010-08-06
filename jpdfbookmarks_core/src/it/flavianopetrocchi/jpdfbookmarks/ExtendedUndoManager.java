@@ -74,6 +74,7 @@ public class ExtendedUndoManager extends UndoManager
     //
 
     // Add an edit and notify our listeners.
+    @Override
     public synchronized boolean addEdit(UndoableEdit anEdit) {
         boolean b = super.addEdit(anEdit);
         if (b) {
@@ -83,6 +84,7 @@ public class ExtendedUndoManager extends UndoManager
     }
 
     // When an edit is sent to us, call addEdit() to notify any of our listeners.
+    @Override
     public synchronized void undoableEditHappened(UndoableEditEvent ev) {
         UndoableEdit ue = ev.getEdit();
         source = ev.getSource();
