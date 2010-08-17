@@ -22,6 +22,8 @@
 
 package it.flavianopetrocchi.jpdfbookmarks;
 
+import it.flavianopetrocchi.jpdfbookmarks.bookmark.Bookmark;
+import it.flavianopetrocchi.jpdfbookmarks.bookmark.IBookmarksConverter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 

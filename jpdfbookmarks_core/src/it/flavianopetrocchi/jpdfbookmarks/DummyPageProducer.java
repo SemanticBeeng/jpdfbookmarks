@@ -21,6 +21,7 @@
  */
 package it.flavianopetrocchi.jpdfbookmarks;
 
+import it.flavianopetrocchi.jpdfbookmarks.bookmark.IBookmarksConverter;
 import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;

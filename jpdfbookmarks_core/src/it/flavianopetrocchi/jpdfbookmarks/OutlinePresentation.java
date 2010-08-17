@@ -21,6 +21,8 @@
  */
 package it.flavianopetrocchi.jpdfbookmarks;
 
+import it.flavianopetrocchi.jpdfbookmarks.bookmark.IBookmarksConverter;
+
 /**
  * This is parent class for dumper and applier contains parameters to read or
  * create a bookmarks.txt file.
@@ -32,7 +34,6 @@ public abstract class OutlinePresentation {
     protected String indentationString = "\t";
     protected String pageSep = "/";
     protected String attributesSep = ",";
-    protected static final String NEWLINE = System.getProperty("line.separator");
 
     public String getAttributesSep() {
         return attributesSep;

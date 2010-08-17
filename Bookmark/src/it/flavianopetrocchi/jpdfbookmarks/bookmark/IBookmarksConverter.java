@@ -21,7 +21,7 @@
  */
 
 
-package it.flavianopetrocchi.jpdfbookmarks;
+package it.flavianopetrocchi.jpdfbookmarks.bookmark;
 
 import java.io.IOException;
 
@@ -33,9 +33,10 @@ public interface IBookmarksConverter {
 	 * Constructs the bookmarks hierarchy and returns the root bookmark of the pdf
          * or null if there are no bookmarks.
 	 *
+         * @param convertNamedDestinations Whether to convert named destinations to explicit destinations.
 	 * @return The root bookmark of the pdf, or null if the pdf has no bookmarks.
 	 */
-	Bookmark getRootBookmark();
+	Bookmark getRootBookmark(boolean convertNamedDestinations);
 
 	boolean isEncryped();
 

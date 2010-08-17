@@ -21,22 +21,22 @@
  */
 package it.flavianopetrocchi.jpdfbookmarks;
 
+import it.flavianopetrocchi.jpdfbookmarks.bookmark.IBookmarksConverter;
+import it.flavianopetrocchi.jpdfbookmarks.bookmark.Bookmark;
 import java.awt.EventQueue;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
+import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
-import java.security.Security;
-import java.util.List;
-import java.util.Map;
+import java.util.Iterator;
+import java.util.ServiceLoader;
 import javax.swing.JOptionPane;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -45,7 +45,6 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 /**
  * This is the main class of the application. It parses the command line and
@@ -54,8 +53,8 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 class JPdfBookmarks {
 
     public static final boolean DEBUG = false;
-    private IBookmarksConverter pdf;
 
+    //private IBookmarksConverter pdf;
     private enum Mode {
 
         DUMP,
@@ -68,6 +67,7 @@ class JPdfBookmarks {
     // <editor-fold defaultstate="expanded" desc="Member variables">
     public static final String VERSION = "2.3.0";
     public static final String APP_NAME = "JPdfBookmarks";
+    protected static final String NEWLINE = System.getProperty("line.separator");
     public static final String DOWNLOAD_URL =
             "http://flavianopetrocchi.blogspot.com/2008/07/jpsdbookmarks-download-page.html";
     public static final String BLOG_URL =
@@ -89,7 +89,6 @@ class JPdfBookmarks {
     private String pageSeparator = "/";
     private String attributesSeparator = ",";
     private String indentationString = "\t";
-    private Bookmark firstTargetBookmark = null;
     private String firstTargetString = null;
     private boolean silentMode = false;
     private String charset = Charset.defaultCharset().displayName();
@@ -97,14 +96,146 @@ class JPdfBookmarks {
 
     //<editor-fold defaultstate="expanded" desc="public methods">
     public static void main(String[] args) {
+        localizeExternalModules();
         JPdfBookmarks app = new JPdfBookmarks();
         app.start(args);
     }
 
-    static void launchNewGuiInstance(String path, Bookmark bookmark) {
+    private static void localizeExternalModules() {
+        Bookmark.localizeStrings(Res.getString("DEFAULT_TITLE"), Res.getString("PAGE"), Res.getString("PARSE_ERROR"));
+    }
 
+    public static IBookmarksConverter getBookmarksConverter() {
+        ServiceLoader<IBookmarksConverter> s = ServiceLoader.load(IBookmarksConverter.class);
+        Iterator<IBookmarksConverter> i = s.iterator();
+        if (i.hasNext()) {
+            return i.next();
+        }
+        //return new iTextBookmarksConverter();
+        return null;
+    }
+
+    private IBookmarksConverter fatalGetConverterAndOpenPdf(String inputFilePath) {
+        IBookmarksConverter pdf = getBookmarksConverter();
+        if (pdf != null) {
+            try {
+                pdf.open(inputFilePath);
+            } catch (IOException ex) {
+                fatalOpenFileError(inputFilePath);
+            }
+        } else {
+            err.println(Res.getString("ERROR_BOOKMARKS_CONVERTER_NOT_FOUND"));
+            System.exit(1);
+        }
+        return pdf;
+    }
+
+    private void apply() {
+        IBookmarksConverter pdf = fatalGetConverterAndOpenPdf(inputFilePath);
+
+        Applier applier = new Applier(pdf, indentationString,
+                pageSeparator, attributesSeparator);
+        try {
+            applier.loadBookmarksFile(bookmarksFilePath, charset);
+        } catch (Exception ex) {
+            fatalOpenFileError(bookmarksFilePath);
+        }
+
+        if (outputFilePath == null || outputFilePath.equals(inputFilePath)) {
+            if (getYesOrNo(Res.getString(
+                    "ERR_INFILE_EQUAL_OUTFILE"))) {
+                outputFilePath = inputFilePath;
+            }
+        } else {
+            File f = new File(outputFilePath);
+            if (!f.exists()
+                    || getYesOrNo(Res.getString("WARNING_OVERWRITE_CMD"))) {
+                try {
+                    applier.save(outputFilePath);
+                    pdf.close();
+                } catch (IOException ex) {
+                    fatalSaveFileError(outputFilePath);
+                }
+            }
+        }
+
+    }
+
+    private void dump() {
+        IBookmarksConverter pdf = fatalGetConverterAndOpenPdf(inputFilePath);
+        Dumper dumper = new Dumper(pdf, indentationString,
+                pageSeparator, attributesSeparator);
+
+        if (outputFilePath == null) {
+            dumper.printBookmarksIterative(new OutputStreamWriter(System.out));
+        } else {
+            File f = new File(outputFilePath);
+            if (!f.exists()
+                    || getYesOrNo(Res.getString("WARNING_OVERWRITE_CMD"))) {
+                FileOutputStream fos = null;
+                try {
+                    fos = new FileOutputStream(outputFilePath);
+                    OutputStreamWriter outStream = new OutputStreamWriter(fos, charset);
+                    dumper.printBookmarksIterative(outStream);
+                    outStream.close();
+                    pdf.close();
+                } catch (FileNotFoundException ex) {
+                    fatalOpenFileError(outputFilePath);
+                } catch (UnsupportedEncodingException ex) {
+                    //already checked in command line parsing
+                } catch (IOException ex) {
+                }
+            }
+        }
+    }
+
+    private void showOnOpen() {
+        IBookmarksConverter ipdf = fatalGetConverterAndOpenPdf(inputFilePath);
+
+        if (showOnOpenArg.equalsIgnoreCase("CHECK") || showOnOpenArg.equalsIgnoreCase("c")) {
+            if (ipdf.showBookmarksOnOpen()) {
+                out.println("YES");
+            } else {
+                out.println("NO");
+            }
+        } else {
+            if (showOnOpenArg.equalsIgnoreCase("yes") || showOnOpenArg.equalsIgnoreCase("y")) {
+                ipdf.setShowBookmarksOnOpen(true);
+            } else if (showOnOpenArg.equalsIgnoreCase("no") || showOnOpenArg.equalsIgnoreCase("n")) {
+                ipdf.setShowBookmarksOnOpen(false);
+            }
+            if (outputFilePath == null || outputFilePath.equals(inputFilePath)) {
+                if (getYesOrNo(Res.getString(
+                        "ERR_INFILE_EQUAL_OUTFILE"))) {
+                    outputFilePath = inputFilePath;
+                }
+            } else {
+                File f = new File(outputFilePath);
+                if (!f.exists()
+                        || getYesOrNo(Res.getString("WARNING_OVERWRITE_CMD"))) {
+                    try {
+                        ipdf.save(outputFilePath);
+                        ipdf.close();
+                    } catch (IOException ex) {
+                        fatalSaveFileError(outputFilePath);
+                    }
+                }
+            }
+        }
+    }
+
+    private void fatalOpenFileError(String filePath) {
+        err.println(Res.getString("ERROR_OPENING_FILE") + " " + filePath);
+        System.exit(1);
+    }
+
+    private void fatalSaveFileError(String filePath) {
+        err.println(Res.getString("ERROR_SAVING_FILE") + " (" + filePath + ")");
+        System.exit(1);
+    }
+
+    public void launchNewGuiInstance(String path, Bookmark bookmark) {
         EventQueue.invokeLater(new GuiLauncher(path, bookmark));
-
     }
 
     static public File getPath() {
@@ -122,125 +253,176 @@ class JPdfBookmarks {
      * @param args Arguments to select mode and pass files to process. Can be
      *             null.
      */
-    public void start(String[] args) {
+//    public void start(String[] args) {
+//        if (args != null && args.length > 0) {
+//            setModeByCommandLine(args);
+//        }
+//
+//        if (mode == Mode.HELP) {
+//            printHelpMessage();
+//        } else if (mode == Mode.VERSION) {
+//            out.println(VERSION);
+//        } else {
+//            try {
+//                if (inputFilePath != null) {
+//                    pdf = new iTextBookmarksConverter(inputFilePath);
+////                    if (pdf.isEncryped()) {
+////                        throw new Exception(
+////                                Res.getString("ERROR_PDF_ENCRYPTED"));
+////                    }
+//                    if (firstTargetString != null) {
+//                        StringBuffer buffer = new StringBuffer("Bookmark");
+//                        buffer.append(pageSeparator).append(firstTargetString);
+//                        firstTargetBookmark = Bookmark.bookmarkFromString(pdf,
+//                                buffer.toString(), indentationString, pageSeparator, attributesSeparator);
+//                    }
+//                }
+//
+//                if (mode == Mode.SHOW_ON_OPEN) {
+//                    if (showOnOpenArg.equalsIgnoreCase("CHECK") || showOnOpenArg.equalsIgnoreCase("c")) {
+////                        PrintWriter out = new PrintWriter(System.out, true);
+//                        if (pdf.showBookmarksOnOpen()) {
+//                            out.println("YES");
+//                        } else {
+//                            out.println("NO");
+//                        }
+//                    } else {
+//                        if (showOnOpenArg.equalsIgnoreCase("yes") || showOnOpenArg.equalsIgnoreCase("y")) {
+//                            pdf.setShowBookmarksOnOpen(true);
+//                        } else if (showOnOpenArg.equalsIgnoreCase("no") || showOnOpenArg.equalsIgnoreCase("n")) {
+//                            pdf.setShowBookmarksOnOpen(false);
+//                        }
+//                        if (outputFilePath == null || outputFilePath.equals(inputFilePath)) {
+//                            if (getYesOrNo(Res.getString(
+//                                    "ERR_INFILE_EQUAL_OUTFILE"))) {
+//                                pdf.save(inputFilePath);
+//                            }
+//                        } else {
+//                            File f = new File(outputFilePath);
+//                            if (!f.exists()
+//                                    || getYesOrNo(Res.getString("WARNING_OVERWRITE_CMD"))) {
+//                                pdf.save(outputFilePath);
+//                            }
+//                        }
+//                    }
+//                } else if (mode == Mode.DUMP) {
+//                    Dumper dumper = new Dumper(pdf, indentationString,
+//                            pageSeparator, attributesSeparator);
+//                    if (outputFilePath == null) {
+//                        dumper.printBookmarksIterative(new OutputStreamWriter(System.out));
+//                    } else {
+//                        File f = new File(outputFilePath);
+//                        if (!f.exists()
+//                                || getYesOrNo(Res.getString("WARNING_OVERWRITE_CMD"))) {
+//
+//                            FileOutputStream fos = new FileOutputStream(outputFilePath);
+//                            OutputStreamWriter outStream = new OutputStreamWriter(fos, charset);
+//                            dumper.printBookmarksIterative(outStream);
+//                            outStream.close();
+//                        }
+//                    }
+//                } else if (mode == Mode.APPLY) {
+//                    Applier applier = new Applier(pdf, indentationString,
+//                            pageSeparator, attributesSeparator);
+//                    applier.loadBookmarksFile(bookmarksFilePath, charset);
+//                    if (outputFilePath == null || outputFilePath.equals(inputFilePath)) {
+//                        if (getYesOrNo(Res.getString(
+//                                "ERR_INFILE_EQUAL_OUTFILE"))) {
+//                            applier.save(inputFilePath);
+//                        }
+//                    } else {
+//                        File f = new File(outputFilePath);
+//                        if (!f.exists()
+//                                || getYesOrNo(Res.getString("WARNING_OVERWRITE_CMD"))) {
+//                            applier.save(outputFilePath);
+//                        }
+//                    }
+//                } else if (mode == Mode.GUI) {
+//                    if (pdf != null) {
+//                        pdf.close();
+//                        pdf = null;
+//                    }
+//                    EventQueue.invokeLater(new GuiLauncher(inputFilePath, firstTargetBookmark));
+//                }
+//                if (pdf != null) {
+//                    pdf.close();
+//                }
+//            } catch (Exception ex) {
+//                if (mode == Mode.GUI) {
+//                    EventQueue.invokeLater(new GuiLauncher(inputFilePath, firstTargetBookmark));
+//                } else {
+//                    if (inputFilePath != null) {
+//                        err.println(Res.getString("ERROR_OPENING_FILE") + " "
+//                                + inputFilePath);
+//                    } else {
+//                        err.println(Res.getString("ERROR_STARTING_JPDFBOOKMARKS"));
+//                    }
+//                }
+//            }
+//        }
+//    }
+    /**
+     * Start the application in the requested mode.
+     *
+     * @param args Arguments to select mode and pass files to process. Can be
+     *             null.
+     */
+    public void start(final String[] args) {
         if (args != null && args.length > 0) {
             setModeByCommandLine(args);
         }
 
-        if (mode == Mode.HELP) {
-            printHelpMessage();
-        } else if (mode == Mode.VERSION) {
-            out.println(VERSION);
-        } else {
-            try {
-                if (inputFilePath != null) {
-                    pdf = new iTextBookmarksConverter(inputFilePath);
-//                    if (pdf.isEncryped()) {
-//                        throw new Exception(
-//                                Res.getString("ERROR_PDF_ENCRYPTED"));
-//                    }
-                    if (firstTargetString != null) {
-                        StringBuffer buffer = new StringBuffer("Bookmark");
-                        buffer.append(pageSeparator).append(firstTargetString);
-                        firstTargetBookmark = Bookmark.bookmarkFromString(pdf,
-                                buffer.toString(), indentationString, pageSeparator, attributesSeparator);
-                    }
-                }
+        switch (mode) {
+            case VERSION:
+                out.println(VERSION);
+                break;
+            case DUMP:
+                dump();
+                break;
+            case SHOW_ON_OPEN:
+                showOnOpen();
+                break;
+            case APPLY:
+                apply();
+                break;
+            case GUI:
+                EventQueue.invokeLater(new GuiLauncher(inputFilePath));
+                break;
+            case HELP:
+            default:
+                printHelpMessage();
 
-                if (mode == Mode.SHOW_ON_OPEN) {
-                    if (showOnOpenArg.equalsIgnoreCase("CHECK") || showOnOpenArg.equalsIgnoreCase("c")) {
-//                        PrintWriter out = new PrintWriter(System.out, true);
-                        if (pdf.showBookmarksOnOpen()) {
-                            out.println("YES");
-                        } else {
-                            out.println("NO");
-                        }
-                    } else {
-                        if (showOnOpenArg.equalsIgnoreCase("yes") || showOnOpenArg.equalsIgnoreCase("y")) {
-                            pdf.setShowBookmarksOnOpen(true);
-                        } else if (showOnOpenArg.equalsIgnoreCase("no") || showOnOpenArg.equalsIgnoreCase("n")) {
-                            pdf.setShowBookmarksOnOpen(false);
-                        }
-                        if (outputFilePath == null || outputFilePath.equals(inputFilePath)) {
-                            if (getYesOrNo(Res.getString(
-                                    "ERR_INFILE_EQUAL_OUTFILE"))) {
-                                pdf.save(inputFilePath);
-                            }
-                        } else {
-                            File f = new File(outputFilePath);
-                            if (!f.exists()
-                                    || getYesOrNo(Res.getString("WARNING_OVERWRITE_CMD"))) {
-                                pdf.save(outputFilePath);
-                            }
-                        }
-                    }
-                } else if (mode == Mode.DUMP) {
-                    Dumper dumper = new Dumper(pdf, indentationString,
-                            pageSeparator, attributesSeparator);
-                    if (outputFilePath == null) {
-                        dumper.printBookmarksIterative(new OutputStreamWriter(System.out));
-                    } else {
-                        File f = new File(outputFilePath);
-                        if (!f.exists()
-                                || getYesOrNo(Res.getString("WARNING_OVERWRITE_CMD"))) {
-
-                            FileOutputStream fos = new FileOutputStream(outputFilePath);
-                            OutputStreamWriter outStream = new OutputStreamWriter(fos, charset);
-                            dumper.printBookmarksIterative(outStream);
-                            outStream.close();
-                        }
-                    }
-                } else if (mode == Mode.APPLY) {
-                    Applier applier = new Applier(pdf, indentationString,
-                            pageSeparator, attributesSeparator);
-                    applier.loadBookmarksFile(bookmarksFilePath, charset);
-                    if (outputFilePath == null || outputFilePath.equals(inputFilePath)) {
-                        if (getYesOrNo(Res.getString(
-                                "ERR_INFILE_EQUAL_OUTFILE"))) {
-                            applier.save(inputFilePath);
-                        }
-                    } else {
-                        File f = new File(outputFilePath);
-                        if (!f.exists()
-                                || getYesOrNo(Res.getString("WARNING_OVERWRITE_CMD"))) {
-                            applier.save(outputFilePath);
-                        }
-                    }
-                } else if (mode == Mode.GUI) {
-                    if (pdf != null) {
-                        pdf.close();
-                        pdf = null;
-                    }
-                    EventQueue.invokeLater(new GuiLauncher(inputFilePath, firstTargetBookmark));
-                }
-                if (pdf != null) {
-                    pdf.close();
-                }
-            } catch (Exception ex) {
-                if (mode == Mode.GUI) {
-                    EventQueue.invokeLater(new GuiLauncher(inputFilePath, firstTargetBookmark));
-                } else {
-                    if (inputFilePath != null) {
-                        err.println(Res.getString("ERROR_OPENING_FILE") + " "
-                                + inputFilePath);
-                    } else {
-                        err.println(Res.getString("ERROR_STARTING_JPDFBOOKMARKS"));
-                    }
-                }
-            }
         }
     }
 
-    private static class GuiLauncher implements Runnable {
+    private class GuiLauncher implements Runnable {
 
         private Bookmark firstTarget;
         private String inputPath;
+
+        public GuiLauncher(String inputPath) {
+            if (inputPath != null) {
+                IBookmarksConverter ipdf = fatalGetConverterAndOpenPdf(inputPath);
+                if (firstTargetString != null) {
+                    StringBuilder buffer = new StringBuilder("Bookmark");
+                    buffer.append(pageSeparator).append(firstTargetString);
+                    firstTarget = Bookmark.bookmarkFromString(null, ipdf,
+                            buffer.toString(), indentationString, pageSeparator, attributesSeparator);
+                }
+                this.inputPath = inputPath;
+                try {
+                    ipdf.close();
+                } catch (IOException ex) {
+                }
+            }
+        }
 
         public GuiLauncher(String inputPath, Bookmark firstTarget) {
             this.firstTarget = firstTarget;
             this.inputPath = inputPath;
         }
 
+        @Override
         public void run() {
             try {
                 JPdfBookmarksGui viewer;
@@ -261,7 +443,6 @@ class JPdfBookmarks {
         if (DEBUG) {
             System.err.println("***** printErrorForDebug Start *****");
             System.err.println(e.getMessage());
-            e.printStackTrace();
             System.err.println("***** printErrorForDebug End *****");
         }
     }
@@ -393,10 +574,10 @@ class JPdfBookmarks {
             cout.println(question);
             try {
                 String line = in.readLine();
-                if (line.equalsIgnoreCase("y") || line.equalsIgnoreCase("yes")) {
+                if (line.equalsIgnoreCase(Res.getString("SHORT_YES")) || line.equalsIgnoreCase(Res.getString("LONG_YES"))) {
                     answer = true;
                     validInput = true;
-                } else if (line.equalsIgnoreCase("n") || line.equalsIgnoreCase("no")) {
+                } else if (line.equalsIgnoreCase(Res.getString("SHORT_NO")) || line.equalsIgnoreCase(Res.getString("LONG_NO"))) {
                     answer = false;
                     validInput = true;
                 }

@@ -23,6 +23,7 @@
 
 package it.flavianopetrocchi.jpdfbookmarks;
 
+import it.flavianopetrocchi.jpdfbookmarks.bookmark.Bookmark;
 import java.awt.Rectangle;
 import java.io.File;
 

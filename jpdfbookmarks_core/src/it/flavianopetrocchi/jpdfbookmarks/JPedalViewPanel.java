@@ -21,6 +21,7 @@
  */
 package it.flavianopetrocchi.jpdfbookmarks;
 
+import it.flavianopetrocchi.jpdfbookmarks.bookmark.Bookmark;
 import it.flavianopetrocchi.utilities.Ut;
 import java.awt.Adjustable;
 import java.awt.BasicStroke;

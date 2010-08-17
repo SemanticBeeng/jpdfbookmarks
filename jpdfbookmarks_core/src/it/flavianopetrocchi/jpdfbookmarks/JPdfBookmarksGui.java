@@ -21,6 +21,9 @@
  */
 package it.flavianopetrocchi.jpdfbookmarks;
 
+import it.flavianopetrocchi.jpdfbookmarks.bookmark.Bookmark;
+import it.flavianopetrocchi.jpdfbookmarks.bookmark.IBookmarksConverter;
+import it.flavianopetrocchi.jpdfbookmarks.bookmark.BookmarkType;
 import it.flavianopetrocchi.colors.ColorsListPanel;
 import it.flavianopetrocchi.labelvertical.VerticalLabel;
 import it.flavianopetrocchi.labelvertical.VerticalLabelUI;
@@ -80,6 +83,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
@@ -252,6 +257,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     private Action setDestFromViewAction;
     private Action showOnOpenAction;
     private Action addWebLinkAction;
+    private Action addLaunchLinkAction;
+    private Action showActionsDialog;
     private Action applyPageOffset;
     private Action optionsDialogAction;
     private Action checkUpdatesAction;
@@ -443,8 +450,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                     addChildAction, deleteAction, undoAction, redoAction,
                     showOnOpenAction, setBoldAction, setItalicAction,
                     renameAction, setDestFromViewAction, changeColorAction,
-                    dumpAction, loadAction, addWebLinkAction, saveAction,
-                    applyPageOffset, selectText, connectToClipboard);
+                    dumpAction, loadAction, addWebLinkAction, addLaunchLinkAction, saveAction,
+                    applyPageOffset, selectText, connectToClipboard, showActionsDialog);
             lblMouseOverNode.setText(" ");
             lblSelectedNode.setText(" ");
             lblCurrentView.setText(" ");
@@ -570,8 +577,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     public void valueChanged(TreeSelectionEvent e) {
         Bookmark bookmark = getSelectedBookmark();
         Ut.enableActions((bookmark != null), addChildAction, deleteAction,
-                setBoldAction, setItalicAction, renameAction, changeColorAction,
-                setDestFromViewAction, addWebLinkAction, applyPageOffset);
+                setBoldAction, setItalicAction, renameAction, changeColorAction, showActionsDialog,
+                setDestFromViewAction, addWebLinkAction, addLaunchLinkAction, applyPageOffset);
         Ut.enableComponents((bookmark != null), cutMenuItem, copyMenuItem);
         if (bookmark != null) {
             updateStyleButtons(bookmark);
@@ -839,6 +846,95 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         fileOperator.setFileChanged(true);
     }
 
+    private int askAddOrReplace() {
+
+        Object[] choices = new Object[]{
+            Res.getString("REPLACE_CURRENT"),
+            Res.getString("ADD_TO_CURRENT"),
+            Res.getString("CANCEL")};
+        int response = JOptionPane.showOptionDialog(this, Res.getString("ADD_TO_CURRENT_OR_REPLACE"), JPdfBookmarks.APP_NAME,
+                JOptionPane.YES_NO_CANCEL_OPTION,
+                JOptionPane.QUESTION_MESSAGE, null, choices, choices[0]);
+
+        return response;
+    }
+
+    private void destFromView() {
+//        int answer = JOptionPane.showConfirmDialog(JPdfBookmarksGui.this,
+//                Res.getString("MSG_SET_DESTINATION"), title,
+//                JOptionPane.OK_CANCEL_OPTION);
+//
+//        if (answer != JOptionPane.OK_OPTION) {
+//            return;
+//        }
+
+        Bookmark bookmark = getSelectedBookmark();
+        Bookmark fromView = viewPanel.getBookmarkFromView();
+        adjustInheritValues(fromView);
+
+        switch (askAddOrReplace()) {
+            case 0: //replace
+                if (bookmark != null) {
+                    bookmark.clearChainedBookmarks();
+                    UndoableSetDestination undoable =
+                            new UndoableSetDestination(bookmarksTreeModel,
+                            bookmark, fromView);
+                    undoable.doEdit();
+                    undoSupport.postEdit(undoable);
+                }
+                break;
+            case 1: //add
+                bookmark.addChainedBookmark(fromView);
+                break;
+            case 2: //cancel
+                return;
+        }
+
+        fileOperator.setFileChanged(true);
+    }
+
+    private void setLaunchLink() {
+
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        chooser.setCurrentDirectory(fileOperator.getFile().getParentFile());
+
+        if (chooser.showSaveDialog(JPdfBookmarksGui.this)
+                != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+
+        File f = chooser.getSelectedFile();
+        if (f == null) {
+            return;
+        }
+
+        File relativeFile = Ut.createRelativePath(fileOperator.getFile(), f);
+        Bookmark bookmark = getSelectedBookmark();
+
+        switch (askAddOrReplace()) {
+            case 0: //replace
+                if (bookmark != null) {
+                    bookmark.clearChainedBookmarks();
+                    bookmark.setType(BookmarkType.Launch);
+                    bookmark.setFileToLaunch(relativeFile.getPath());
+                }
+                break;
+            case 1: //add
+                Bookmark b = new Bookmark();
+                b.setType(BookmarkType.Launch);
+                b.setFileToLaunch(relativeFile.getPath());
+                bookmark.addChainedBookmark(b);
+                break;
+            case 2: //cancel
+                return;
+        }
+
+
+        fileOperator.setFileChanged(true);
+
+    }
+
     private void setWebLink() {
         String address = JOptionPane.showInputDialog(this,
                 Res.getString("INPUT_WEB_ADDRESS") + ": ");
@@ -848,13 +944,44 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         }
 
         Bookmark bookmark = getSelectedBookmark();
-        if (bookmark != null) {
-            bookmark.setType(BookmarkType.Uri);
-            bookmark.setUri(address);
+
+        switch (askAddOrReplace()) {
+            case 0: //replace
+                if (bookmark != null) {
+                    bookmark.clearChainedBookmarks();
+                    bookmark.setType(BookmarkType.Uri);
+                    bookmark.setUri(address);
+                }
+                break;
+            case 1: //add
+                Bookmark b = new Bookmark();
+                b.setType(BookmarkType.Uri);
+                b.setUri(address);
+                bookmark.addChainedBookmark(b);
+                break;
+            case 2: //cancel
+                return;
         }
         fileOperator.setFileChanged(true);
 
         goToWebLink(address);
+    }
+
+    private void launchFile(String file) {
+
+        int answer = JOptionPane.showConfirmDialog(this,
+                String.format(Res.getString("MSG_LAUNCH_FILE"), file), title,
+                JOptionPane.OK_CANCEL_OPTION);
+        if (answer != JOptionPane.OK_OPTION) {
+            return;
+        }
+
+        Desktop desktop = Desktop.getDesktop();
+        try {
+            desktop.open(new File(file).getCanonicalFile().getAbsoluteFile());
+        } catch (Exception ex) {
+            showErrorMessage(Res.getString("ERR_LAUNCHING_FILE") + " " + file + ".");
+        }
     }
 
     private void goToWebLink(String uri) {
@@ -937,27 +1064,6 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                 bookmarksTree.getSelectionPath());
     }
 
-    private void destFromView() {
-        int answer = JOptionPane.showConfirmDialog(JPdfBookmarksGui.this,
-                Res.getString("MSG_SET_DESTINATION"), title,
-                JOptionPane.OK_CANCEL_OPTION);
-
-        if (answer != JOptionPane.OK_OPTION) {
-            return;
-        }
-
-        Bookmark bookmark = getSelectedBookmark();
-        if (bookmark != null) {
-            Bookmark fromView = viewPanel.getBookmarkFromView();
-            adjustInheritValues(fromView);
-            UndoableSetDestination undoable =
-                    new UndoableSetDestination(bookmarksTreeModel,
-                    bookmark, fromView);
-            undoable.doEdit();
-            undoSupport.postEdit(undoable);
-        }
-    }
-
     public void showErrorMessage(String resMessage) {
         JOptionPane.showMessageDialog(JPdfBookmarksGui.this,
                 resMessage, title,
@@ -973,7 +1079,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             @Override
             protected Void doInBackground() throws Exception {
                 if (!fileOperator.save((Bookmark) bookmarksTreeModel.getRoot())) {
-                    showErrorMessage(Res.getString("ERROR_SAVING_FILE"));
+                    //fileOperator.save already print an error message, no need to do it again here
+                    //showErrorMessage(Res.getString("ERROR_SAVING_FILE"));
                 }
                 return null;
             }
@@ -1088,8 +1195,13 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         }
 
         try {
-            IBookmarksConverter converter =
-                    new iTextBookmarksConverter(fileOperator.getFilePath());
+//            IBookmarksConverter converter =
+//                    new iTextBookmarksConverter(fileOperator.getFilePath());
+            IBookmarksConverter converter = JPdfBookmarks.getBookmarksConverter();
+            if (converter == null) {
+                showErrorMessage(Res.getString("ERROR_BOOKMARKS_CONVERTER_NOT_FOUND"));
+                throw new Exception();
+            }
             Bookmark root = Bookmark.outlineFromFile(converter,
                     file.getAbsolutePath(), userPrefs.getIndentationString(),
                     userPrefs.getPageSeparator(),
@@ -1479,6 +1591,15 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             }
         };
 
+        addLaunchLinkAction = new ActionBuilder("ACTION_ADD_LAUNCH_LINK",
+                "ACTION_ADD_LAUNCH_LINK_DESCR", "ctrl alt H", "bookmark-launch.png", false) {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setLaunchLink();
+            }
+        };
+
         deleteAction = new ActionBuilder("ACTION_DELETE", "ACTION_DELETE_DESCR",
                 "ctrl DELETE", "user-trash.png", false) {
 
@@ -1775,6 +1896,19 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                 optionsDlg.setVisible(true);
             }
         };
+                
+        showActionsDialog = new ActionBuilder("ACTION_ACTIONS_DIALOG",
+                "ACTION_ACTIONS_DIALOG_DESCR", "ctrl alt O",
+                "actions-dialog.png", false) {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ActionsDialog d = new ActionsDialog(JPdfBookmarksGui.this, true, getSelectedBookmark());
+                d.setLocationRelativeTo(JPdfBookmarksGui.this);
+                d.setVisible(true);
+                fileOperator.setFileChanged(d.isBookmarkModified());
+            }
+        };
 
         checkUpdatesAction = new ActionBuilder("ACTION_CHECK_UPDATES",
                 "ACTION_CHECK_UPDATES_DESCR", null,
@@ -1953,8 +2087,12 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         menuEdit.addSeparator();
         item = menuEdit.add(addWebLinkAction);
         item.setMnemonic(Res.mnemonicFromRes("MENU_ADD_WEB_LINK_MNEMONIC"));
+        item = menuEdit.add(addLaunchLinkAction);
+        item.setMnemonic(Res.mnemonicFromRes("MENU_ADD_LAUNCH_LINK_MNEMONIC"));
         item = menuEdit.add(setDestFromViewAction);
         item.setMnemonic(Res.mnemonicFromRes("MENU_SET_DESTINATION_MNEMONIC"));
+        item = menuEdit.add(showActionsDialog);
+        item.setMnemonic(Res.mnemonicFromRes("MENU_ACTIONS_DIALOG_MNEMONIC"));
         menuBar.add(menuEdit);
 
         JMenu menuView = new JMenu(Res.getString("MENU_VIEW"));
@@ -2211,8 +2349,12 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         treeMenu.addSeparator();
         item = treeMenu.add(addWebLinkAction);
         item.setMnemonic(Res.mnemonicFromRes("MENU_ADD_WEB_LINK_MNEMONIC"));
+        item = treeMenu.add(addLaunchLinkAction);
+        item.setMnemonic(Res.mnemonicFromRes("MENU_ADD_LAUNCH_LINK_MNEMONIC"));
         item = treeMenu.add(setDestFromViewAction);
         item.setMnemonic(Res.mnemonicFromRes("MENU_SET_DESTINATION_MNEMONIC"));
+        item = treeMenu.add(showActionsDialog);
+        item.setMnemonic(Res.mnemonicFromRes("MENU_ACTIONS_DIALOG_MNEMONIC"));
     }
 
     private class ActionListenerSetLAF implements ActionListener {
@@ -2516,7 +2658,9 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         bookmarksToolbars.put(Prefs.SHOW_SETDEST_TB, setDestToolbar);
 
         setDestToolbar.add(addWebLinkAction);
+        setDestToolbar.add(addLaunchLinkAction);
         setDestToolbar.add(setDestFromViewAction);
+        setDestToolbar.add(showActionsDialog);
 
         bookmarksToolbarsPanel.add(addToolbar);
         bookmarksToolbarsPanel.add(changeToolbar);
@@ -2648,53 +2792,53 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                 f = new File(target);
                 try {
                     String targetCanonical = f.getCanonicalPath();
-                    JPdfBookmarks.launchNewGuiInstance(targetCanonical, b);
+                    new JPdfBookmarks().launchNewGuiInstance(targetCanonical, b);
                 } catch (IOException ex) {
-                    JPdfBookmarks.launchNewGuiInstance(target, b);
+                    new JPdfBookmarks().launchNewGuiInstance(target, b);
                 }
             }
-            return;
-        }
-
-        if (bookmark.getType() == BookmarkType.Named) {
+        } else if (bookmark.getType() == BookmarkType.Named) {
             followBookmarkInView(bookmark.getNamedTarget());
-            return;
-        }
-
-        if (bookmark.getType() == BookmarkType.Uri) {
+        } else if (bookmark.getType() == BookmarkType.Uri) {
             goToWebLink(bookmark.getUri());
-            return;
+        } else if (bookmark.getType() == BookmarkType.Launch) {
+            launchFile(bookmark.getFileToLaunch());
+        } else {
+
+            int destPage = bookmark.getPageNumber();
+            viewPanel.goToPage(destPage);
+
+            switch (bookmark.getType()) {
+                case FitWidth:
+                    checkInheritTop.setSelected(bookmark.getTop() < 0);
+                    viewPanel.setFitWidth(bookmark.getTop());
+                    break;
+                case FitHeight:
+                    checkInheritLeft.setSelected(bookmark.getLeft() < 0);
+                    viewPanel.setFitHeight(bookmark.getLeft());
+                    break;
+                case FitPage:
+                    viewPanel.setFitPage();
+                    break;
+                case FitRect:
+                    viewPanel.setFitRect(bookmark.getTop(), bookmark.getLeft(),
+                            bookmark.getBottom(), bookmark.getRight());
+                    break;
+                case TopLeft:
+                case TopLeftZoom:
+                    checkInheritTop.setSelected(bookmark.getTop() < 0);
+                    checkInheritLeft.setSelected(bookmark.getLeft() < 0);
+                    checkInheritZoom.setSelected(bookmark.getZoom() <= 0);
+                    viewPanel.setTopLeftZoom(bookmark.getTop(),
+                            bookmark.getLeft(), bookmark.getZoom());
+                    break;
+                case Unknown:
+                    break;
+            }
         }
 
-        int destPage = bookmark.getPageNumber();
-        viewPanel.goToPage(destPage);
-
-        switch (bookmark.getType()) {
-            case FitWidth:
-                checkInheritTop.setSelected(bookmark.getTop() < 0);
-                viewPanel.setFitWidth(bookmark.getTop());
-                break;
-            case FitHeight:
-                checkInheritLeft.setSelected(bookmark.getLeft() < 0);
-                viewPanel.setFitHeight(bookmark.getLeft());
-                break;
-            case FitPage:
-                viewPanel.setFitPage();
-                break;
-            case FitRect:
-                viewPanel.setFitRect(bookmark.getTop(), bookmark.getLeft(),
-                        bookmark.getBottom(), bookmark.getRight());
-                break;
-            case TopLeft:
-            case TopLeftZoom:
-                checkInheritTop.setSelected(bookmark.getTop() < 0);
-                checkInheritLeft.setSelected(bookmark.getLeft() < 0);
-                checkInheritZoom.setSelected(bookmark.getZoom() <= 0);
-                viewPanel.setTopLeftZoom(bookmark.getTop(),
-                        bookmark.getLeft(), bookmark.getZoom());
-                break;
-            case Unknown:
-                break;
+        for (Bookmark b : bookmark.getChainedBookmarks()) {
+            followBookmarkInView(b);
         }
     }
 
@@ -2736,8 +2880,12 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             Object obj = overPath.getLastPathComponent();
             if (obj != null && obj instanceof Bookmark) {
                 Bookmark bookmark = (Bookmark) obj;
+                //in case of multiple actions keep only first line of description for statusbar
+                //which is the first action
+                String bookmarksDescription = bookmark.getDescription(userPrefs.getUseThousandths());
+
                 lblMouseOverNode.setText(Res.getString("MOUSE_OVER_BOOKMARK")
-                        + ": " + bookmark.getDescription(userPrefs.getUseThousandths()));
+                        + ": " + bookmarksDescription);
             }
         }
 
@@ -2876,7 +3024,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                 for (int i = selectedLevel; i < b.getLevel(); i++) {
                     buffer.append(indent);
                 }
-                buffer.append(b.getExtendedDescription(psep, asep, useThousandths));
+                buffer.append(b.getExtendedDescription(null, psep, asep, useThousandths));
                 //always add the file informatin to allow pasting bookmarks from one
                 //file to another, this must be taken into account when pasting,
                 //if the bookmark is actually a remote destination the remote file is
@@ -2936,7 +3084,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                                 userPrefs.getIndentationString(), userPrefs.getPageSeparator(),
                                 userPrefs.getAttributesSeparator());
                         //bookmarksConverter.close();
-                        bookmark = (Bookmark)bookmark.getFirstChild();
+                        bookmark = (Bookmark) bookmark.getFirstChild();
                         bookmark.removeFromParent();
                         String remotePath = bookmark.getRemoteFilePath();
                         if (remotePath != null) {

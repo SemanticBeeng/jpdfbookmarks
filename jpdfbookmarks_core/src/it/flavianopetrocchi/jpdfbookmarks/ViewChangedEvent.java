@@ -23,6 +23,7 @@
 
 package it.flavianopetrocchi.jpdfbookmarks;
 
+import it.flavianopetrocchi.jpdfbookmarks.bookmark.Bookmark;
 import java.util.EventObject;
 
 public class ViewChangedEvent extends EventObject {

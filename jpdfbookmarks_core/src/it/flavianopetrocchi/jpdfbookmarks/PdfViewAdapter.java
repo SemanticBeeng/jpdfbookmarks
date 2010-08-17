@@ -21,6 +21,8 @@
  */
 package it.flavianopetrocchi.jpdfbookmarks;
 
+import it.flavianopetrocchi.jpdfbookmarks.bookmark.IBookmarksConverter;
+import it.flavianopetrocchi.jpdfbookmarks.bookmark.Bookmark;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Cursor;

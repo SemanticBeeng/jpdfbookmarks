@@ -19,10 +19,11 @@
  * You should have received a copy of the GNU General Public License
  * along with JPdfBookmarks.  If not, see <http://www.gnu.org/licenses/>.
  */
-package it.flavianopetrocchi.jpdfbookmarks;
+package it.flavianopetrocchi.jpdfbookmarks.bookmark;
 
 public enum BookmarkType {
 
+    Hide,
     FitWidth,
     FitContentWidth,
     FitHeight,

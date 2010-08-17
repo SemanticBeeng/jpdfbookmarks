@@ -19,15 +19,16 @@
  * You should have received a copy of the GNU General Public License
  * along with JPdfBookmarks.  If not, see <http://www.gnu.org/licenses/>.
  */
-package it.flavianopetrocchi.jpdfbookmarks;
+package it.flavianopetrocchi.jpdfbookmarks.bookmark;
 
 import it.flavianopetrocchi.colors.Colors;
+//import it.flavianopetrocchi.jpdfbookmarks.Res;
 import it.flavianopetrocchi.utilities.Ut;
 import java.awt.Color;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
@@ -37,12 +38,15 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 public class Bookmark extends DefaultMutableTreeNode {
 
-    private static final int PAGE = 0,
-            COLOR = 1,
-            BOLD = 2,
-            ITALIC = 3,
-            OPEN = 4;
-    private String title = Res.getString("DEFAULT_TITLE");
+    protected static final String NEWLINE = System.getProperty("line.separator");
+    private ArrayList<Bookmark> chainedBookmarks = new ArrayList<Bookmark>();
+    //used as tokens array indexes in bookmarkFromString
+    private static final int PAGE = 0, COLOR = 1, BOLD = 2, ITALIC = 3, OPEN = 4;
+    //private String title = Res.getString("DEFAULT_TITLE");
+    private static String defaultTitle = "Bookmark";
+    private String title = null;
+    private static String sPage = "Page";
+    private static String parseError = "PARSE ERROR:";
     private int pageNumber = -1;
     private boolean bold = false, italic = false;
     private Color color = Color.black;
@@ -67,6 +71,28 @@ public class Bookmark extends DefaultMutableTreeNode {
     private static IBookmarksConverter converter;
 //	private long pageWidth;
 //	private long pageHeight;
+
+    public Bookmark() {
+        title = defaultTitle;
+    }
+
+    public static void localizeStrings(String defTitle, String page, String parseErr) {
+        if (defTitle != null) {
+            defaultTitle = defTitle;
+        }
+
+        if (page != null) {
+            sPage = page;
+        }
+
+        if (parseError != null) {
+            parseError = parseErr;
+        }
+    }
+
+    public void addChainedBookmark(Bookmark bookmark) {
+        chainedBookmarks.add(bookmark);
+    }
 
     public boolean isNamedAsName() {
         return namedAsName;
@@ -100,8 +126,32 @@ public class Bookmark extends DefaultMutableTreeNode {
         this.newWindow = newWindow;
     }
 
+    public String getFileToLaunchOsDep() {
+        //On windows tranform path like /C/folder/document.txt to C:\folder\document.txt
+        String sys = System.getProperty("os.name");
+        StringBuilder s = new StringBuilder(fileToLaunch);
+        if (sys.startsWith("Windows")) {
+            if (fileToLaunch.startsWith("/")) {
+                while (s.charAt(0) == '/') {
+                    s.deleteCharAt(0);
+                }
+                if (s.charAt(1) == '/') {
+                    s.insert(1, ":");
+                }
+            }
+        }
+        //File f = new File(s.toString());
+        //return f.toString();
+        return s.toString();
+    }
+    
     public String getFileToLaunch() {
-        return fileToLaunch;
+        if (fileToLaunch == null) {
+            return null;
+        } else {
+            return getFileToLaunchOsDep();
+        }
+        //return fileToLaunch; 
     }
 
     public void setFileToLaunch(String fileToLaunch) {
@@ -238,6 +288,9 @@ public class Bookmark extends DefaultMutableTreeNode {
     }
 
     public String getTitle() {
+        if (title == null) {
+            title = defaultTitle;
+        }
         return title;
     }
 
@@ -263,6 +316,10 @@ public class Bookmark extends DefaultMutableTreeNode {
     public void setZoom(float zoom) {
         this.zoom = zoom;
     }// </editor-fold>
+    
+    public void clearChainedBookmarks() {
+        chainedBookmarks.clear();
+    }
 
     public void cloneDestination(Bookmark bookmark) {
         setType(bookmark.getType());
@@ -285,24 +342,28 @@ public class Bookmark extends DefaultMutableTreeNode {
         setThousandthsLeft(bookmark.getThousandthsLeft());
     }
 
-    public Bookmark(Object outlineNode) {
-        super(outlineNode);
-    }
-
-    public Bookmark() {
-    }
-
+//    public Bookmark(Object outlineNode) {
+//        super(outlineNode);
+//    }
     public String getDescription(boolean useThousandths) {
-        StringBuilder buffer = new StringBuilder(getExtendedDescription(null,
-                null, useThousandths));
+        
+        String extendedDescr = getExtendedDescription(null, null, null, useThousandths);
+        StringBuilder buffer = new StringBuilder(extendedDescr);
 
+        //restrict to first line (that is to say first action)
+        int firstNewLineIndex = buffer.indexOf(NEWLINE);
+        if (firstNewLineIndex != -1) {
+            buffer.delete(firstNewLineIndex, buffer.length());
+        }
+        
         if (isRemoteDestination()) {
             String filePath = getRemoteFilePath();
             int filePathIndex = buffer.lastIndexOf(filePath);
             buffer = new StringBuilder(buffer.substring(0, filePathIndex));
         }
 
-        int pageSepIndex = buffer.lastIndexOf(pageSep);
+        //int pageSepIndex = buffer.lastIndexOf(pageSep);
+        int pageSepIndex = findPageSepIndex(buffer.toString(), attributeSep, pageSep);
 
         StringTokenizer tokenizer = new StringTokenizer(
                 buffer.substring(pageSepIndex + pageSep.length()), attributeSep);
@@ -311,7 +372,8 @@ public class Bookmark extends DefaultMutableTreeNode {
             attributes[i] = tokenizer.nextToken();
         }
         //String[] attributes = buffer.substring(pageSepIndex + pageSep.length()).split(attributeSep);
-        buffer = new StringBuilder("[ ").append(Res.getString("PAGE")).append(" ").append(attributes[0]).append("  ");
+        //buffer = new StringBuilder("[ ").append(Res.getString("PAGE")).append(" ").append(attributes[0]).append("  ");
+        buffer = new StringBuilder("[ ").append(sPage).append(" ").append(attributes[0]).append("  ");
         boolean goToFileReached = false;
         int i = OPEN + 1;
         for (; i < attributes.length; i++) {
@@ -339,8 +401,8 @@ public class Bookmark extends DefaultMutableTreeNode {
         return buffer.toString();
     }
 
-    public String getExtendedDescription(String pageSeparator,
-            String attributeSeparator, boolean useThousandths) {
+    public String getExtendedDescriptionNoTitle(String prepend, String pageSeparator, String attributeSeparator,
+            boolean useThousandths) {
 
         if (pageSeparator == null) {
             pageSeparator = pageSep;
@@ -350,8 +412,7 @@ public class Bookmark extends DefaultMutableTreeNode {
             attributeSeparator = attributeSep;
         }
 
-        StringBuilder buffer = new StringBuilder(title);
-        buffer.append(pageSeparator);
+        StringBuilder buffer = new StringBuilder(pageSeparator);
         buffer.append(pageNumber);
         buffer.append(attributeSeparator);
         buffer.append(Colors.colorToString(color));
@@ -447,7 +508,7 @@ public class Bookmark extends DefaultMutableTreeNode {
         } else if (type == BookmarkType.Uri) {
             buffer.append(uri);
         } else if (type == BookmarkType.Launch) {
-            buffer.append(fileToLaunch);
+            buffer.append(getFileToLaunch());
         } else if (type == BookmarkType.GoToFile) {
         }
 
@@ -458,10 +519,102 @@ public class Bookmark extends DefaultMutableTreeNode {
             buffer.append(remoteFilePath);
         }
 
+        if (!chainedBookmarks.isEmpty()) {
+            String newLine = System.getProperty("line.separator");
+            for (Bookmark b : chainedBookmarks) {
+                buffer.append(newLine);
+                buffer.append(prepend);
+                buffer.append(b.getExtendedDescriptionNoTitle(prepend, pageSeparator, attributeSeparator, useThousandths));
+            }
+        }
+
         return buffer.toString();
+
     }
 
-    public static Bookmark bookmarkFromString(IBookmarksConverter converter,
+    public ArrayList<Bookmark> getChainedBookmarks() {
+        return chainedBookmarks;
+    }
+
+    public void setChainedBookmarks(ArrayList<Bookmark> chained) {
+        chainedBookmarks = chained;
+    }
+    
+    public String getExtendedDescription(String indentationForHierarchy, String pageSeparator,
+            String attributeSeparator, boolean useThousandths) {
+
+        //indent chained bookmarks to be aligned with the first
+        StringBuilder indentToAlignChainedBookmark = new StringBuilder();
+        if (indentationForHierarchy != null) {
+            indentToAlignChainedBookmark.append(indentationForHierarchy);
+        }
+        for (int i = 0; i < title.length(); i++) {
+            indentToAlignChainedBookmark.append(" ");
+        }
+        return title + getExtendedDescriptionNoTitle(indentToAlignChainedBookmark.toString(), pageSeparator, attributeSeparator, useThousandths);
+    }
+
+    private static boolean isBetweenAttributesSeparator(String line, String token, int tokenIndex, String attributesSeparator) {
+
+        boolean betweenAttributesSeparator = false;
+
+        //check if after the token an attributes separator is present
+        for (int i = (tokenIndex + token.length()); i < line.length(); i++) {
+            char c = line.charAt(i);
+            if (!Character.isWhitespace(c)) {
+                if (line.substring(i, i + attributesSeparator.length()).equals(attributesSeparator)) {
+                    betweenAttributesSeparator = true;
+                    break;
+                }
+            }
+        }
+
+        //check if before the token an attributes separator is present
+        for (int i = tokenIndex; i >= 0; i--) {
+            char c = line.charAt(i);
+            if (!Character.isWhitespace(c)) {
+                if (line.substring(i - attributesSeparator.length() + 1, i).equals(attributesSeparator)) {
+                    betweenAttributesSeparator = true;
+                    break;
+                }
+            }
+        }
+
+        return betweenAttributesSeparator;
+    }
+
+    private static int findProblematicBookmarksTypesIndex(String line, String attributesSeparator) {
+
+        String[] types = new String[]{BookmarkType.GoToFile.toString(),
+            BookmarkType.Launch.toString(), BookmarkType.Uri.toString()};
+
+        int typeIndex = -1;
+        for (String type : types) {
+            typeIndex = line.lastIndexOf(type);
+            if (typeIndex != -1
+                    && isBetweenAttributesSeparator(line, type, typeIndex, attributesSeparator)) {
+                break;
+            }
+        }
+        return typeIndex;
+    }
+
+    private static int findPageSepIndex(String line, String attributesSeparator, String pageSeparator) {
+        //if there is a GoToFile or Launch or Uri we must be sure the pageSeparator is
+        //before the bookmark type attribute otherwise could be a path separator
+        int lastCharToScan = findProblematicBookmarksTypesIndex(line, attributesSeparator);
+        int pageSepIndex;
+        if (lastCharToScan != -1) {
+            //further trying to avoid that Launch Uri or GoToFIle are part of the tile or file name
+            //for that check if they are followed and preceeded by attribute separator
+            pageSepIndex = line.substring(0, lastCharToScan).lastIndexOf(pageSeparator);
+        } else {
+            pageSepIndex = line.lastIndexOf(pageSeparator);
+        }
+        return pageSepIndex;
+    }
+
+    public static Bookmark bookmarkFromString(Bookmark chainedBookmarkFather, IBookmarksConverter converter,
             String line, String indentation, String pageSeparator,
             String attributesSeparator) {
 
@@ -473,15 +626,7 @@ public class Bookmark extends DefaultMutableTreeNode {
             line = line.replaceFirst(indentation, "");
         }
 
-        //if there is a GoToFile we must be sure the pageSeparator is
-        //before the GoToFile attribute otherwise could be a path separator
-        int goToFileIndex = line.lastIndexOf(BookmarkType.GoToFile.toString());
-        int pageSepIndex;
-        if (goToFileIndex != -1) {
-            pageSepIndex = line.substring(0, goToFileIndex).lastIndexOf(pageSeparator);
-        } else {
-            pageSepIndex = line.lastIndexOf(pageSeparator);
-        }
+        int pageSepIndex = findPageSepIndex(line, attributesSeparator, pageSeparator);
 
         String title = line;
         String attributes = null;
@@ -621,12 +766,19 @@ public class Bookmark extends DefaultMutableTreeNode {
                     wellFormed = false;
                 }
                 break;
+            case Launch:
+                try {
+                    bookmark.setFileToLaunch(tokens[++typeIndex].trim());
+                } catch (Exception e) {
+                    wellFormed = false;
+                }
+                break;
         }
 
         try {
             if (tokens[++typeIndex].trim().equalsIgnoreCase(BookmarkType.GoToFile.toString())) {
                 bookmark.setRemoteDestination(true);
-                StringBuffer remotePath = new StringBuffer();
+                StringBuilder remotePath = new StringBuilder();
                 //if the path contains the attributes separator we must add all
                 //remaining tokens to get the correct path
                 remotePath.append(tokens[++typeIndex]);
@@ -641,7 +793,13 @@ public class Bookmark extends DefaultMutableTreeNode {
 
         if (!wellFormed) {
             bookmark.setColor(Color.red);
-            bookmark.setTitle(Res.getString("PARSE_ERROR") + " " + bookmark.getTitle());
+            //bookmark.setTitle(Res.getString("PARSE_ERROR") + " " + bookmark.getTitle());
+            bookmark.setTitle(parseError + " " + bookmark.getTitle());
+        }
+
+        if (bookmark.getTitle().isEmpty() && chainedBookmarkFather != null) {
+            chainedBookmarkFather.addChainedBookmark(bookmark);
+            return null;
         }
 
         return bookmark;
@@ -667,6 +825,7 @@ public class Bookmark extends DefaultMutableTreeNode {
         int newFatherIndex = 1;
         Bookmark current = null;
         Bookmark father = null;
+        Bookmark chainedBookmarkFather = null;
         int numLine = 0;
         while ((line = br.readLine()) != null) {
             numLine++;
@@ -674,26 +833,29 @@ public class Bookmark extends DefaultMutableTreeNode {
             if (line.isEmpty()) {
                 continue;
             }
-            if (line.lastIndexOf(indentation) <= 0) {
-                fatherIndex = line.lastIndexOf(indentation) + 1;
-            } else {
-                fatherIndex = line.lastIndexOf(indentation) / indentation.length() + 1;
-            }
-            newFatherIndex = fatherIndex + 1;
-            current = bookmarkFromString(converter, line, indentation, pageSeparator,
+            current = bookmarkFromString(chainedBookmarkFather, converter, line, indentation, pageSeparator,
                     attributesSeparator);
-            if (fatherIndex >= fathers.size()) {
-                father = fathers.get(fathers.size() - 1);
-            } else {
-                father = fathers.get(fatherIndex);
-            }
-            father.add(current);
-
-            if (newFatherIndex < fathers.size()) {
-                fathers.remove(newFatherIndex);
-                fathers.add(newFatherIndex, current);
-            } else {
-                fathers.add(current);
+            //null is returned in case of chained bookmark
+            if (current != null) {
+                if (line.lastIndexOf(indentation) <= 0) {
+                    fatherIndex = line.lastIndexOf(indentation) + 1;
+                } else {
+                    fatherIndex = line.lastIndexOf(indentation) / indentation.length() + 1;
+                }
+                newFatherIndex = fatherIndex + 1;
+                if (fatherIndex >= fathers.size()) {
+                    father = fathers.get(fathers.size() - 1);
+                } else {
+                    father = fathers.get(fatherIndex);
+                }
+                father.add(current);
+                chainedBookmarkFather = current;
+                if (newFatherIndex < fathers.size()) {
+                    fathers.remove(newFatherIndex);
+                    fathers.add(newFatherIndex, current);
+                } else {
+                    fathers.add(current);
+                }
             }
         }
         br.close();
@@ -727,7 +889,7 @@ public class Bookmark extends DefaultMutableTreeNode {
                 fatherIndex = line.lastIndexOf(indentation) / indentation.length() + 1;
             }
             newFatherIndex = fatherIndex + 1;
-            current = bookmarkFromString(converter, line, indentation, pageSeparator,
+            current = bookmarkFromString(current, converter, line, indentation, pageSeparator,
                     attributesSeparator);
             if (fatherIndex >= fathers.size()) {
                 father = fathers.get(fathers.size() - 1);

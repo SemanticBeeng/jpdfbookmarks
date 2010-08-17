@@ -21,6 +21,7 @@
  */
 package it.flavianopetrocchi.jpdfbookmarks;
 
+import it.flavianopetrocchi.jpdfbookmarks.bookmark.Bookmark;
 import it.flavianopetrocchi.mousedraggabletree.MouseDraggableTree;
 import java.awt.Color;
 import java.awt.Component;

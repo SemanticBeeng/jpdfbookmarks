@@ -21,6 +21,8 @@
  */
 package it.flavianopetrocchi.jpdfbookmarks;
 
+import it.flavianopetrocchi.jpdfbookmarks.bookmark.BookmarkType;
+
 public enum FitType {
 
     FitNative,

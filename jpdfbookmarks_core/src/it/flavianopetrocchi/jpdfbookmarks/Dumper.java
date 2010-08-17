@@ -21,6 +21,8 @@
  */
 package it.flavianopetrocchi.jpdfbookmarks;
 
+import it.flavianopetrocchi.jpdfbookmarks.bookmark.IBookmarksConverter;
+import it.flavianopetrocchi.jpdfbookmarks.bookmark.Bookmark;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.Enumeration;
@@ -110,7 +112,7 @@ public class Dumper extends OutlinePresentation {
         if (converter == null) {
             return;
         }
-        Bookmark root = converter.getRootBookmark();
+        Bookmark root = converter.getRootBookmark(userPrefs.getConvertNamedDestinations());
         if (root != null) {
             Enumeration preOrder = root.preorderEnumeration();
             printEnumeration(out, preOrder);
@@ -180,10 +182,12 @@ public class Dumper extends OutlinePresentation {
 
         while (e.hasMoreElements()) {
             Bookmark b = (Bookmark) e.nextElement();
+            StringBuilder indentLevel = new StringBuilder();
             for (int i = 0; i < (b.getLevel() - 1); i++) {
-                printer.print(indent);
+                indentLevel.append(indent);
             }
-            printer.println(b.getExtendedDescription(psep, asep, useThousandths));
+            printer.print(indentLevel);
+            printer.println(b.getExtendedDescription(indentLevel.toString(), psep, asep, useThousandths));
         }
     }
 }

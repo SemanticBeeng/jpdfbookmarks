@@ -19,14 +19,16 @@
  * You should have received a copy of the GNU General Public License
  * along with JPdfBookmarks.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package it.flavianopetrocchi.jpdfbookmarks;
 
+import it.flavianopetrocchi.jpdfbookmarks.bookmark.Bookmark;
+import it.flavianopetrocchi.jpdfbookmarks.bookmark.IBookmarksConverter;
 import it.flavianopetrocchi.utilities.FileOperationEvent;
 import it.flavianopetrocchi.utilities.FileOperationListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import javax.management.ServiceNotFoundException;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
@@ -39,6 +41,7 @@ public class UnifiedFileOperator {
     private File file;
     private boolean showOnOpen = false;
     private Bookmark root;
+    private Prefs userPrefs = new Prefs();
 
     public File getFile() {
         return file;
@@ -54,9 +57,14 @@ public class UnifiedFileOperator {
     public void open(File file) throws Exception {
         this.file = file;
         filePath = file.getAbsolutePath();
-        IBookmarksConverter bookmarksConverter = new iTextBookmarksConverter(filePath);
+//        IBookmarksConverter bookmarksConverter = new iTextBookmarksConverter(filePath);
+        IBookmarksConverter bookmarksConverter = JPdfBookmarks.getBookmarksConverter();
+        if (bookmarksConverter == null) {
+            throw new ServiceNotFoundException(Res.getString("ERROR_BOOKMARKS_CONVERTER_NOT_FOUND"));
+        }
+        bookmarksConverter.open(filePath);
         showOnOpen = bookmarksConverter.showBookmarksOnOpen();
-        root = bookmarksConverter.getRootBookmark();
+        root = bookmarksConverter.getRootBookmark(userPrefs.getConvertNamedDestinations());
         if (viewPanel instanceof PdfViewAdapter) {
             PdfViewAdapter v = (PdfViewAdapter) viewPanel;
             v.setIBookmarksConverter(bookmarksConverter);
@@ -100,7 +108,12 @@ public class UnifiedFileOperator {
 
     public boolean saveAs(Bookmark root, String path) {
         try {
-            IBookmarksConverter bookmarksConverter = new iTextBookmarksConverter(filePath);
+            //IBookmarksConverter bookmarksConverter = new iTextBookmarksConverter(filePath);
+            IBookmarksConverter bookmarksConverter = JPdfBookmarks.getBookmarksConverter();
+            bookmarksConverter.open(filePath);
+            if (bookmarksConverter == null) {
+                throw new ServiceNotFoundException(Res.getString("ERROR_BOOKMARKS_CONVERTER_NOT_FOUND"));
+            }
             bookmarksConverter.setShowBookmarksOnOpen(showOnOpen);
             bookmarksConverter.rebuildBookmarksFromTreeNodes(root);
             bookmarksConverter.save(path);
