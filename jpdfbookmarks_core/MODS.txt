@@ -9,8 +9,8 @@
 2010-08-20  Hide Bookmarks for fields only support named filds and not 
             dictionary fields. Only a single field per action is supoprted for
             hide bookmarks while pdf standard supports arrays of fields.
-2010-08-20  Add Cut Paste between different files.
 2010-08-21  Add support for encrypted pdf.
+2010-08-20  Add Copy Cut Paste for multiple bookmarks.
 
 ================================================================================
     BUGS CORRECTED AND FEATURES ADDED
@@ -41,4 +41,5 @@
             options dialog if someone prefers the old way. 
 2010-08-19  Bookmarks with named destinations were not copied correctly 
 2010-08-19  Unknown bookmarks should be maintained as Unknown type not default 
-            to FitWidth and must be handled correctly when reapplying. 
+            to FitWidth and must be handled correctly when reapplying.
+2010-08-20  Add Copy Cut Paste between different files.

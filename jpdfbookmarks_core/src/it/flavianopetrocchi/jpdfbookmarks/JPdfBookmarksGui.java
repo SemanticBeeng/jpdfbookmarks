@@ -1109,17 +1109,21 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         }
     }
 
-    private void delete() {
+    private ArrayList<Bookmark> getSelectedBookmarks() {
 
-        ArrayList<Bookmark> deleteList = new ArrayList<Bookmark>();
+        ArrayList<Bookmark> bookmarksList = new ArrayList<Bookmark>();
         TreePath[] paths = bookmarksTree.getSelectionPaths();
         for (TreePath path : paths) {
-            deleteList.add((Bookmark) path.getLastPathComponent());
+            bookmarksList.add((Bookmark) path.getLastPathComponent());
         }
+        return bookmarksList;
+    }
+
+    private void delete() {
 
         UndoableDeleteBookmark undoableDelete =
                 new UndoableDeleteBookmark(
-                bookmarksTreeModel, deleteList);
+                bookmarksTreeModel, getSelectedBookmarks());
 
         undoableDelete.doEdit();
         recreateNodesOpenedState();
@@ -1132,6 +1136,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             Bookmark bookmark = (Bookmark) path.getLastPathComponent();
             bookmark.setBold(bold);
         }
+
         //try to trigger a selection to update the menu presentation
 //		bookmarksTree.setSelectionPaths(paths);
         SwingUtilities.updateComponentTreeUI(bookmarksTree);

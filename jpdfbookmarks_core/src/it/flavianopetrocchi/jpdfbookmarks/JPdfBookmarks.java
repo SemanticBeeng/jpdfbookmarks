@@ -65,7 +65,7 @@ class JPdfBookmarks {
         SHOW_ON_OPEN,
     }
     // <editor-fold defaultstate="expanded" desc="Member variables">
-    public static final String VERSION = "2.3.0";
+    public static final String VERSION = "2.4.0";
     public static final String APP_NAME = "JPdfBookmarks";
     protected static final String NEWLINE = System.getProperty("line.separator");
     public static final String DOWNLOAD_URL =
