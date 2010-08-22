@@ -134,6 +134,7 @@ import javax.swing.event.UndoableEditListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import javax.swing.undo.CannotUndoException;
@@ -610,12 +611,12 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
         //enable or disable actions applicable to multiple bookmarks
         Ut.enableActions((bookmark != null), setBoldAction, setItalicAction,
-                changeColorAction, applyPageOffset, deleteAction);
+                changeColorAction, applyPageOffset, deleteAction, renameAction);
 
         //enable or disable actions applicable to only a single bookmark
         TreePath[] paths = bookmarksTree.getSelectionPaths();
         Ut.enableActions((bookmark != null) && (paths.length == 1), cutAction, copyAction,
-                addChildAction, renameAction, setDestFromViewAction, showActionsDialog, addWebLinkAction, addLaunchLinkAction);
+                addChildAction, setDestFromViewAction, showActionsDialog, addWebLinkAction, addLaunchLinkAction);
 
         //Ut.enableComponents((bookmark != null), cutMenuItem, copyMenuItem);
         if (bookmark != null) {
@@ -841,6 +842,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         } catch (CannotUndoException ex) {
         } finally {
             updateUndoRedoPresentation();
+            bookmarksTreeModel.nodeStructureChanged((TreeNode) bookmarksTreeModel.getRoot());
             recreateNodesOpenedState();
         }
     }
@@ -852,6 +854,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         } catch (CannotUndoException ex) {
         } finally {
             updateUndoRedoPresentation();
+            bookmarksTreeModel.nodeStructureChanged((TreeNode) bookmarksTreeModel.getRoot());
             recreateNodesOpenedState();
         }
     }
@@ -1169,8 +1172,29 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     }
 
     private void rename() {
-        bookmarksTree.startEditingAtPath(
-                bookmarksTree.getSelectionPath());
+        if (bookmarksTree.getSelectionCount() > 1) {
+            String s = (String) JOptionPane.showInputDialog(
+                    bookmarksTree,
+                    Res.getString("INSERT_NEW_TITLE"),
+                    JPdfBookmarks.APP_NAME,
+                    JOptionPane.PLAIN_MESSAGE,
+                    null,
+                    null,
+                    getSelectedBookmark().getTitle());
+
+            if ((s != null) && (s.length() > 0)) {
+                UndoableRenameAction undoableRename =
+                        new UndoableRenameAction(bookmarksTree, s);
+
+                undoableRename.doEdit();
+                bookmarksTreeModel.nodeStructureChanged((TreeNode) bookmarksTreeModel.getRoot());
+                recreateNodesOpenedState();
+                undoSupport.postEdit(undoableRename);
+            }
+        } else {
+            bookmarksTree.startEditingAtPath(
+                    bookmarksTree.getSelectionPath());
+        }
     }
 
     public void showErrorMessage(String resMessage) {
@@ -1785,7 +1809,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         };
 
         renameAction = new ActionBuilder("ACTION_RENAME", "ACTION_RENAME_DESCR",
-                null, "edit-select-all.png", false) {
+                "ctrl F2", "edit-select-all.png", false) {
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -2932,7 +2956,9 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             File actualFile = fileOperator.getFile();
             try {
                 File absoluteActualFile = actualFile.getAbsoluteFile();
-                File absoluteRemoteFile = new File(bookmarkToFollow.getRemoteFilePath()).getAbsoluteFile();
+//                File absoluteRemoteFile = new File(bookmarkToFollow.getRemoteFilePath()).getAbsoluteFile();
+                File absoluteRemoteFile = Ut.createAbsolutePath(absoluteActualFile,
+                        new File(bookmarkToFollow.getRemoteFilePath()));
                 JPdfBookmarksGui gui = alreadyOpenedIn(absoluteRemoteFile.getCanonicalFile());
                 if (gui != null) {
                     gui.requestFocus();
@@ -3117,10 +3143,16 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         public void keyReleased(KeyEvent e) {
             super.keyReleased(e);
             int code = e.getKeyCode();
-            int[] triggers = new int[]{KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT,
-                KeyEvent.VK_UP, KeyEvent.VK_DOWN, KeyEvent.VK_HOME,
-                KeyEvent.VK_END, KeyEvent.VK_PAGE_DOWN,
-                KeyEvent.VK_PAGE_UP};
+            int[] triggers;
+            if (userPrefs.getNumClicks() > 1) {
+                triggers = new int[]{KeyEvent.VK_ENTER, KeyEvent.VK_SPACE};
+
+            } else {
+                triggers = new int[]{KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT,
+                            KeyEvent.VK_UP, KeyEvent.VK_DOWN, KeyEvent.VK_HOME,
+                            KeyEvent.VK_END, KeyEvent.VK_PAGE_DOWN,
+                            KeyEvent.VK_PAGE_UP};
+            }
 
             for (int trigger : triggers) {
                 if (trigger == code) {

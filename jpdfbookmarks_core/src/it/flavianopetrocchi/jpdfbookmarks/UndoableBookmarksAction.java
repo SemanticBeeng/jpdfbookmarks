@@ -22,17 +22,22 @@
 package it.flavianopetrocchi.jpdfbookmarks;
 
 import it.flavianopetrocchi.jpdfbookmarks.bookmark.Bookmark;
-import javax.swing.tree.TreeModel;
+import java.util.ArrayList;
+import javax.swing.JTree;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
 
 public abstract class UndoableBookmarksAction extends AbstractUndoableEdit {
 
-    protected TreeModel treeModel;
+    protected DefaultTreeModel treeModel;
     protected Bookmark selectedBookmark;
+    protected JTree tree;
 
-    public UndoableBookmarksAction(TreeModel model) {
-        treeModel = model;
+    protected UndoableBookmarksAction(JTree tree) {
+        this.tree = tree;
+        treeModel = (DefaultTreeModel) tree.getModel();
     }
 
     @Override
@@ -43,5 +48,29 @@ public abstract class UndoableBookmarksAction extends AbstractUndoableEdit {
 
     public void doEdit() {
         
+    }
+
+    protected Bookmark getSelectedBookmark() {
+        TreePath path = tree.getSelectionPath();
+        if (path == null) {
+            return null;
+        }
+
+        Bookmark treeNode = null;
+        try {
+            treeNode = (Bookmark) path.getLastPathComponent();
+        } catch (ClassCastException e) {
+        }
+        return treeNode;
+    }
+
+    protected ArrayList<Bookmark> getSelectedBookmarks() {
+
+        ArrayList<Bookmark> bookmarksList = new ArrayList<Bookmark>();
+        TreePath[] paths = tree.getSelectionPaths();
+        for (TreePath path : paths) {
+            bookmarksList.add((Bookmark) path.getLastPathComponent());
+        }
+        return bookmarksList;
     }
 }

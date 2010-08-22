@@ -80,7 +80,7 @@ public class Ut {
     public static String rtrim(String s) {
 
         StringBuffer sb = new StringBuffer(s);
-        
+
         for (int i = sb.length() - 1; i >= 0; i--) {
             char c = sb.charAt(i);
             if (Character.isWhitespace(c)) {
@@ -89,7 +89,7 @@ public class Ut {
                 break;
             }
         }
-        
+
         return sb.toString();
     }
 
@@ -164,6 +164,23 @@ public class Ut {
 
         is.close();
         return bytes;
+    }
+
+    /**
+     * Create an absolute path file from a target path relative to a base path
+     *
+     * @param base The path relative to which target is indicated
+     * @param target The path relative to base
+     * @return The absolute path to target
+     */
+    public static File createAbsolutePath(File base, File target) {
+        File absoluteTarget = target;
+        if (!target.isAbsolute()) {
+            String containingFolder = base.getParent();
+            String remotePath = containingFolder + File.separator + target.getPath();
+            absoluteTarget = new File(remotePath);
+        }
+        return absoluteTarget.getAbsoluteFile();
     }
 
     public static File createRelativePath(File base, File target) {

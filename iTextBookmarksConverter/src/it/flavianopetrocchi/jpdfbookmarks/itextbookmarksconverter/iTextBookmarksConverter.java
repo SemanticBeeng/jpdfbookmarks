@@ -95,11 +95,14 @@ import java.awt.Color;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class iTextBookmarksConverter implements IBookmarksConverter {
 
@@ -386,20 +389,6 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
         } else if (PdfName.GOTOR.equals(
                 PdfReader.getPdfObjectRelease(
                 action.get(PdfName.S)))) {
-            dest = PdfReader.getPdfObjectRelease(
-                    action.get(PdfName.D));
-            if (dest != null) {
-                if (dest.isString()) {
-                    bookmark.setNamedDestination(dest.toString());
-                } else if (dest.isName()) {
-                    bookmark.setNamedDestination(
-                            PdfName.decodeName(dest.toString()));
-                    bookmark.setNamedAsName(true);
-                } else if (dest.isArray()) {
-                    PdfArray arr = (PdfArray) dest;
-                    makeBookmarkParam(bookmark, arr, null);
-                }
-            }
             bookmark.setRemoteDestination(true);
             PdfObject file = PdfReader.getPdfObjectRelease(
                     action.get(PdfName.F));
@@ -413,6 +402,37 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
                     if (file.isString()) {
                         bookmark.setRemoteFilePath(
                                 ((PdfString) file).toUnicodeString());
+                    }
+                }
+            }
+            dest = PdfReader.getPdfObjectRelease(
+                    action.get(PdfName.D));
+            if (dest != null) {
+                if (dest.isString()) {
+                    bookmark.setNamedDestination(dest.toString());
+                } else if (dest.isName()) {
+                    bookmark.setNamedDestination(
+                            PdfName.decodeName(dest.toString()));
+                    bookmark.setNamedAsName(true);
+                } else if (dest.isArray()) {
+                    PdfArray arr = (PdfArray) dest;
+                    PdfReader remoteReader;
+                    try {
+//                        File remoteFile = new File(bookmark.getRemoteFilePath());
+//                        if (!remoteFile.isAbsolute()) {
+//                            File openedFile = new File(filePath);
+//                            String containingFolder = openedFile.getParent();
+//                            String remotePath = containingFolder + File.separator + bookmark.getRemoteFilePath();
+//                            remoteFile = new File(remotePath);
+//                        }
+                        File remoteFile = Ut.createAbsolutePath(new File(filePath),
+                                new File(bookmark.getRemoteFilePath()));
+                        remoteReader = new PdfReader(remoteFile.getCanonicalPath());
+                        makeBookmarkParam(remoteReader, bookmark, arr, null);
+                        remoteReader.close();
+                    } catch (IOException ex) {
+                        //System.out.println(ex.getMessage());
+                    } finally {
                     }
                 }
             }
@@ -620,7 +640,7 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
             PdfArray namedDest = getNamedDestination(reader, dest.toString(), false);
             Bookmark namedTarget = new Bookmark();
             namedTarget.setTitle(dest.toString());
-            makeBookmarkParam(namedTarget, (PdfArray) namedDest, pages);
+            makeBookmarkParam(reader, namedTarget, (PdfArray) namedDest, pages);
             bookmark.setNamedTarget(namedTarget);
         } else if (dest.isName()) {
             if (namesAsName == null) {
@@ -633,10 +653,10 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
             PdfArray namedDest = getNamedDestination(reader, name, true);
             Bookmark namedTarget = new Bookmark();
             namedTarget.setTitle(name);
-            makeBookmarkParam(namedTarget, (PdfArray) namedDest, pages);
+            makeBookmarkParam(reader, namedTarget, (PdfArray) namedDest, pages);
             bookmark.setNamedTarget(namedTarget);
         } else if (dest.isArray()) {
-            makeBookmarkParam(bookmark, (PdfArray) dest, pages);
+            makeBookmarkParam(reader, bookmark, (PdfArray) dest, pages);
         }
     }
 
@@ -658,7 +678,7 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
         return arr;
     }
 
-    private String makeBookmarkParam(Bookmark bookmark, PdfArray dest, IntHashtable pages) {
+    private String makeBookmarkParam(PdfReader reader, Bookmark bookmark, PdfArray dest, IntHashtable pages) {
         StringBuilder s = new StringBuilder();
         PdfObject obj = dest.getPdfObject(0);
         if (obj.isNumber()) {
@@ -672,9 +692,10 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
         }
 
         Rectangle pageSize = null;
-        if (bookmark.getType().equals(BookmarkType.GoToFile) == false) {
+        //if (bookmark.getType().equals(BookmarkType.GoToFile) == false) {
+        //if (!bookmark.isRemoteDestination()) {
             pageSize = reader.getPageSize(bookmark.getPageNumber());
-        }
+        //}
 
         if (pageSize != null) {
             bookmark.setPageWidth(pageSize.getWidth());
