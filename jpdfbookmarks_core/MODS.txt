@@ -1,0 +1,44 @@
+================================================================================
+    BUGS TO SOLVE AND FEATURES TO ADD
+================================================================================
+2010-07-20  Add undoable support for nodes added and nodes copied.
+2010-08-19  When the window is minimized and closed from there the dialog to ask
+            save action should appear at the centre of the screen.
+2010-08-20  Unknown bookmarks cannot have chained bookmarks because don't have 
+            an action to witch attach the other actions.
+2010-08-20  Hide Bookmarks for fields only support named filds and not 
+            dictionary fields. Only a single field per action is supoprted for
+            hide bookmarks while pdf standard supports arrays of fields.
+2010-08-20  Add Cut Paste between different files.
+2010-08-21  Add support for encrypted pdf.
+
+================================================================================
+    BUGS CORRECTED AND FEATURES ADDED
+================================================================================
+2010-07-06  Not using bytes array for opening pdf files, using a temporary file
+            to save changes to the same file, necessary to limit memory usage
+            with large files;
+2010-07-07  Problem with trailing spaces or tabs in bookmarks text lines;
+2010-07-07  Output file in command line doesn't check if the file already
+            exists, should ask confirmation before overwriting;
+2010-07-07  Silent mode in command line, no confirmation asked for overwrite;
+2010-07-07  Saving modifications to a large file can be time consuming should
+            be done in its own thread in gui mode, like opening does;
+2010-07-08  Support different encodings for bookmarks text files, added
+            --encoding option to specify encoding on the command line and a
+            field in the options dialog for a persistent encoding setting;
+2010-07-09  Now the --output options is available also for the dump mode from
+            command line, so redirection is not more necessary to obtain a
+            bookmarks.txt file, this permits to dump with a different encoding
+            using the option --encoding
+2010-08-10  Added a bookmark type to Launch an executable or a file associated 
+            with a local application
+2010-08-12  Added support for bookmarks with multiple actions both by command
+            line and by gui
+2010-08-18  Now default behavior is to use double click to activate bookmarks
+            and follow the link, so now you can use single click to work on 
+            bookmarks without being interrupted, this can be changed in the 
+            options dialog if someone prefers the old way. 
+2010-08-19  Bookmarks with named destinations were not copied correctly 
+2010-08-19  Unknown bookmarks should be maintained as Unknown type not default 
+            to FitWidth and must be handled correctly when reapplying. 

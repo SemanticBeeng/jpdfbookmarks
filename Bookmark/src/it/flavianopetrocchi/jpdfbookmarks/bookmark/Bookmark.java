@@ -31,12 +31,14 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.StringTokenizer;
 import javax.swing.tree.DefaultMutableTreeNode;
 
-public class Bookmark extends DefaultMutableTreeNode {
+public class Bookmark extends DefaultMutableTreeNode implements Serializable {
 
     protected static final String NEWLINE = System.getProperty("line.separator");
     private ArrayList<Bookmark> chainedBookmarks = new ArrayList<Bookmark>();
@@ -58,22 +60,39 @@ public class Bookmark extends DefaultMutableTreeNode {
     private String pageSep = "/";
     private String attributeSep = ",";
     private String namedDestination = "";
+    private Bookmark namedTarget;
     private boolean opened = false;
     private float pageHeight = Float.NaN;
     private float pageWidth = Float.NaN;
     private String uri;
     private String remoteFilePath;
     private String fileToLaunch;
-    private boolean newWindow = false;
+    private boolean newWindow = true;
     private boolean remoteDestination = false;
     private boolean namedAsName = false;
-    private Bookmark namedTarget;
-    private static IBookmarksConverter converter;
+    private String fieldNameToHide = null;
+    private boolean hide = true;
+
 //	private long pageWidth;
 //	private long pageHeight;
-
     public Bookmark() {
         title = defaultTitle;
+    }
+
+    public String getFieldNameToHide() {
+        return fieldNameToHide;
+    }
+
+    public void setFieldNameToHide(String fieldNameToHide) {
+        this.fieldNameToHide = fieldNameToHide;
+    }
+
+    public boolean isHide() {
+        return hide;
+    }
+
+    public void setHide(boolean hide) {
+        this.hide = hide;
     }
 
     public static void localizeStrings(String defTitle, String page, String parseErr) {
@@ -144,7 +163,7 @@ public class Bookmark extends DefaultMutableTreeNode {
         //return f.toString();
         return s.toString();
     }
-    
+
     public String getFileToLaunch() {
         if (fileToLaunch == null) {
             return null;
@@ -316,9 +335,41 @@ public class Bookmark extends DefaultMutableTreeNode {
     public void setZoom(float zoom) {
         this.zoom = zoom;
     }// </editor-fold>
-    
+
     public void clearChainedBookmarks() {
         chainedBookmarks.clear();
+    }
+
+    public static Bookmark cloneBookmark(Bookmark bookmarkToClone, boolean copyChildren) {
+        Bookmark clonedBookmark;
+        clonedBookmark = new Bookmark();
+        clonedBookmark.cloneAppearance(bookmarkToClone);
+        clonedBookmark.cloneDestination(bookmarkToClone);
+        if (copyChildren) {
+            cloneBookmarkWithChildren(clonedBookmark, bookmarkToClone);
+        }
+        return clonedBookmark;
+    }
+
+    private static void cloneBookmarkWithChildren(Bookmark father, Bookmark bookmarkToClone) {
+
+        Enumeration e = bookmarkToClone.children();
+        while (e.hasMoreElements()) {
+            Bookmark child = (Bookmark) e.nextElement();
+            Bookmark clonedChild = new Bookmark();
+            clonedChild.cloneAppearance(child);
+            clonedChild.cloneDestination(child);
+            father.add(clonedChild);
+            cloneBookmarkWithChildren(clonedChild, child);
+        }
+    }
+
+    public void cloneAppearance(Bookmark bookmark) {
+        setTitle(bookmark.getTitle());
+        setColor(bookmark.getColor());
+        setItalic(bookmark.isItalic());
+        setBold(bookmark.isBold());
+        setOpened(bookmark.isOpened());
     }
 
     public void cloneDestination(Bookmark bookmark) {
@@ -332,6 +383,11 @@ public class Bookmark extends DefaultMutableTreeNode {
         setFileToLaunch(bookmark.getFileToLaunch());
         setNamedAsName(bookmark.isNamedAsName());
         setNamedDestination(bookmark.getNamedDestination());
+        Bookmark target = bookmark.getNamedTarget();
+        if (target != null) {
+            Bookmark copiedTarget = cloneBookmark(target, false);
+            setNamedTarget(copiedTarget);
+        }
         setNewWindow(bookmark.isNewWindow());
         setRemoteDestination(bookmark.isRemoteDestination());
         setRemoteFilePath(bookmark.getRemoteFilePath());
@@ -340,13 +396,24 @@ public class Bookmark extends DefaultMutableTreeNode {
         setThousandthsRight(bookmark.getThousandthsRight());
         setThousandthsTop(bookmark.getThousandthsTop());
         setThousandthsLeft(bookmark.getThousandthsLeft());
+        setFieldNameToHide(bookmark.getFieldNameToHide());
+        setHide(bookmark.isHide());
+
+        chainedBookmarks.clear();
+        ArrayList<Bookmark> chainedBookmarksToCopy = bookmark.getChainedBookmarks();
+        chainedBookmarks.ensureCapacity(chainedBookmarksToCopy.size());
+        for (Bookmark b : chainedBookmarksToCopy) {
+            Bookmark copy = new Bookmark();
+            copy.cloneDestination(b);
+            chainedBookmarks.add(copy);
+        }
     }
 
 //    public Bookmark(Object outlineNode) {
 //        super(outlineNode);
 //    }
     public String getDescription(boolean useThousandths) {
-        
+
         String extendedDescr = getExtendedDescription(null, null, null, useThousandths);
         StringBuilder buffer = new StringBuilder(extendedDescr);
 
@@ -355,7 +422,7 @@ public class Bookmark extends DefaultMutableTreeNode {
         if (firstNewLineIndex != -1) {
             buffer.delete(firstNewLineIndex, buffer.length());
         }
-        
+
         if (isRemoteDestination()) {
             String filePath = getRemoteFilePath();
             int filePathIndex = buffer.lastIndexOf(filePath);
@@ -509,6 +576,10 @@ public class Bookmark extends DefaultMutableTreeNode {
             buffer.append(uri);
         } else if (type == BookmarkType.Launch) {
             buffer.append(getFileToLaunch());
+        } else if (type == BookmarkType.Hide) {
+            buffer.append(getFieldNameToHide());
+            buffer.append(attributeSeparator);
+            buffer.append(isHide());
         } else if (type == BookmarkType.GoToFile) {
         }
 
@@ -539,7 +610,7 @@ public class Bookmark extends DefaultMutableTreeNode {
     public void setChainedBookmarks(ArrayList<Bookmark> chained) {
         chainedBookmarks = chained;
     }
-    
+
     public String getExtendedDescription(String indentationForHierarchy, String pageSeparator,
             String attributeSeparator, boolean useThousandths) {
 
@@ -773,6 +844,13 @@ public class Bookmark extends DefaultMutableTreeNode {
                     wellFormed = false;
                 }
                 break;
+            case Hide:
+                try {
+                    bookmark.setFieldNameToHide(tokens[++typeIndex].trim());
+                    bookmark.setHide(!(tokens[++typeIndex].trim().equalsIgnoreCase("false")));
+                } catch (Exception e) {
+                    wellFormed = false;
+                }
         }
 
         try {
@@ -862,7 +940,7 @@ public class Bookmark extends DefaultMutableTreeNode {
         return newOutline;
     }
 
-    public static Bookmark outlineFromBufferedReader(
+    public static Bookmark outlineFromBufferedReader(IBookmarksConverter converter,
             BufferedReader br, String indentation, String pageSeparator,
             String attributesSeparator) throws IOException {
 
@@ -910,7 +988,7 @@ public class Bookmark extends DefaultMutableTreeNode {
 
     }
 
-    public static Bookmark outlineFromString(
+    public static Bookmark outlineFromString(IBookmarksConverter converter,
             String bookmarks, String indentation, String pageSeparator,
             String attributesSeparator)
             throws IOException {
@@ -918,7 +996,7 @@ public class Bookmark extends DefaultMutableTreeNode {
 
         BufferedReader br = new BufferedReader(new StringReader(bookmarks));
 
-        return outlineFromBufferedReader(br, indentation, pageSeparator, attributesSeparator);
+        return outlineFromBufferedReader(converter, br, indentation, pageSeparator, attributesSeparator);
     }
 
     @Override
@@ -970,5 +1048,25 @@ public class Bookmark extends DefaultMutableTreeNode {
 
     public static int horizontalFromThousandths(int thousandths, float width) {
         return (thousandths == -1) ? -1 : Math.round(thousandths * width / 1000.0f);
+    }
+
+    public void setRemoteFilePathWithChildren(File file) {
+        Enumeration<Bookmark> e = this.preorderEnumeration();
+        while (e.hasMoreElements()) {
+            Bookmark b = e.nextElement();
+            setRemoteTarget(b, file);
+        }
+    }
+
+    private void setRemoteTarget(Bookmark b, File file) {
+        if (b.type != BookmarkType.Launch && b.type != BookmarkType.Uri
+                && !b.isRemoteDestination()) {
+            b.setRemoteDestination(true);
+            b.setRemoteFilePath(file.getPath());
+        }
+
+        for (Bookmark chained : b.getChainedBookmarks()) {
+            setRemoteTarget(chained, file);
+        }
     }
 }

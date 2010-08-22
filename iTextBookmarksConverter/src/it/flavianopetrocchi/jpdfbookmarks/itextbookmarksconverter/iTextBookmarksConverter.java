@@ -247,6 +247,10 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
         } else if (type == BookmarkType.Uri) {
             map.put("Action", "URI");
             map.put("URI", bookmark.getUri());
+        } else if (type == BookmarkType.Hide) {
+            map.put("Action", "Hide");
+            map.put("FieldName", bookmark.getFieldNameToHide());
+            map.put("Hide", String.valueOf(bookmark.isHide()));
         } else if (type != BookmarkType.Unknown) {
             if (bookmark.isRemoteDestination()) {
                 map.put("Action", "GoToR");
@@ -300,6 +304,8 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
                 }
                 map.put("Page", pageDest.toString());
             }
+        } else {
+            //Unknown type
         }
 
         ArrayList<Bookmark> chainedBookmarks = bookmark.getChainedBookmarks();
@@ -439,6 +445,23 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
                     }
                 }
             }
+        } else if (PdfName.HIDE.equals(
+                PdfReader.getPdfObjectRelease(action.get(PdfName.S)))) {
+            bookmark.setType(BookmarkType.Hide);
+            PdfObject annotation = PdfReader.getPdfObjectRelease(action.get(PdfName.T));
+            if (annotation != null) {
+                if (annotation.isDictionary()) {
+                } else if (annotation.isArray()) {
+                } else if (annotation.isString()) {
+                    bookmark.setFieldNameToHide(((PdfString) annotation).toUnicodeString());
+                }
+            }
+            PdfBoolean hide = (PdfBoolean) PdfReader.getPdfObjectRelease(action.get(PdfName.H));
+            if (hide != null) {
+                bookmark.setHide(hide.booleanValue());
+            }
+        } else {
+            bookmark.setType(BookmarkType.Unknown);
         }
     }
 
@@ -513,6 +536,8 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
                         outline.get(PdfName.A));
                 if (action != null) {
                     setActionsRecursive(bookmark, action);
+                } else {
+                    bookmark.setType(BookmarkType.Unknown);
                 }
             }
         } catch (Exception e) {

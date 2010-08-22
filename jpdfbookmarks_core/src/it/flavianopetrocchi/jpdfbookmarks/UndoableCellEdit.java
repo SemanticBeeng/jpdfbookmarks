@@ -19,8 +19,6 @@
  * You should have received a copy of the GNU General Public License
  * along with JPdfBookmarks.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-
 package it.flavianopetrocchi.jpdfbookmarks;
 
 import it.flavianopetrocchi.jpdfbookmarks.bookmark.Bookmark;
@@ -29,37 +27,36 @@ import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
-
 public class UndoableCellEdit extends AbstractUndoableEdit {
-	private	String newText;
-	private String oldText;
-	private DefaultTreeModel treeModel;
-	private Bookmark bookmark;
 
-	public UndoableCellEdit(DefaultTreeModel model, Bookmark bookmark,
-			String newText) {
-		this.treeModel = model;
-		this.bookmark = bookmark;
-		this.newText = newText;
-		this.oldText = bookmark.getTitle();
-	}
+    private String newText;
+    private String oldText;
+    private DefaultTreeModel treeModel;
+    private Bookmark bookmark;
 
-	@Override
-	public void undo() throws CannotUndoException {
-		super.undo();
-		bookmark.setTitle(oldText);
-		treeModel.nodeStructureChanged(bookmark);
-	}
+    public UndoableCellEdit(DefaultTreeModel model, Bookmark bookmark,
+            String newText) {
+        this.treeModel = model;
+        this.bookmark = bookmark;
+        this.newText = newText;
+        this.oldText = bookmark.getTitle();
+    }
 
-	@Override
-	public void redo() throws CannotRedoException {
-		super.redo();
-		doEdit();
-	}
+    @Override
+    public void undo() throws CannotUndoException {
+        super.undo();
+        bookmark.setTitle(oldText);
+        treeModel.nodeStructureChanged(bookmark);
+    }
 
-	public void doEdit() {
-		bookmark.setTitle(newText);
-		treeModel.nodeStructureChanged(bookmark);
-	}
+    @Override
+    public void redo() throws CannotRedoException {
+        super.redo();
+        doEdit();
+    }
 
+    public void doEdit() {
+        bookmark.setTitle(newText);
+        treeModel.nodeStructureChanged(bookmark);
+    }
 }

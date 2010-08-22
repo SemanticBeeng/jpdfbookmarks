@@ -186,7 +186,7 @@ public class ConnectionOptionsPanel extends javax.swing.JPanel {
                 .addComponent(checkUpdatesOnStart)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(checkConfirmWebAccess)
-                .addGap(80, 80, 80))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 

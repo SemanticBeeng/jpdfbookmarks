@@ -21,11 +21,8 @@
  */
 package it.flavianopetrocchi.jpdfbookmarks;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.awt.BorderLayout;
 import javax.swing.JOptionPane;
-import javax.swing.JToolBar;
-import javax.swing.SwingUtilities;
 
 public class OptionsDlg extends javax.swing.JDialog {
     public final static int GENERAL_PANEL = 0;
@@ -33,9 +30,10 @@ public class OptionsDlg extends javax.swing.JDialog {
     public final static int TOOLBARS_PANEL = 2;
 
     private Prefs userPrefs = new Prefs();
-    private GeneralOptionsPanel generalOptions = new GeneralOptionsPanel(userPrefs);
+    private SeparatorsPanel separatorsOptions = new SeparatorsPanel(userPrefs);
     private ConnectionOptionsPanel connectionOptions = new ConnectionOptionsPanel(userPrefs);
     private ToolbarsOptionsPanel toolbarsOptions = new ToolbarsOptionsPanel(userPrefs);
+    private GeneralOptionsPanel generalOptions = new GeneralOptionsPanel(userPrefs);
 //    private EncodingOptionsPanel encodingOptions = new EncodingOptionsPanel(userPrefs);
     private JPdfBookmarksGui gui;
 
@@ -47,11 +45,14 @@ public class OptionsDlg extends javax.swing.JDialog {
         gui = (JPdfBookmarksGui) parent;
         mainTabPane.addTab(Res.getString("TAB_GENERAL_OPTIONS"), generalOptions);
         mainTabPane.setMnemonicAt(0, Res.mnemonicFromRes("TAB_GENERAL_OPTIONS_MNEMONIC"));
+        mainTabPane.addTab(Res.getString("TAB_SEPARATOR_OPTIONS"), separatorsOptions);
+        mainTabPane.setMnemonicAt(0, Res.mnemonicFromRes("TAB_SEPARATOR_OPTIONS_MNEMONIC"));
         mainTabPane.addTab(Res.getString("TAB_CONNECTION_OPTIONS"), connectionOptions);
         mainTabPane.setMnemonicAt(0, Res.mnemonicFromRes("TAB_CONNECTION_OPTIONS_MNEMONIC"));
         mainTabPane.add(Res.getString("TAB_TOOLBARS_MANAGER"), toolbarsOptions);
 //        mainTabPane.setMnemonicAt(0, Res.mnemonicFromRes("TAB_ENCODING_OPTIONS_MNEMONIC"));
 //        mainTabPane.add(Res.getString("TAB_ENCODING_OPTIONS"), encodingOptions);
+        
         pack();
     }
 
@@ -60,9 +61,9 @@ public class OptionsDlg extends javax.swing.JDialog {
     }
 
     private boolean checkDifferentValuesAndEmptyValues() {
-        String pag = generalOptions.getPageSeparator();
-        String ind = generalOptions.getIndentationString();
-        String sep = generalOptions.getAttributesSeparator();
+        String pag = separatorsOptions.getPageSeparator();
+        String ind = separatorsOptions.getIndentationString();
+        String sep = separatorsOptions.getAttributesSeparator();
 
 
         if (pag.equals(ind) || pag.equals(sep) || ind.equals(sep)) {
@@ -93,21 +94,19 @@ public class OptionsDlg extends javax.swing.JDialog {
 
         jScrollPane1 = new javax.swing.JScrollPane();
         mainPanel = new javax.swing.JPanel();
-        btnOk = new javax.swing.JButton();
+        buttonsPanel = new javax.swing.JPanel();
         btnCancel = new javax.swing.JButton();
+        btnOk = new javax.swing.JButton();
+        tabsPanel = new javax.swing.JPanel();
         mainTabPane = new javax.swing.JTabbedPane();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("JPdfBookmarks");
+        setTitle("JPdfBookmarks"); // NOI18N
+
+        mainPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        mainPanel.setLayout(new java.awt.BorderLayout());
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("it/flavianopetrocchi/jpdfbookmarks/locales/localizedText"); // NOI18N
-        btnOk.setText(bundle.getString("OK")); // NOI18N
-        btnOk.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnOkActionPerformed(evt);
-            }
-        });
-
         btnCancel.setText(bundle.getString("CANCEL")); // NOI18N
         btnCancel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -115,34 +114,43 @@ public class OptionsDlg extends javax.swing.JDialog {
             }
         });
 
-        javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
-        mainPanel.setLayout(mainPanelLayout);
-        mainPanelLayout.setHorizontalGroup(
-            mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(mainTabPane, javax.swing.GroupLayout.DEFAULT_SIZE, 552, Short.MAX_VALUE)
-                    .addGroup(mainPanelLayout.createSequentialGroup()
-                        .addComponent(btnOk)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnCancel)))
+        btnOk.setText(bundle.getString("OK")); // NOI18N
+        btnOk.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnOkActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout buttonsPanelLayout = new javax.swing.GroupLayout(buttonsPanel);
+        buttonsPanel.setLayout(buttonsPanelLayout);
+        buttonsPanelLayout.setHorizontalGroup(
+            buttonsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(buttonsPanelLayout.createSequentialGroup()
+                .addGap(475, 475, 475)
+                .addComponent(btnOk)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnCancel)
                 .addContainerGap())
         );
 
-        mainPanelLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {btnCancel, btnOk});
+        buttonsPanelLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {btnCancel, btnOk});
 
-        mainPanelLayout.setVerticalGroup(
-            mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
+        buttonsPanelLayout.setVerticalGroup(
+            buttonsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(buttonsPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(mainTabPane, javax.swing.GroupLayout.DEFAULT_SIZE, 447, Short.MAX_VALUE)
-                .addGap(18, 18, 18)
-                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnOk)
-                    .addComponent(btnCancel))
-                .addContainerGap())
+                .addGroup(buttonsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnCancel)
+                    .addComponent(btnOk))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        mainPanel.add(buttonsPanel, java.awt.BorderLayout.PAGE_END);
+
+        tabsPanel.setLayout(new java.awt.BorderLayout());
+        tabsPanel.add(mainTabPane, java.awt.BorderLayout.CENTER);
+
+        mainPanel.add(tabsPanel, java.awt.BorderLayout.CENTER);
 
         jScrollPane1.setViewportView(mainPanel);
 
@@ -157,9 +165,9 @@ public class OptionsDlg extends javax.swing.JDialog {
                 return;
             }
 
-            String pag = generalOptions.getPageSeparator();
-            String ind = generalOptions.getIndentationString();
-            String sep = generalOptions.getAttributesSeparator();
+            String pag = separatorsOptions.getPageSeparator();
+            String ind = separatorsOptions.getIndentationString();
+            String sep = separatorsOptions.getAttributesSeparator();
 
             userPrefs.setPageSeparator(pag);
             userPrefs.setIndentationString(ind);
@@ -167,6 +175,7 @@ public class OptionsDlg extends javax.swing.JDialog {
             userPrefs.setConvertNamedDestinations(generalOptions.convertNamedDestinations());
             userPrefs.setUseThousandths(generalOptions.useThousandths());
             userPrefs.setCharsetEncoding(generalOptions.getCharsetEncoding());
+            userPrefs.setNumClicks(generalOptions.getNumClicks());
 
             userPrefs.setUseProxy(connectionOptions.useProxy());
             userPrefs.setProxyType(connectionOptions.getProxyType());
@@ -190,8 +199,10 @@ public class OptionsDlg extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCancel;
     private javax.swing.JButton btnOk;
+    private javax.swing.JPanel buttonsPanel;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JTabbedPane mainTabPane;
+    private javax.swing.JPanel tabsPanel;
     // End of variables declaration//GEN-END:variables
 }

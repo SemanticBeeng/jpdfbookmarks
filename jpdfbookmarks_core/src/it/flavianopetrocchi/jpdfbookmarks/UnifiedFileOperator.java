@@ -88,6 +88,7 @@ public class UnifiedFileOperator {
         fireFileOperationEvent(new FileOperationEvent(this, filePath,
                 FileOperationEvent.Operation.FILE_CLOSED));
         filePath = null;
+        file = null;
     }
 
     public void setFileChanged(boolean changed) {

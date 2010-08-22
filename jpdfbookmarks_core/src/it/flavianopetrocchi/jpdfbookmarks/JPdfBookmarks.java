@@ -386,6 +386,7 @@ class JPdfBookmarks {
                 apply();
                 break;
             case GUI:
+                //launchNewGuiInstance(inputFilePath, null);
                 EventQueue.invokeLater(new GuiLauncher(inputFilePath));
                 break;
             case HELP:
@@ -395,7 +396,7 @@ class JPdfBookmarks {
         }
     }
 
-    private class GuiLauncher implements Runnable {
+    public class GuiLauncher implements Runnable {
 
         private Bookmark firstTarget;
         private String inputPath;

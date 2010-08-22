@@ -19,8 +19,6 @@
  * You should have received a copy of the GNU General Public License
  * along with JPdfBookmarks.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-
 package it.flavianopetrocchi.jpdfbookmarks;
 
 import it.flavianopetrocchi.jpdfbookmarks.bookmark.Bookmark;
@@ -29,34 +27,33 @@ import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
-
 public class UndoableSetDestination extends AbstractUndoableEdit {
-	private DefaultTreeModel treeModel;
-	private Bookmark old, dest;
-	private Bookmark backup = new Bookmark();
 
-	public UndoableSetDestination(DefaultTreeModel model, Bookmark old,
-			Bookmark dest) {
-		this.treeModel = model;
-		this.backup.cloneDestination(old);
-		this.old = old;
-		this.dest = dest;
-	}
+    private DefaultTreeModel treeModel;
+    private Bookmark old, dest;
+    private Bookmark backup = new Bookmark();
 
-	@Override
-	public void undo() throws CannotUndoException {
-		super.undo();
-		old.cloneDestination(backup);
-	}
+    public UndoableSetDestination(DefaultTreeModel model, Bookmark old,
+            Bookmark dest) {
+        this.treeModel = model;
+        this.backup.cloneDestination(old);
+        this.old = old;
+        this.dest = dest;
+    }
 
-	@Override
-	public void redo() throws CannotRedoException {
-		super.redo();
-		doEdit();
-	}
+    @Override
+    public void undo() throws CannotUndoException {
+        super.undo();
+        old.cloneDestination(backup);
+    }
 
-	public void doEdit() {
-		old.cloneDestination(dest);
-	}
+    @Override
+    public void redo() throws CannotRedoException {
+        super.redo();
+        doEdit();
+    }
 
+    public void doEdit() {
+        old.cloneDestination(dest);
+    }
 }

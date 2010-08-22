@@ -286,7 +286,7 @@ public class MouseDraggableTree extends JTree {
     }
 
     private class TreeMouseListener extends MouseAdapter {
-
+        
         @Override
         public void mousePressed(MouseEvent e) {
             if (checkAndShowPopup(e)) {

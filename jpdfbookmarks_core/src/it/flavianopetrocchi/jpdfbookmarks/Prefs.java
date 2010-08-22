@@ -75,8 +75,10 @@ public class Prefs {
 
         public static final String CHARSET_ENCODING = "CHARSET_ENCODING";
 
+        public static final String NUM_CLICKS = "NUM_CLICKS";
 
 	private Dimension screenSize = null;
+    
 
 
 	Prefs() {
@@ -286,6 +288,14 @@ public class Prefs {
 			userPrefs.putInt(SIZE_HEIGHT, size.height);
 		}
 	}
+
+    int getNumClicks() {
+        return userPrefs.getInt(NUM_CLICKS, 2);
+    }
+    
+    void setNumClicks(int n) {
+        userPrefs.putInt(NUM_CLICKS, n);
+    }
 
 
 }

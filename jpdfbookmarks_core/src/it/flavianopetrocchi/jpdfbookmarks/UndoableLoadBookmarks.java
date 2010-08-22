@@ -19,8 +19,6 @@
  * You should have received a copy of the GNU General Public License
  * along with JPdfBookmarks.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-
 package it.flavianopetrocchi.jpdfbookmarks;
 
 import it.flavianopetrocchi.jpdfbookmarks.bookmark.Bookmark;
@@ -29,43 +27,42 @@ import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
-
 public class UndoableLoadBookmarks extends AbstractUndoableEdit {
-	private DefaultTreeModel treeModel;
-	private BookmarksTree tree;
-	private Bookmark oldRoot, newRoot;
 
-	public UndoableLoadBookmarks(DefaultTreeModel model, BookmarksTree tree, Bookmark newRoot) {
-		this.treeModel = model;
-		this.tree = tree;
-		this.oldRoot = (Bookmark) treeModel.getRoot();
-		this.newRoot = newRoot;
-	}
+    private DefaultTreeModel treeModel;
+    private BookmarksTree tree;
+    private Bookmark oldRoot, newRoot;
 
-	@Override
-	public void undo() throws CannotUndoException {
-		super.undo();
-		if (oldRoot != null) {
-			treeModel.setRoot(oldRoot);
-			tree.setRootVisible(false);
-			tree.setEditable(true);
-			tree.treeDidChange();
-		}
-	}
+    public UndoableLoadBookmarks(DefaultTreeModel model, BookmarksTree tree, Bookmark newRoot) {
+        this.treeModel = model;
+        this.tree = tree;
+        this.oldRoot = (Bookmark) treeModel.getRoot();
+        this.newRoot = newRoot;
+    }
 
-	@Override
-	public void redo() throws CannotRedoException {
-		super.redo();
-		doEdit();
-	}
+    @Override
+    public void undo() throws CannotUndoException {
+        super.undo();
+        if (oldRoot != null) {
+            treeModel.setRoot(oldRoot);
+            tree.setRootVisible(false);
+            tree.setEditable(true);
+            tree.treeDidChange();
+        }
+    }
 
-	public void doEdit() {
-		if (newRoot != null) {
-			treeModel.setRoot(newRoot);
-			tree.setRootVisible(false);
-			tree.setEditable(true);
-			tree.treeDidChange();
-		}
-	}
+    @Override
+    public void redo() throws CannotRedoException {
+        super.redo();
+        doEdit();
+    }
 
+    public void doEdit() {
+        if (newRoot != null) {
+            treeModel.setRoot(newRoot);
+            tree.setRootVisible(false);
+            tree.setEditable(true);
+            tree.treeDidChange();
+        }
+    }
 }

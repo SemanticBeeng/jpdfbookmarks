@@ -19,8 +19,6 @@
  * You should have received a copy of the GNU General Public License
  * along with JPdfBookmarks.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-
 package it.flavianopetrocchi.jpdfbookmarks;
 
 import it.flavianopetrocchi.jpdfbookmarks.bookmark.Bookmark;
@@ -31,40 +29,40 @@ import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
-
 public class UnboablePageOffset extends AbstractUndoableEdit {
-	private DefaultTreeModel treeModel;
-	TreePath[] paths;
-	private int offset;
 
-	public UnboablePageOffset(DefaultTreeModel model, 
-			TreePath[] selectedPaths, int offset) {
-		this.treeModel = model;
-		paths = selectedPaths;
-		this.offset = offset;
-	}
+    private DefaultTreeModel treeModel;
+    TreePath[] paths;
+    private int offset;
 
-	@Override
-	public void undo() throws CannotUndoException {
-		super.undo();
-		for (TreePath path : paths) {
-			Bookmark bookmark = (Bookmark) path.getLastPathComponent();
-			bookmark.setPageNumber(bookmark.getPageNumber() - offset);
-		}
-		treeModel.nodeStructureChanged((TreeNode) treeModel.getRoot());
-	}
+    public UnboablePageOffset(DefaultTreeModel model,
+            TreePath[] selectedPaths, int offset) {
+        this.treeModel = model;
+        paths = selectedPaths;
+        this.offset = offset;
+    }
 
-	@Override
-	public void redo() throws CannotRedoException {
-		super.redo();
-		doEdit();
-	}
+    @Override
+    public void undo() throws CannotUndoException {
+        super.undo();
+        for (TreePath path : paths) {
+            Bookmark bookmark = (Bookmark) path.getLastPathComponent();
+            bookmark.setPageNumber(bookmark.getPageNumber() - offset);
+        }
+        treeModel.nodeStructureChanged((TreeNode) treeModel.getRoot());
+    }
 
-	public void doEdit() {
-		for (TreePath path : paths) {
-			Bookmark bookmark = (Bookmark) path.getLastPathComponent();
-			bookmark.setPageNumber(offset + bookmark.getPageNumber());
-		}
-		treeModel.nodeStructureChanged((TreeNode) treeModel.getRoot());
-	}
+    @Override
+    public void redo() throws CannotRedoException {
+        super.redo();
+        doEdit();
+    }
+
+    public void doEdit() {
+        for (TreePath path : paths) {
+            Bookmark bookmark = (Bookmark) path.getLastPathComponent();
+            bookmark.setPageNumber(offset + bookmark.getPageNumber());
+        }
+        treeModel.nodeStructureChanged((TreeNode) treeModel.getRoot());
+    }
 }
