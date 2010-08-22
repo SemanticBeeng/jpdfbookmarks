@@ -3160,6 +3160,24 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                     break;
                 }
             }
+
+            if (e.isControlDown() && code == KeyEvent.VK_C) {
+                if (copyAction.isEnabled()) {
+                    copy(false);
+                }
+            }
+
+            if (e.isControlDown() && code == KeyEvent.VK_V) {
+                if (pasteAction.isEnabled()) {
+                    paste();
+                }
+            }
+
+            if (e.isControlDown() && code == KeyEvent.VK_X) {
+                if (cutAction.isEnabled()) {
+                    cut();
+                }
+            }
         }
     }
 
