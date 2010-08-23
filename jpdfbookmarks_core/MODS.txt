@@ -2,11 +2,9 @@
     BUGS TO SOLVE AND FEATURES TO ADD
 ================================================================================
 2010-07-20  Add undoable support for nodes added and nodes copied.
-2010-08-19  When the window is minimized and closed from there the dialog to ask
-            save action should appear at the centre of the screen.
 2010-08-20  Unknown bookmarks cannot have chained bookmarks because don't have 
             an action to witch attach the other actions.
-2010-08-20  Hide Bookmarks for fields only support named filds and not 
+2010-08-20  Hide Bookmarks for fields only support named fields and not
             dictionary fields. Only a single field per action is supoprted for
             hide bookmarks while pdf standard supports arrays of fields.
 2010-08-21  Add support for encrypted pdf.
@@ -42,4 +40,7 @@
 2010-08-19  Bookmarks with named destinations were not copied correctly 
 2010-08-19  Unknown bookmarks should be maintained as Unknown type not default 
             to FitWidth and must be handled correctly when reapplying.
-2010-08-20  Add Copy Cut Paste between different files.
+2010-08-20  Added Copy Cut Paste between different files.
+2010-08-23  Corrected multiple paste from the same copy or cut
+2010-08-19  When the window is minimized and closed from there the dialog to ask
+            save action should appear at the centre of the screen.

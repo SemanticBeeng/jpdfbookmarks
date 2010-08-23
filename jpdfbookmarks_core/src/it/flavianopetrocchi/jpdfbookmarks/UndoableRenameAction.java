@@ -23,9 +23,7 @@ package it.flavianopetrocchi.jpdfbookmarks;
 
 import it.flavianopetrocchi.jpdfbookmarks.bookmark.Bookmark;
 import java.util.ArrayList;
-import javax.swing.JOptionPane;
 import javax.swing.JTree;
-import javax.swing.tree.TreeNode;
 import javax.swing.undo.CannotUndoException;
 
 public class UndoableRenameAction extends UndoableBookmarksAction {

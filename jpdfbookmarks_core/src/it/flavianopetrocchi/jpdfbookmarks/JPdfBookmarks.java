@@ -105,18 +105,8 @@ class JPdfBookmarks {
         Bookmark.localizeStrings(Res.getString("DEFAULT_TITLE"), Res.getString("PAGE"), Res.getString("PARSE_ERROR"));
     }
 
-    public static IBookmarksConverter getBookmarksConverter() {
-        ServiceLoader<IBookmarksConverter> s = ServiceLoader.load(IBookmarksConverter.class);
-        Iterator<IBookmarksConverter> i = s.iterator();
-        if (i.hasNext()) {
-            return i.next();
-        }
-        //return new iTextBookmarksConverter();
-        return null;
-    }
-
     private IBookmarksConverter fatalGetConverterAndOpenPdf(String inputFilePath) {
-        IBookmarksConverter pdf = getBookmarksConverter();
+        IBookmarksConverter pdf = Bookmark.getBookmarksConverter();
         if (pdf != null) {
             try {
                 pdf.open(inputFilePath);
@@ -145,6 +135,12 @@ class JPdfBookmarks {
             if (getYesOrNo(Res.getString(
                     "ERR_INFILE_EQUAL_OUTFILE"))) {
                 outputFilePath = inputFilePath;
+                try {
+                    applier.save(outputFilePath);
+                    pdf.close();
+                } catch (IOException ex) {
+                    fatalSaveFileError(outputFilePath);
+                }
             }
         } else {
             File f = new File(outputFilePath);

@@ -391,8 +391,11 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             return true;
         }
 
+        //this is to centre the dialog to the screen when iconified
+        Component parent = (getState() != Frame.ICONIFIED) ? this : null;
+
         int response = JOptionPane.showConfirmDialog(
-                this,
+                parent,
                 Res.getString("ASK_SAVE_CHANGES"), title,
                 JOptionPane.YES_NO_CANCEL_OPTION,
                 JOptionPane.INFORMATION_MESSAGE);
@@ -970,6 +973,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         }
 
         File relativeFile = Ut.createRelativePath(fileOperator.getFile(), f);
+        String relativePath = Ut.onWindowsReplaceBackslashWithSlash(relativeFile.toString());
         Bookmark bookmark = getSelectedBookmark();
 
         switch (askAddOrReplace()) {
@@ -977,19 +981,18 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                 if (bookmark != null) {
                     bookmark.clearChainedBookmarks();
                     bookmark.setType(BookmarkType.Launch);
-                    bookmark.setFileToLaunch(relativeFile.getPath());
+                    bookmark.setFileToLaunch(relativePath);
                 }
                 break;
             case 1: //add
                 Bookmark b = new Bookmark();
                 b.setType(BookmarkType.Launch);
-                b.setFileToLaunch(relativeFile.getPath());
+                b.setFileToLaunch(relativePath);
                 bookmark.addChainedBookmark(b);
                 break;
             case 2: //cancel
                 return;
         }
-
 
         fileOperator.setFileChanged(true);
 
@@ -1089,8 +1092,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                 BookmarkSelection bs = (BookmarkSelection) content.getTransferData(bookmarkFlavor);
                 Bookmark bookmarkCopied = bs.getBookmark();
                 if (!fileOperator.getFile().equals(bs.getFile())) {
-                    bookmarkCopied.setRemoteFilePathWithChildren(
-                            Ut.createRelativePath(fileOperator.getFile(), bs.getFile()));
+                    File relativeRemoteFile = Ut.createRelativePath(fileOperator.getFile(), bs.getFile());
+                    bookmarkCopied.setRemoteFilePathWithChildren(relativeRemoteFile);
                 }
                 TreePath path = bookmarksTree.getSelectionPath();
                 Bookmark father;
@@ -1330,7 +1333,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         try {
 //            IBookmarksConverter converter =
 //                    new iTextBookmarksConverter(fileOperator.getFilePath());
-            IBookmarksConverter converter = JPdfBookmarks.getBookmarksConverter();
+            IBookmarksConverter converter = Bookmark.getBookmarksConverter();
             if (converter == null) {
                 showErrorMessage(Res.getString("ERROR_BOOKMARKS_CONVERTER_NOT_FOUND"));
                 throw new Exception();
@@ -2238,6 +2241,10 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         item = menuEdit.add(redoAction);
         item.setMnemonic(Res.mnemonicFromRes("MENU_REDO_MNEMONIC"));
         menuEdit.addSeparator();
+        menuEdit.add(cutAction);
+        menuEdit.add(copyAction);
+        menuEdit.add(pasteAction);
+        menuEdit.addSeparator();
         item = menuEdit.add(addSiblingAction);
         item.setMnemonic(Res.mnemonicFromRes("MENU_ADD_SIBLING_MNEMONIC"));
         item = menuEdit.add(addChildAction);
@@ -2562,9 +2569,14 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         fileToolbar.add(closeAction);
         mainToolbars.put(Prefs.SHOW_FILE_TB, fileToolbar);
 
-//        JToolBar undoToolbar = new JToolBar();
-//        undoToolbar.add(undoAction);
-//        undoToolbar.add(redoAction);
+        JToolBar undoToolbar = new JToolBar();
+        undoToolbar.add(undoAction);
+        undoToolbar.add(redoAction);
+        undoToolbar.addSeparator();
+        undoToolbar.add(cutAction);
+        undoToolbar.add(copyAction);
+        undoToolbar.add(pasteAction);
+        mainToolbars.put(Prefs.SHOW_UNDO_TB, undoToolbar);
 
         navigationToolbar = new JToolBar();
         JButton btn = navigationToolbar.add(goFirstPageAction);
@@ -2668,7 +2680,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         webToolbar.add(readOnlineManualAction);
 
         mainToolbarsPanel.add(fileToolbar);
-        //toolbarsPanel.add(undoToolbar);
+        mainToolbarsPanel.add(undoToolbar);
         mainToolbarsPanel.add(fitTypeToolbar);
         mainToolbarsPanel.add(zoomToolbar);
         mainToolbarsPanel.add(navigationToolbar);
@@ -2816,10 +2828,10 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         changeToolbar.add(renameAction);
         changeToolbar.add(deleteAction);
 
-        JToolBar undoToolbar = new JToolBar(JToolBar.VERTICAL);
-        bookmarksToolbars.put(Prefs.SHOW_UNDO_TB, undoToolbar);
-        undoToolbar.add(undoAction);
-        undoToolbar.add(redoAction);
+//        JToolBar undoToolbar = new JToolBar(JToolBar.VERTICAL);
+//        bookmarksToolbars.put(Prefs.SHOW_UNDO_TB, undoToolbar);
+//        undoToolbar.add(undoAction);
+//        undoToolbar.add(redoAction);
 
         JToolBar styleToolbar = new JToolBar(JToolBar.VERTICAL);
         bookmarksToolbars.put(Prefs.SHOW_STYLE_TB, styleToolbar);
@@ -2841,7 +2853,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
         bookmarksToolbarsPanel.add(addToolbar);
         bookmarksToolbarsPanel.add(changeToolbar);
-        bookmarksToolbarsPanel.add(undoToolbar);
+//        bookmarksToolbarsPanel.add(undoToolbar);
         bookmarksToolbarsPanel.add(styleToolbar);
         bookmarksToolbarsPanel.add(setDestToolbar);
 

@@ -60,4 +60,6 @@ public interface IBookmarksConverter {
 
         public int getCountOfPages();
 
+        public String getOpenedFilePath();
+
 }

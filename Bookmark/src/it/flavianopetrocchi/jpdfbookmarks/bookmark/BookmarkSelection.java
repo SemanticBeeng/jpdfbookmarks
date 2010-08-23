@@ -42,7 +42,7 @@ public class BookmarkSelection implements Transferable, ClipboardOwner, Serializ
     }
     
     public Bookmark getBookmark() {
-        return bookmark;
+        return Bookmark.cloneBookmark(bookmark, !bookmark.isOpened());
     }
     
     public boolean isCutOperation() {

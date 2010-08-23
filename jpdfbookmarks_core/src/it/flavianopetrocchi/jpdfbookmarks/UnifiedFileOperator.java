@@ -58,7 +58,7 @@ public class UnifiedFileOperator {
         this.file = file;
         filePath = file.getAbsolutePath();
 //        IBookmarksConverter bookmarksConverter = new iTextBookmarksConverter(filePath);
-        IBookmarksConverter bookmarksConverter = JPdfBookmarks.getBookmarksConverter();
+        IBookmarksConverter bookmarksConverter = Bookmark.getBookmarksConverter();
         if (bookmarksConverter == null) {
             throw new ServiceNotFoundException(Res.getString("ERROR_BOOKMARKS_CONVERTER_NOT_FOUND"));
         }
@@ -110,7 +110,7 @@ public class UnifiedFileOperator {
     public boolean saveAs(Bookmark root, String path) {
         try {
             //IBookmarksConverter bookmarksConverter = new iTextBookmarksConverter(filePath);
-            IBookmarksConverter bookmarksConverter = JPdfBookmarks.getBookmarksConverter();
+            IBookmarksConverter bookmarksConverter = Bookmark.getBookmarksConverter();
             bookmarksConverter.open(filePath);
             if (bookmarksConverter == null) {
                 throw new ServiceNotFoundException(Res.getString("ERROR_BOOKMARKS_CONVERTER_NOT_FOUND"));

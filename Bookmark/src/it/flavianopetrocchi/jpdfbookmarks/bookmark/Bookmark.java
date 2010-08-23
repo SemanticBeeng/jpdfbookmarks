@@ -35,6 +35,8 @@ import java.io.Serializable;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.ServiceLoader;
 import java.util.StringTokenizer;
 import javax.swing.tree.DefaultMutableTreeNode;
 
@@ -865,6 +867,20 @@ public class Bookmark extends DefaultMutableTreeNode implements Serializable {
                     remotePath.append(tokens[i]);
                 }
                 bookmark.setRemoteFilePath(remotePath.toString().trim());
+                IBookmarksConverter remoteFileConverter = getBookmarksConverter();
+                if (remoteFileConverter != null) {
+                    try {
+                        File absoluteRemoteFile = Ut.createAbsolutePath(new File(converter.getOpenedFilePath()),
+                                new File(bookmark.getRemoteFilePath()));
+                        remoteFileConverter.open(absoluteRemoteFile.getAbsolutePath());
+                        bookmark.setTop(verticalFromThousandths(bookmark.getThousandthsTop(),
+                                remoteFileConverter.getPageHeight(bookmark.getPageNumber())));
+                        bookmark.setLeft(horizontalFromThousandths(bookmark.getThousandthsLeft(),
+                                remoteFileConverter.getPageWidth(bookmark.getPageNumber())));
+                        remoteFileConverter.close();
+                    } catch (IOException ex) {
+                    }
+                }
             }
         } catch (Exception e) {
         }
@@ -938,6 +954,16 @@ public class Bookmark extends DefaultMutableTreeNode implements Serializable {
         }
         br.close();
         return newOutline;
+    }
+
+    public static IBookmarksConverter getBookmarksConverter() {
+        ServiceLoader<IBookmarksConverter> s = ServiceLoader.load(IBookmarksConverter.class);
+        Iterator<IBookmarksConverter> i = s.iterator();
+        if (i.hasNext()) {
+            return i.next();
+        }
+        //return new iTextBookmarksConverter();
+        return null;
     }
 
     public static Bookmark outlineFromBufferedReader(IBookmarksConverter converter,
@@ -1051,22 +1077,23 @@ public class Bookmark extends DefaultMutableTreeNode implements Serializable {
     }
 
     public void setRemoteFilePathWithChildren(File file) {
+        String path = Ut.onWindowsReplaceBackslashWithSlash(file.getPath());
         Enumeration<Bookmark> e = this.preorderEnumeration();
         while (e.hasMoreElements()) {
             Bookmark b = e.nextElement();
-            setRemoteTarget(b, file);
+            setRemoteTarget(b, path);
         }
     }
 
-    private void setRemoteTarget(Bookmark b, File file) {
+    private void setRemoteTarget(Bookmark b, String path) {
         if (b.type != BookmarkType.Launch && b.type != BookmarkType.Uri
                 && !b.isRemoteDestination()) {
             b.setRemoteDestination(true);
-            b.setRemoteFilePath(file.getPath());
+            b.setRemoteFilePath(path);
         }
 
         for (Bookmark chained : b.getChainedBookmarks()) {
-            setRemoteTarget(chained, file);
+            setRemoteTarget(chained, path);
         }
     }
 }

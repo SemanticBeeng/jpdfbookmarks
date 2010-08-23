@@ -257,8 +257,9 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
         } else if (type != BookmarkType.Unknown) {
             if (bookmark.isRemoteDestination()) {
                 map.put("Action", "GoToR");
-                map.put("File", bookmark.getRemoteFilePath());
-                //map.put("NewWindow", bookmark.isNewWindow());
+                String path = Ut.onWindowsReplaceBackslashWithSlash(bookmark.getRemoteFilePath());
+                map.put("File", path);
+                map.put("NewWindow", String.valueOf(bookmark.isNewWindow()));
             } else {
                 map.put("Action", "GoTo");
 //                if (type == BookmarkType.Named) {
@@ -394,8 +395,9 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
                     action.get(PdfName.F));
             if (file != null) {
                 if (file.isString()) {
-                    bookmark.setRemoteFilePath(
+                    String path = Ut.onWindowsReplaceBackslashWithSlash(
                             ((PdfString) file).toUnicodeString());
+                    bookmark.setRemoteFilePath(path);
                 } else if (file.isDictionary()) {
                     file = PdfReader.getPdfObject(
                             ((PdfDictionary) file).get(PdfName.F));
@@ -854,5 +856,9 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
     @Override
     public int getCountOfPages() {
         return reader.getNumberOfPages();
+    }
+
+    public String getOpenedFilePath() {
+        return filePath;
     }
 }

@@ -79,7 +79,7 @@ public class Ut {
 
     public static String rtrim(String s) {
 
-        StringBuffer sb = new StringBuffer(s);
+        StringBuilder sb = new StringBuilder(s);
 
         for (int i = sb.length() - 1; i >= 0; i--) {
             char c = sb.charAt(i);
@@ -183,36 +183,61 @@ public class Ut {
         return absoluteTarget.getAbsoluteFile();
     }
 
-    public static File createRelativePath(File base, File target) {
-        File relativeFile = target;
-        ArrayList<File> baseDirectories = new ArrayList<File>();
-        ArrayList<File> targetDirectories = new ArrayList<File>();
-        try {
-            File baseCanonical = base.getCanonicalFile();
-            File targetCanonical = target.getCanonicalFile();
-            File parent = baseCanonical.getParentFile();
-            while (parent != null) {
-                baseDirectories.add(parent);
-                parent = parent.getParentFile();
-            }
-            parent = targetCanonical.getParentFile();
-            while (parent != null) {
-                targetDirectories.add(parent);
-                parent = parent.getParentFile();
-            }
-
-            File commonBaseDir = null;
-
-            int baseIndex = baseDirectories.size() - 1;
-            int targetIndex = targetDirectories.size() - 1;
-            for (; baseIndex >= 0 && targetIndex >= 0; baseIndex--, targetIndex--) {
-                if (baseDirectories.get(baseIndex).equals(targetDirectories.get(targetIndex))) {
-                    commonBaseDir = baseDirectories.get(baseIndex);
-                } else {
-                    break;
+    public static String onWindowsReplaceBackslashWithSlash(String path) {
+        //most readers use a Unix like separator "/" instead of a "\" even on windows
+        StringBuilder s = new StringBuilder(path);
+        if (isWindowsSystem()) {
+            for (int i = 0; i < s.length(); i++) {
+                if (s.charAt(i) == '\\') {
+                    s.replace(i, i + 1, "/");
                 }
             }
+        }
+        return s.toString();
+    }
 
+    public static boolean isWindowsSystem() {
+        String sys = System.getProperty("os.name");
+        return sys.startsWith("Windows");
+    }
+
+    public static ArrayList<File> getParentDirectories(File f) {
+        ArrayList<File> directories = new ArrayList<File>();
+        File canonical = f.getAbsoluteFile();
+        try {
+            canonical = canonical.getCanonicalFile();
+        } catch (IOException ex) {
+        }
+        File parent = canonical.getParentFile();
+        while (parent != null) {
+            directories.add(parent);
+            //On Windows stop adding when you arrive at something like C:\ or D:\
+            if (isWindowsSystem() && parent.toString().endsWith(":\\")) {
+                break;
+            }
+            parent = parent.getParentFile();
+        }
+        return directories;
+    }
+
+    public static File createRelativePath(File base, File target) {
+        File relativeFile = target;
+        ArrayList<File> baseDirectories = getParentDirectories(base);
+        ArrayList<File> targetDirectories = getParentDirectories(target);
+
+        File commonBaseDir = null;
+
+        int baseIndex = baseDirectories.size() - 1;
+        int targetIndex = targetDirectories.size() - 1;
+        for (; baseIndex >= 0 && targetIndex >= 0; baseIndex--, targetIndex--) {
+            if (baseDirectories.get(baseIndex).equals(targetDirectories.get(targetIndex))) {
+                commonBaseDir = baseDirectories.get(baseIndex);
+            } else {
+                break;
+            }
+        }
+
+        if (commonBaseDir != null) {
             int upDirectories = baseIndex + 1;
 
             StringBuilder path = new StringBuilder();
@@ -226,8 +251,6 @@ public class Ut {
             }
             path.append(target.getName());
             relativeFile = new File(path.toString());
-
-        } catch (IOException ex) {
         }
 
         return relativeFile;
