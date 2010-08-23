@@ -3000,7 +3000,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             goToWebLink(bookmarkToFollow.getUri());
         } else if (bookmarkToFollow.getType() == BookmarkType.Launch) {
             launchFile(bookmarkToFollow.getFileToLaunch());
-        } else {
+        } else if (bookmarkToFollow.getType() != BookmarkType.Unknown) {
 
             int destPage = bookmarkToFollow.getPageNumber();
             viewPanel.goToPage(destPage);
@@ -3028,8 +3028,6 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                     checkInheritZoom.setSelected(bookmarkToFollow.getZoom() <= 0);
                     viewPanel.setTopLeftZoom(bookmarkToFollow.getTop(),
                             bookmarkToFollow.getLeft(), bookmarkToFollow.getZoom());
-                    break;
-                case Unknown:
                     break;
             }
         }

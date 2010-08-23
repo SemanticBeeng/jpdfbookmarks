@@ -442,7 +442,8 @@ public class Bookmark extends DefaultMutableTreeNode implements Serializable {
         }
         //String[] attributes = buffer.substring(pageSepIndex + pageSep.length()).split(attributeSep);
         //buffer = new StringBuilder("[ ").append(Res.getString("PAGE")).append(" ").append(attributes[0]).append("  ");
-        buffer = new StringBuilder("[ ").append(sPage).append(" ").append(attributes[0]).append("  ");
+        //buffer = new StringBuilder("[ ").append(sPage).append(" ").append(attributes[0]).append("  ");
+        buffer = new StringBuilder(sPage).append(" ").append(attributes[0]).append("  ");
         boolean goToFileReached = false;
         int i = OPEN + 1;
         for (; i < attributes.length; i++) {
@@ -465,7 +466,7 @@ public class Bookmark extends DefaultMutableTreeNode implements Serializable {
             buffer.append('\"');
         }
 
-        buffer.append("]");
+//        buffer.append(" ]");
 
         return buffer.toString();
     }

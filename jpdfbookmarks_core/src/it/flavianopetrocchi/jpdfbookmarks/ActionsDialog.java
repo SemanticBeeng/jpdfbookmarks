@@ -23,6 +23,7 @@
 package it.flavianopetrocchi.jpdfbookmarks;
 
 import it.flavianopetrocchi.jpdfbookmarks.bookmark.Bookmark;
+import it.flavianopetrocchi.jpdfbookmarks.bookmark.BookmarkType;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -290,9 +291,14 @@ public class ActionsDialog extends javax.swing.JDialog {
     private void btnOkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOkActionPerformed
 
         if (modified) {
-            bookmark.cloneDestination(actions.get(0));
-            actions.remove(0);
-            bookmark.setChainedBookmarks(actions);
+            if (!actions.isEmpty()) {
+                bookmark.cloneDestination(actions.get(0));
+                actions.remove(0);
+                bookmark.setChainedBookmarks(actions);
+            } else {
+                bookmark.setPageNumber(-1);
+                bookmark.setType(BookmarkType.Unknown);
+            }
         }
         dispose();
     }//GEN-LAST:event_btnOkActionPerformed

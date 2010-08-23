@@ -42,5 +42,7 @@
             to FitWidth and must be handled correctly when reapplying.
 2010-08-20  Added Copy Cut Paste between different files.
 2010-08-23  Corrected multiple paste from the same copy or cut
-2010-08-19  When the window is minimized and closed from there the dialog to ask
+2010-08-23  When the window is minimized and closed from there the dialog to ask
             save action should appear at the centre of the screen.
+2010-08-23  Corrected bug when removing all actions from a bookmark. Corrected
+            bug Unknown type followed in view.
