@@ -12,7 +12,7 @@
 JAR_NAME=jpdfbookmarks.jar
 JVM_OPTIONS="-Xms64m -Xmx512m"
 
-PATH_TO_TARGET=`readlink $0`
+PATH_TO_TARGET=`readlink -f $0`
 DIR_OF_TARGET=`dirname $PATH_TO_TARGET`
 
 if [ -n "$JAVA_HOME" ]; then
