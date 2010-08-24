@@ -42,7 +42,25 @@ import javax.swing.UIManager.LookAndFeelInfo;
 /**
  * Class for utlity static methods usefull in different situations.
  */
-public class Ut {
+public final class Ut {
+
+    private Ut() {
+    }
+
+    /**
+     *  The only value of this could be not save the string in memory with possibly a 
+     *  password inside using simple String.valueOf(array).getBytes()
+     * 
+     * @param array
+     * @return
+     */
+    public byte[] arrayOfCharsToArrayOfBytes(char[] array) {
+        byte[] byteArray = new byte[array.length];
+        for (int i = 0; i < array.length; i++) {
+            byteArray[i] = String.valueOf(array[i]).getBytes()[0];
+        }
+        return byteArray;
+    }
 
     /**
      * Get the class name for the current look and feel. The returned string can

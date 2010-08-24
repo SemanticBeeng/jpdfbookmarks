@@ -95,14 +95,11 @@ import java.awt.Color;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class iTextBookmarksConverter implements IBookmarksConverter {
 
@@ -147,6 +144,20 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
         return rootBookmark;
     }
 
+//    @Override
+//    public boolean isBookmarksEditingPermitted() {
+//        boolean permitted = true;
+//        if (reader.isEncrypted()) {
+//            int permissions = reader.getPermissions();
+//            if ((permissions & PdfWriter.ALLOW_ASSEMBLY) == PdfWriter.ALLOW_ASSEMBLY) {
+//                permitted = true;
+//            } else {
+//                permitted = false;
+//            }
+//        }
+//        return permitted;
+//    }
+
     @Override
     public boolean isEncryped() {
         return reader.isEncrypted();
@@ -154,22 +165,49 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
 
     @Override
     public final void open(String pdfPath) throws IOException {
+//        if (reader != null) {
+//            close();
+//        }
+//        this.filePath = pdfPath;
+//        //byte[] fileBytes = Ut.getBytesFromFile(new File(pdfPath));
+//        //random access seems to slow down loading a lot
+//        //reader = new PdfReader(new RandomAccessFileOrArray(fileBytes), null);
+//        //reader = new PdfReader(fileBytes);
+//        reader = new PdfReader(pdfPath);
+//        //reader = new PdfReader(new RandomAccessFileOrArray(this.filePath), null);
+//        int preferences = reader.getSimpleViewerPreferences();
+//        if ((preferences & PdfWriter.PageModeUseOutlines) == 0) {
+//            showOnOpen = false;
+//        } else {
+//            showOnOpen = true;
+//        }
+        open(pdfPath, null);
+    }
+    
+    @Override
+    public void open(String pdfPath, byte[] password)  throws IOException {
         if (reader != null) {
             close();
         }
         this.filePath = pdfPath;
-        //byte[] fileBytes = Ut.getBytesFromFile(new File(pdfPath));
-        //random access seems to slow down loading a lot
-        //reader = new PdfReader(new RandomAccessFileOrArray(fileBytes), null);
-        //reader = new PdfReader(fileBytes);
-        reader = new PdfReader(pdfPath);
-        //reader = new PdfReader(new RandomAccessFileOrArray(this.filePath), null);
+        if (password != null) {
+            reader = new PdfReader(pdfPath, password);
+        } else {
+            reader = new PdfReader(pdfPath);
+        }
         int preferences = reader.getSimpleViewerPreferences();
         if ((preferences & PdfWriter.PageModeUseOutlines) == 0) {
             showOnOpen = false;
         } else {
             showOnOpen = true;
         }
+    }
+
+    @Override
+    public boolean isBookmarksEditingPermitted() {
+        //for what we are concerned if we can write bookmarks it is not encrypted
+        //return ((reader.getPermissions() & PdfWriter.ALLOW_ASSEMBLY) == PdfWriter.ALLOW_ASSEMBLY);
+        return reader.isOpenedWithFullPermissions();
     }
 
     @Override
@@ -323,14 +361,41 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
 
         return map;
     }
+    
+    @Override
+    public void createUnencryptedCopy(File tmpFile) throws IOException {
+        try {
+            PdfStamper tmpStamper = new PdfStamper(reader, new FileOutputStream(tmpFile));
+            tmpStamper.close();
+        } catch (DocumentException ex) {
+        }
+    }
 
     @Override
     public void save(String filePath) throws IOException {
-        try {
+        save(filePath, null);
+    }
+
+    @Override
+    public void save(String filePath, byte[] ownerPassword) throws IOException {
+        save(filePath, null, null);
+    }
+
+
+    public void save(String path, byte[] userPassword, byte[] ownerPassword) throws IOException {
+                try {
             File tmp = File.createTempFile("jpdf", ".pdf");
             tmp.deleteOnExit();
             Ut.copyFile(this.filePath, tmp.getPath());
-            PdfReader tmpReader = new PdfReader(tmp.getPath());
+            PdfReader tmpReader;
+            if (ownerPassword != null) {
+                tmpReader = new PdfReader(tmp.getPath(), ownerPassword);
+            } else if (userPassword != null) {
+                tmpReader = new PdfReader(tmp.getPath(), userPassword);
+            } else {
+                tmpReader = new PdfReader(tmp.getPath());
+            }
+
             stamper = new PdfStamper(tmpReader, new FileOutputStream(filePath));
             if (outline != null) {
                 stamper.setOutlines(outline);
@@ -342,6 +407,15 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
                 preferences = preferences & ~PdfWriter.PageModeUseOutlines;
             }
             stamper.setViewerPreferences(preferences);
+
+            if (ownerPassword != null || userPassword != null) {
+//                tmpReader.computeUserPassword();
+                if (ownerPassword == null && userPassword != null) {
+                    ownerPassword = userPassword;
+                }
+                stamper.setEncryption(userPassword, ownerPassword,
+                        tmpReader.getPermissions(), tmpReader.getCryptoMode());
+            }
             stamper.close();
             tmp.delete();
         } catch (DocumentException ex) {
@@ -861,4 +935,6 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
     public String getOpenedFilePath() {
         return filePath;
     }
+
+
 }

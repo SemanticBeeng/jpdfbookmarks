@@ -105,13 +105,23 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
 
     @Override
     public void open(File file) throws Exception {
+        open(file, null);
+    }
+
+    @Override
+    public void open(File file, String password) throws Exception {
         if (decoder == null) {
             decoder = new PdfDecoder();
             decoder.setExtractionMode(PdfDecoder.TEXT);
             decoder.init(true);
         }
         //byte[] fileBytes = Ut.getBytesFromFile(file);
-        decoder.openPdfFile(file.getCanonicalPath());
+        if (password != null) {
+            decoder.setEncryptionPassword(password);
+            //decoder.openPdfFile(file.getCanonicalPath(), password);
+        } //else {
+            decoder.openPdfFile(file.getCanonicalPath());
+        //}
         //decoder.openPdfArray(fileBytes);
         pdfPageData = decoder.getPdfPageData();
         numberOfPages = decoder.getPageCount();

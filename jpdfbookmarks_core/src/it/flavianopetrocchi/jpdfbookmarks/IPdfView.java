@@ -30,6 +30,7 @@ import java.io.File;
 public interface IPdfView {
 	
 	public void open(File file) throws Exception;
+        public void open(File file, String password) throws Exception;
         public void reopen(File file) throws Exception;
 	public void close();
 

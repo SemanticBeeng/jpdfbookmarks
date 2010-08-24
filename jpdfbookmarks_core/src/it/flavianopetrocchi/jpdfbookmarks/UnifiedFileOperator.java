@@ -21,13 +21,16 @@
  */
 package it.flavianopetrocchi.jpdfbookmarks;
 
+import com.lowagie.text.exceptions.BadPasswordException;
 import it.flavianopetrocchi.jpdfbookmarks.bookmark.Bookmark;
 import it.flavianopetrocchi.jpdfbookmarks.bookmark.IBookmarksConverter;
 import it.flavianopetrocchi.utilities.FileOperationEvent;
 import it.flavianopetrocchi.utilities.FileOperationListener;
+import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import javax.management.ServiceNotFoundException;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -42,9 +45,16 @@ public class UnifiedFileOperator {
     private boolean showOnOpen = false;
     private Bookmark root;
     private Prefs userPrefs = new Prefs();
+    private byte[] ownerPassword;
+    private byte[] userPassword;
+    private boolean readonly = false;
 
     public File getFile() {
         return file;
+    }
+
+    public boolean isReadonly() {
+        return readonly;
     }
 
     public String getFilePath() {
@@ -54,32 +64,128 @@ public class UnifiedFileOperator {
     private ArrayList<FileOperationListener> fileOperationListeners =
             new ArrayList<FileOperationListener>();
 
+    private boolean askOwnerPassword(String msg) {
+        PasswordDialog d = new PasswordDialog(null, true, msg);
+        d.setLocationRelativeTo((Component) viewPanel);
+        d.setVisible(true);
+        if (d.okPressed()) {
+            ownerPassword = d.getPassword();
+            if (ownerPassword.length == 0) {
+                ownerPassword = null;
+            }
+        }
+        return d.okPressed();
+    }
+
+    private boolean askUserPassword(String msg) {
+        PasswordDialog d = new PasswordDialog(null, true, msg);
+        d.setLocationRelativeTo((Component) viewPanel);
+        d.setVisible(true);
+        if (d.okPressed()) {
+            userPassword = d.getPassword();
+            if (userPassword.length == 0) {
+                userPassword = null;
+            }
+        }
+        return d.okPressed();
+    }
+
     public void open(File file) throws Exception {
         this.file = file;
         filePath = file.getAbsolutePath();
-//        IBookmarksConverter bookmarksConverter = new iTextBookmarksConverter(filePath);
         IBookmarksConverter bookmarksConverter = Bookmark.getBookmarksConverter();
         if (bookmarksConverter == null) {
             throw new ServiceNotFoundException(Res.getString("ERROR_BOOKMARKS_CONVERTER_NOT_FOUND"));
         }
-        bookmarksConverter.open(filePath);
-        showOnOpen = bookmarksConverter.showBookmarksOnOpen();
-        root = bookmarksConverter.getRootBookmark(userPrefs.getConvertNamedDestinations());
-        if (viewPanel instanceof PdfViewAdapter) {
-            PdfViewAdapter v = (PdfViewAdapter) viewPanel;
-            v.setIBookmarksConverter(bookmarksConverter);
-        } else {
-            bookmarksConverter.close();
-            bookmarksConverter = null;
+
+
+        //open possibly using user password
+        boolean userPasswordNeeded = false;
+        while (true) {
+            try {
+                bookmarksConverter.open(filePath, userPassword);
+                break;
+            } catch (BadPasswordException e) {
+                userPasswordNeeded = true;
+                while (userPassword == null) {
+                    if (!askUserPassword(Res.getString("DIALOG_USER_PASSWORD"))) {
+                        //the user has renounced to open the file
+                        root = null;
+                        return;
+                    }
+                }
+            }
         }
 
-        viewPanel.open(file);
-        fireFileOperationEvent(new FileOperationEvent(this, filePath,
-                FileOperationEvent.Operation.FILE_OPENED));
+        //here instead we check for owner password
+        boolean ownerPasswordNeeded = false;
+        if (userPasswordNeeded) {
+            if (!bookmarksConverter.isBookmarksEditingPermitted()) {
+                ownerPasswordNeeded = true;
+            }
+        } else if (bookmarksConverter.isEncryped()) {
+            ownerPasswordNeeded = true;
+        }
+
+        if (ownerPasswordNeeded) {
+//                JOptionPane.showMessageDialog(null, Res.getString("ERROR_PDF_ENCRYPTED"), JPdfBookmarks.APP_NAME,
+//                    JOptionPane.ERROR_MESSAGE);
+ outer:     while (true) {
+                while (ownerPassword == null) {
+                    if (!askOwnerPassword(Res.getString("DIALOG_OWNER_PASSWORD"))) {
+                        //the user doesn't have owner password if possible open read only
+                        //if the userPassword is not necessary or has already been inserted
+                        if (!userPasswordNeeded || userPassword != null) {
+                            break outer;
+                        } else {
+                            root = null;
+                            return;
+                        }
+                    }
+                }
+                try {
+                    bookmarksConverter.close();
+                    bookmarksConverter.open(filePath, ownerPassword);
+                    break;
+                } catch (Exception e) {
+                    ownerPassword = null;
+                }
+            }
+        } 
+        
+        if (userPasswordNeeded /*|| ownerPasswordNeeded*/) {
+            //create an unencrypted copy fot jpedal panel
+            File tmp = File.createTempFile("jpdf", ".pdf");
+            tmp.deleteOnExit();
+            bookmarksConverter.createUnencryptedCopy(tmp);
+            viewPanel.open(tmp);
+        } else {
+            viewPanel.open(file);
+        }
+        
+        showOnOpen = bookmarksConverter.showBookmarksOnOpen();
+        root = bookmarksConverter.getRootBookmark(userPrefs.getConvertNamedDestinations());
+        bookmarksConverter.close();
+        bookmarksConverter = null;
+        FileOperationEvent.Operation op;
+        if (ownerPasswordNeeded && ownerPassword == null) {
+            op = FileOperationEvent.Operation.FILE_READONLY;
+            readonly = true;
+        } else {
+            op = FileOperationEvent.Operation.FILE_OPENED;
+        }
+        fireFileOperationEvent(new FileOperationEvent(this, filePath, op));
     }
 
     public Bookmark getRootBookmark() {
         return root;
+    }
+
+    private void zeroPasswordsMem(byte[] password) {
+        if (password != null) {
+            Arrays.fill(password, (byte)0);
+            password = null;
+        }
     }
 
     public void close() {
@@ -89,6 +195,9 @@ public class UnifiedFileOperator {
                 FileOperationEvent.Operation.FILE_CLOSED));
         filePath = null;
         file = null;
+        zeroPasswordsMem(ownerPassword);
+        zeroPasswordsMem(userPassword);
+        readonly = false;
     }
 
     public void setFileChanged(boolean changed) {
@@ -108,27 +217,30 @@ public class UnifiedFileOperator {
     }
 
     public boolean saveAs(Bookmark root, String path) {
+        boolean fileSaved = false;
         try {
             //IBookmarksConverter bookmarksConverter = new iTextBookmarksConverter(filePath);
             IBookmarksConverter bookmarksConverter = Bookmark.getBookmarksConverter();
-            bookmarksConverter.open(filePath);
             if (bookmarksConverter == null) {
                 throw new ServiceNotFoundException(Res.getString("ERROR_BOOKMARKS_CONVERTER_NOT_FOUND"));
             }
+
+            bookmarksConverter.open(filePath, userPassword);
             bookmarksConverter.setShowBookmarksOnOpen(showOnOpen);
             bookmarksConverter.rebuildBookmarksFromTreeNodes(root);
-            bookmarksConverter.save(path);
-            bookmarksConverter.close();
-            bookmarksConverter = null;
+            bookmarksConverter.save(path, userPassword, ownerPassword);
+            fileSaved = true;
             this.filePath = path;
             this.file = new File(path);
-            viewPanel.reopen(file);
+            //viewPanel.reopen(file);
             fireFileOperationEvent(new FileOperationEvent(this, path,
                     FileOperationEvent.Operation.FILE_SAVED));
             setFileChanged(false);
-            return true;
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(null, ex.getMessage(), JPdfBookmarks.APP_NAME,
+            bookmarksConverter.close();
+            bookmarksConverter = null;
+            return fileSaved;
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e.getMessage(), JPdfBookmarks.APP_NAME,
                     JOptionPane.ERROR_MESSAGE);
             return false;
         }

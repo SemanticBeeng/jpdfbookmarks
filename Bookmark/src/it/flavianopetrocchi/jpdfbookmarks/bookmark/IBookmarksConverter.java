@@ -19,47 +19,56 @@
  * You should have received a copy of the GNU General Public License
  * along with JPdfBookmarks.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-
 package it.flavianopetrocchi.jpdfbookmarks.bookmark;
 
+import java.io.File;
 import java.io.IOException;
 
 public interface IBookmarksConverter {
+    
+    public void close() throws IOException;
 
-	void close() throws IOException;
+    /**
+     * Constructs the bookmarks hierarchy and returns the root bookmark of the pdf
+     * or null if there are no bookmarks.
+     *
+     * @param convertNamedDestinations Whether to convert named destinations to explicit destinations.
+     * @return The root bookmark of the pdf, or null if the pdf has no bookmarks.
+     */
+    public Bookmark getRootBookmark(boolean convertNamedDestinations);
 
-	/**
-	 * Constructs the bookmarks hierarchy and returns the root bookmark of the pdf
-         * or null if there are no bookmarks.
-	 *
-         * @param convertNamedDestinations Whether to convert named destinations to explicit destinations.
-	 * @return The root bookmark of the pdf, or null if the pdf has no bookmarks.
-	 */
-	Bookmark getRootBookmark(boolean convertNamedDestinations);
+    public boolean isEncryped();
 
-	boolean isEncryped();
+    public boolean isBookmarksEditingPermitted();
 
-	void open(String pdfPath) throws IOException;
+    public void open(String pdfPath) throws IOException;
+    public void open(String path, byte[] bytes) throws IOException;
 
-	/**
-	 * Create an outline in the pdf from a Bookmark objects hierarchy starting
-	 * at the root given as parameter.
-	 *
-	 * @param root The root Bookmark of the outline.
-	 */
-	void rebuildBookmarksFromTreeNodes(Bookmark root);
+    public void createUnencryptedCopy(File tmpFile) throws IOException;
 
-	void save(String filePath) throws IOException;
+    /**
+     * Create an outline in the pdf from a Bookmark objects hierarchy starting
+     * at the root given as parameter.
+     *
+     * @param root The root Bookmark of the outline.
+     */
+    public void rebuildBookmarksFromTreeNodes(Bookmark root);
 
-	boolean showBookmarksOnOpen();
-	void setShowBookmarksOnOpen(boolean show);
+    public void save(String filePath) throws IOException;
+    public void save(String path, byte[] ownerPassword) throws IOException;
+    public void save(String path, byte[] userPassword, byte[] ownerPassword) throws IOException;
 
-	float getPageWidth(int pageNumber);
-	float getPageHeight(int pageNumber);
+    public boolean showBookmarksOnOpen();
 
-        public int getCountOfPages();
+    public void setShowBookmarksOnOpen(boolean show);
 
-        public String getOpenedFilePath();
+    public float getPageWidth(int pageNumber);
+
+    public float getPageHeight(int pageNumber);
+
+    public int getCountOfPages();
+
+    public String getOpenedFilePath();
+
 
 }

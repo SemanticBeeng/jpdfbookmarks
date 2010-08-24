@@ -27,6 +27,7 @@ import java.util.EventObject;
 public class FileOperationEvent extends EventObject {
 	public enum Operation {
 		FILE_OPENED,
+                FILE_READONLY,
 		FILE_CLOSED,
 		FILE_SAVED,
 		FILE_CHANGED

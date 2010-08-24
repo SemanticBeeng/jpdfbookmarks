@@ -46,3 +46,5 @@
             save action should appear at the centre of the screen.
 2010-08-23  Corrected bug when removing all actions from a bookmark. Corrected
             bug Unknown type followed in view.
+2010-08-24  Added encryption support to gui, user password and owner password as
+            well as permissions are maintained if present.

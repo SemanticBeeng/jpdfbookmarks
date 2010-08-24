@@ -387,7 +387,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     }
 
     public boolean askCloseWithoutSave() {
-        if (!fileOperator.getFileChanged()) {
+        if (!fileOperator.getFileChanged() || fileOperator.isReadonly()) {
             return true;
         }
 
@@ -429,7 +429,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
     @Override
     public void fileOperation(FileOperationEvent evt) {
-        if (evt.getOperation() == FileOperationEvent.Operation.FILE_OPENED) {
+        if (evt.getOperation() == FileOperationEvent.Operation.FILE_OPENED
+                || evt.getOperation() == FileOperationEvent.Operation.FILE_READONLY) {
             setTitle(title + ": " + evt.getPathToFile());
             userPrefs.setLastDirectory(evt.getPathToFile());
             userPrefs.addRecentFile(evt.getPathToFile());
@@ -438,12 +439,15 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                     viewPanel.getNumPages()));
             Ut.enableComponents(true, lblPageOfPages, txtGoToPage, txtZoom,
                     lblPercent);
-            Ut.enableActions(true, saveAsAction, closeAction, fitWidthAction,
+            Ut.enableActions(true, closeAction, fitWidthAction,
                     fitHeightAction, fitPageAction, fitNativeAction,
                     zoomInAction, zoomOutAction, goToPageAction, fitRectAction,
                     expandAllAction, collapseAllAction, topLeftZoomAction,
                     addSiblingAction, showOnOpenAction, dumpAction, loadAction,
                     selectText, connectToClipboard, openLinkedPdf);
+            if (evt.getOperation() == FileOperationEvent.Operation.FILE_OPENED) {
+                Ut.enableActions(true, saveAsAction);
+            }
             tbShowOnOpen.setSelected(fileOperator.getShowBookmarksOnOpen());
             cbShowOnOpen.setSelected(fileOperator.getShowBookmarksOnOpen());
             switch (viewPanel.getFitType()) {
@@ -469,6 +473,11 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                     break;
             }
             flavorsChanged();
+            if (evt.getOperation() == FileOperationEvent.Operation.FILE_READONLY) {
+                JOptionPane.showMessageDialog(this, Res.getString("MSG_READONLY"), JPdfBookmarks.APP_NAME,
+                        JOptionPane.WARNING_MESSAGE);
+                setTitle(getTitle() + " - " + Res.getString("READONLY"));
+            }
         } else if (evt.getOperation() == FileOperationEvent.Operation.FILE_CLOSED) {
             setTitle(title);
             txtGoToPage.setText("0");
@@ -493,7 +502,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             setEmptyBookmarksTree();
             undoManager.die();
         } else if (evt.getOperation() == FileOperationEvent.Operation.FILE_CHANGED) {
-            if (fileOperator.getFileChanged()) {
+            if (fileOperator.getFileChanged() && !fileOperator.isReadonly()) {
                 setTitle(title + ": " + evt.getPathToFile() + " *");
                 Ut.enableActions(true, saveAction);
             }
