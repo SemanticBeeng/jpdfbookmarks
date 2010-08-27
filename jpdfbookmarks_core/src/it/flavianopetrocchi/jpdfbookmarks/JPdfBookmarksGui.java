@@ -1036,7 +1036,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         }
         fileOperator.setFileChanged(true);
 
-        goToWebLink(address);
+        goToWebLinkAsking(address);
     }
 
     private void launchFile(String file) {
@@ -1056,7 +1056,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         }
     }
 
-    private void goToWebLink(String uri) {
+    private void goToWebLinkAsking(String uri) {
+
         if (userPrefs.getNeverAskWebAccess() == false) {
             int answer = JOptionPane.showConfirmDialog(this,
                     Res.getString("MSG_LAUNCH_BROWSER"), title,
@@ -1066,6 +1067,11 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                 return;
             }
         }
+
+        goToWebLink(uri);
+    }
+
+    private void goToWebLink(String uri) {
 
         Desktop desktop = Desktop.getDesktop();
         try {
@@ -1556,6 +1562,12 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             OutputStreamWriter outStream = new OutputStreamWriter(fos, userPrefs.getCharsetEncoding());
             dumper.printBookmarksIterative(outStream, (Bookmark) bookmarksTreeModel.getRoot());
             outStream.close();
+            Desktop desktop = Desktop.getDesktop();
+            try {
+                desktop.open(f);
+            } catch (Exception ex) {
+                showErrorMessage(Res.getString("ERR_LAUNCHING_FILE") + " " + f + ".");
+            }
         } catch (Exception exc) {
             JOptionPane.showMessageDialog(this,
                     Res.getString("ERROR_SAVING_FILE"),
@@ -3006,7 +3018,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         } else if (bookmarkToFollow.getType() == BookmarkType.Named) {
             followBookmarkInView(bookmarkToFollow.getNamedTarget());
         } else if (bookmarkToFollow.getType() == BookmarkType.Uri) {
-            goToWebLink(bookmarkToFollow.getUri());
+            goToWebLinkAsking(bookmarkToFollow.getUri());
         } else if (bookmarkToFollow.getType() == BookmarkType.Launch) {
             launchFile(bookmarkToFollow.getFileToLaunch());
         } else if (bookmarkToFollow.getType() != BookmarkType.Unknown) {

@@ -1,5 +1,7 @@
 package it.flavianopetrocchi.jpdfbookmarks;
 
+import it.flavianopetrocchi.utilities.Ut;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -36,8 +38,15 @@ public class PasswordDialog extends javax.swing.JDialog {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle(JPdfBookmarks.APP_NAME);
 
+        passwordField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                passwordFieldKeyPressed(evt);
+            }
+        });
+
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("it/flavianopetrocchi/jpdfbookmarks/locales/localizedText"); // NOI18N
         btnCancel.setText(bundle.getString("CANCEL")); // NOI18N
+        btnCancel.setDefaultCapable(false);
         btnCancel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnCancelActionPerformed(evt);
@@ -98,11 +107,13 @@ public class PasswordDialog extends javax.swing.JDialog {
     private void btnOkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOkActionPerformed
 
         char[] pass = passwordField.getPassword();
-        String s = "";
-        if (pass.length != 0) {
-            s = String.valueOf(pass);
-        }
-        password = s.getBytes();
+//        String s = "";
+//        if (pass.length != 0) {
+//            s = String.valueOf(pass);
+//        }
+//        password = s.getBytes();
+        password = Ut.arrayOfCharsToArrayOfBytes(pass);
+        
         Arrays.fill(pass, '0');
         okPressed = true;
         dispose();
@@ -112,6 +123,14 @@ public class PasswordDialog extends javax.swing.JDialog {
         okPressed = false;
         dispose();
     }//GEN-LAST:event_btnCancelActionPerformed
+
+    private void passwordFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_passwordFieldKeyPressed
+        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+            btnOkActionPerformed(null);
+        } else if (evt.getKeyCode() == KeyEvent.VK_ESCAPE) {
+            btnCancelActionPerformed(null);
+        }
+    }//GEN-LAST:event_passwordFieldKeyPressed
 
     public byte[] getPassword() {
         return password;

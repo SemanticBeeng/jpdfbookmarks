@@ -21,10 +21,13 @@
  */
 package it.flavianopetrocchi.jpdfbookmarks;
 
+import com.lowagie.text.exceptions.BadPasswordException;
 import it.flavianopetrocchi.jpdfbookmarks.bookmark.IBookmarksConverter;
 import it.flavianopetrocchi.jpdfbookmarks.bookmark.Bookmark;
+import it.flavianopetrocchi.utilities.Ut;
 import java.awt.EventQueue;
 import java.io.BufferedReader;
+import java.io.Console;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -35,8 +38,11 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.ServiceLoader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -78,6 +84,7 @@ class JPdfBookmarks {
     public static final String LAST_VERSION_PROPERTIES_URL =
             "http://jpdfbookmarks.altervista.org/version/jpdfbookmarks.properties";
     public static final String MANUAL_URL = "http://sourceforge.net/apps/mediawiki/jpdfbookmarks/";
+    private static final int MAX_PASSWORD_LEN = 32;
     //"http://jpdfbookmarks.altervista.org";
     private Mode mode = Mode.GUI;
     private Options options = createOptions();
@@ -92,7 +99,9 @@ class JPdfBookmarks {
     private String firstTargetString = null;
     private boolean silentMode = false;
     private String charset = Charset.defaultCharset().displayName();
-    private String showOnOpenArg = null;// </editor-fold>
+    private String showOnOpenArg = null;
+    private byte[] userPassword = null;
+    private byte[] ownerPassword = null;// </editor-fold>
 
     //<editor-fold defaultstate="expanded" desc="public methods">
     public static void main(String[] args) {
@@ -105,11 +114,57 @@ class JPdfBookmarks {
         Bookmark.localizeStrings(Res.getString("DEFAULT_TITLE"), Res.getString("PAGE"), Res.getString("PARSE_ERROR"));
     }
 
+    private byte[] askUserPassword() {
+        //avoid the use of strings when dealing with passwords they remain in memomory
+        Console cons;
+        char[] passwdChars = null;
+        byte[] passwdBytes = null;
+        if ((cons = System.console()) != null
+                && (passwdChars = cons.readPassword("[%s:]", Res.getString("PASSWORD"))) != null) {
+            passwdBytes = Ut.arrayOfCharsToArrayOfBytes(passwdChars);
+            Arrays.fill(passwdChars, ' ');
+        } else {
+            out.print("[" + Res.getString("LABEL_PASSWORD") + "]");
+            out.flush();
+            BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+            passwdChars = new char[MAX_PASSWORD_LEN];
+            try {
+                int charsRead = in.read(passwdChars, 0, MAX_PASSWORD_LEN);
+                //remove \r and \n from the password
+                for (int i = charsRead - 1; i >= 0; i--) {
+                    if (passwdChars[i] == '\r' || passwdChars[i] == '\n') {
+                        charsRead--;
+                    } else {
+                        break;
+                    }
+                }
+                char[] trimmedPasswd = Arrays.copyOf(passwdChars, charsRead);
+                Arrays.fill(passwdChars, ' ');
+                passwdBytes = Ut.arrayOfCharsToArrayOfBytes(trimmedPasswd);
+                Arrays.fill(trimmedPasswd, ' ');
+            } catch (IOException ex) {
+            }
+        }
+        return passwdBytes;
+    }
+
     private IBookmarksConverter fatalGetConverterAndOpenPdf(String inputFilePath) {
         IBookmarksConverter pdf = Bookmark.getBookmarksConverter();
         if (pdf != null) {
             try {
-                pdf.open(inputFilePath);
+                userPassword = null;
+                while (true) {
+                    try {
+                        pdf.open(inputFilePath, userPassword);
+                        break;
+                    } catch (BadPasswordException e) {
+                        userPassword = null;
+                        out.println(Res.getString("DIALOG_USER_PASSWORD"));
+                        while (userPassword == null) {
+                            userPassword = askUserPassword();
+                        }
+                    }
+                }
             } catch (IOException ex) {
                 fatalOpenFileError(inputFilePath);
             }
@@ -123,42 +178,89 @@ class JPdfBookmarks {
     private void apply() {
         IBookmarksConverter pdf = fatalGetConverterAndOpenPdf(inputFilePath);
 
-        Applier applier = new Applier(pdf, indentationString,
-                pageSeparator, attributesSeparator);
-        try {
-            applier.loadBookmarksFile(bookmarksFilePath, charset);
-        } catch (Exception ex) {
-            fatalOpenFileError(bookmarksFilePath);
-        }
-
         if (outputFilePath == null || outputFilePath.equals(inputFilePath)) {
             if (getYesOrNo(Res.getString(
                     "ERR_INFILE_EQUAL_OUTFILE"))) {
                 outputFilePath = inputFilePath;
-                try {
-                    applier.save(outputFilePath);
-                    pdf.close();
-                } catch (IOException ex) {
-                    fatalSaveFileError(outputFilePath);
-                }
+                applySave(pdf, inputFilePath, outputFilePath);
             }
         } else {
             File f = new File(outputFilePath);
             if (!f.exists()
                     || getYesOrNo(Res.getString("WARNING_OVERWRITE_CMD"))) {
-                try {
-                    applier.save(outputFilePath);
-                    pdf.close();
-                } catch (IOException ex) {
-                    fatalSaveFileError(outputFilePath);
-                }
+                applySave(pdf, inputFilePath, outputFilePath);
             }
         }
 
     }
 
+    private byte[] openAsOwner(IBookmarksConverter pdf, String input) {
+        //here instead we check for owner password
+        boolean ownerPasswordNeeded = false;
+        if (userPassword != null) {
+            if (!pdf.isBookmarksEditingPermitted()) {
+                ownerPasswordNeeded = true;
+            }
+        } else if (pdf.isEncryped()) {
+            ownerPasswordNeeded = true;
+        }
+
+        outer:
+        while (ownerPasswordNeeded) {
+            out.println(Res.getString("DIALOG_OWNER_PASSWORD"));
+            ownerPassword = null;
+            while (ownerPassword == null) {
+                ownerPassword = askUserPassword();
+            }
+            try {
+                pdf.close();
+                pdf.open(input, ownerPassword);
+                if (pdf.isBookmarksEditingPermitted()) {
+                    ownerPasswordNeeded = false;
+                }
+            } catch (Exception e) {
+                ownerPassword = null;
+            }
+        }
+
+        return ownerPassword;
+    }
+
+    private void resetPasswords() {
+        if (userPassword != null) {
+            Arrays.fill(userPassword, (byte)0);
+            userPassword = null;
+        }
+        if (ownerPassword != null) {
+            Arrays.fill(ownerPassword, (byte)0);
+            ownerPassword = null;
+        }
+    }
+
+    private void applySave(IBookmarksConverter pdf, String input, String output) {
+        try {
+            ownerPassword = openAsOwner(pdf, input);
+
+            Applier applier = new Applier(pdf, indentationString,
+                    pageSeparator, attributesSeparator);
+
+            try {
+                applier.loadBookmarksFile(bookmarksFilePath, charset);
+            } catch (Exception ex) {
+                fatalOpenFileError(bookmarksFilePath);
+            }
+
+            applier.save(output, userPassword, ownerPassword);
+            pdf.close();
+            resetPasswords();
+        } catch (IOException ex) {
+            fatalSaveFileError(output);
+        }
+    }
+
     private void dump() {
         IBookmarksConverter pdf = fatalGetConverterAndOpenPdf(inputFilePath);
+        resetPasswords();
         Dumper dumper = new Dumper(pdf, indentationString,
                 pageSeparator, attributesSeparator);
 
@@ -185,6 +287,21 @@ class JPdfBookmarks {
         }
     }
 
+    private void save(IBookmarksConverter ipdf, byte[] ownerPassword) {
+        try {
+            ipdf.save(outputFilePath, userPassword, ownerPassword);
+            ipdf.close();
+            if (userPassword != null) {
+                Arrays.fill(userPassword, (byte)0);
+            }
+            if (ownerPassword != null) {
+                Arrays.fill(ownerPassword, (byte)0);
+            }
+        } catch (IOException ex) {
+            fatalSaveFileError(outputFilePath);
+        }
+    }
+
     private void showOnOpen() {
         IBookmarksConverter ipdf = fatalGetConverterAndOpenPdf(inputFilePath);
 
@@ -195,6 +312,7 @@ class JPdfBookmarks {
                 out.println("NO");
             }
         } else {
+            ownerPassword = openAsOwner(ipdf, inputFilePath);
             if (showOnOpenArg.equalsIgnoreCase("yes") || showOnOpenArg.equalsIgnoreCase("y")) {
                 ipdf.setShowBookmarksOnOpen(true);
             } else if (showOnOpenArg.equalsIgnoreCase("no") || showOnOpenArg.equalsIgnoreCase("n")) {
@@ -204,20 +322,17 @@ class JPdfBookmarks {
                 if (getYesOrNo(Res.getString(
                         "ERR_INFILE_EQUAL_OUTFILE"))) {
                     outputFilePath = inputFilePath;
+                    save(ipdf, ownerPassword);
                 }
             } else {
                 File f = new File(outputFilePath);
                 if (!f.exists()
                         || getYesOrNo(Res.getString("WARNING_OVERWRITE_CMD"))) {
-                    try {
-                        ipdf.save(outputFilePath);
-                        ipdf.close();
-                    } catch (IOException ex) {
-                        fatalSaveFileError(outputFilePath);
-                    }
+                    save(ipdf, ownerPassword);
                 }
             }
         }
+        resetPasswords();
     }
 
     private void fatalOpenFileError(String filePath) {
@@ -243,120 +358,6 @@ class JPdfBookmarks {
         return f;
     }
 
-    /**
-     * Start the application in the requested mode.
-     *
-     * @param args Arguments to select mode and pass files to process. Can be
-     *             null.
-     */
-//    public void start(String[] args) {
-//        if (args != null && args.length > 0) {
-//            setModeByCommandLine(args);
-//        }
-//
-//        if (mode == Mode.HELP) {
-//            printHelpMessage();
-//        } else if (mode == Mode.VERSION) {
-//            out.println(VERSION);
-//        } else {
-//            try {
-//                if (inputFilePath != null) {
-//                    pdf = new iTextBookmarksConverter(inputFilePath);
-////                    if (pdf.isEncryped()) {
-////                        throw new Exception(
-////                                Res.getString("ERROR_PDF_ENCRYPTED"));
-////                    }
-//                    if (firstTargetString != null) {
-//                        StringBuffer buffer = new StringBuffer("Bookmark");
-//                        buffer.append(pageSeparator).append(firstTargetString);
-//                        firstTargetBookmark = Bookmark.bookmarkFromString(pdf,
-//                                buffer.toString(), indentationString, pageSeparator, attributesSeparator);
-//                    }
-//                }
-//
-//                if (mode == Mode.SHOW_ON_OPEN) {
-//                    if (showOnOpenArg.equalsIgnoreCase("CHECK") || showOnOpenArg.equalsIgnoreCase("c")) {
-////                        PrintWriter out = new PrintWriter(System.out, true);
-//                        if (pdf.showBookmarksOnOpen()) {
-//                            out.println("YES");
-//                        } else {
-//                            out.println("NO");
-//                        }
-//                    } else {
-//                        if (showOnOpenArg.equalsIgnoreCase("yes") || showOnOpenArg.equalsIgnoreCase("y")) {
-//                            pdf.setShowBookmarksOnOpen(true);
-//                        } else if (showOnOpenArg.equalsIgnoreCase("no") || showOnOpenArg.equalsIgnoreCase("n")) {
-//                            pdf.setShowBookmarksOnOpen(false);
-//                        }
-//                        if (outputFilePath == null || outputFilePath.equals(inputFilePath)) {
-//                            if (getYesOrNo(Res.getString(
-//                                    "ERR_INFILE_EQUAL_OUTFILE"))) {
-//                                pdf.save(inputFilePath);
-//                            }
-//                        } else {
-//                            File f = new File(outputFilePath);
-//                            if (!f.exists()
-//                                    || getYesOrNo(Res.getString("WARNING_OVERWRITE_CMD"))) {
-//                                pdf.save(outputFilePath);
-//                            }
-//                        }
-//                    }
-//                } else if (mode == Mode.DUMP) {
-//                    Dumper dumper = new Dumper(pdf, indentationString,
-//                            pageSeparator, attributesSeparator);
-//                    if (outputFilePath == null) {
-//                        dumper.printBookmarksIterative(new OutputStreamWriter(System.out));
-//                    } else {
-//                        File f = new File(outputFilePath);
-//                        if (!f.exists()
-//                                || getYesOrNo(Res.getString("WARNING_OVERWRITE_CMD"))) {
-//
-//                            FileOutputStream fos = new FileOutputStream(outputFilePath);
-//                            OutputStreamWriter outStream = new OutputStreamWriter(fos, charset);
-//                            dumper.printBookmarksIterative(outStream);
-//                            outStream.close();
-//                        }
-//                    }
-//                } else if (mode == Mode.APPLY) {
-//                    Applier applier = new Applier(pdf, indentationString,
-//                            pageSeparator, attributesSeparator);
-//                    applier.loadBookmarksFile(bookmarksFilePath, charset);
-//                    if (outputFilePath == null || outputFilePath.equals(inputFilePath)) {
-//                        if (getYesOrNo(Res.getString(
-//                                "ERR_INFILE_EQUAL_OUTFILE"))) {
-//                            applier.save(inputFilePath);
-//                        }
-//                    } else {
-//                        File f = new File(outputFilePath);
-//                        if (!f.exists()
-//                                || getYesOrNo(Res.getString("WARNING_OVERWRITE_CMD"))) {
-//                            applier.save(outputFilePath);
-//                        }
-//                    }
-//                } else if (mode == Mode.GUI) {
-//                    if (pdf != null) {
-//                        pdf.close();
-//                        pdf = null;
-//                    }
-//                    EventQueue.invokeLater(new GuiLauncher(inputFilePath, firstTargetBookmark));
-//                }
-//                if (pdf != null) {
-//                    pdf.close();
-//                }
-//            } catch (Exception ex) {
-//                if (mode == Mode.GUI) {
-//                    EventQueue.invokeLater(new GuiLauncher(inputFilePath, firstTargetBookmark));
-//                } else {
-//                    if (inputFilePath != null) {
-//                        err.println(Res.getString("ERROR_OPENING_FILE") + " "
-//                                + inputFilePath);
-//                    } else {
-//                        err.println(Res.getString("ERROR_STARTING_JPDFBOOKMARKS"));
-//                    }
-//                }
-//            }
-//        }
-//    }
     /**
      * Start the application in the requested mode.
      *

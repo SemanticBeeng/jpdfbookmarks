@@ -92,7 +92,11 @@ public class UnifiedFileOperator {
 
     public void open(File file) throws Exception {
         this.file = file;
-        filePath = file.getAbsolutePath();
+        try {
+            filePath = file.getCanonicalPath();
+        } catch (IOException iOException) {
+            filePath = file.getAbsolutePath();
+        }
         IBookmarksConverter bookmarksConverter = Bookmark.getBookmarksConverter();
         if (bookmarksConverter == null) {
             throw new ServiceNotFoundException(Res.getString("ERROR_BOOKMARKS_CONVERTER_NOT_FOUND"));
@@ -107,6 +111,7 @@ public class UnifiedFileOperator {
                 break;
             } catch (BadPasswordException e) {
                 userPasswordNeeded = true;
+                userPassword = null;
                 while (userPassword == null) {
                     if (!askUserPassword(Res.getString("DIALOG_USER_PASSWORD"))) {
                         //the user has renounced to open the file
@@ -127,32 +132,34 @@ public class UnifiedFileOperator {
             ownerPasswordNeeded = true;
         }
 
-        if (ownerPasswordNeeded) {
-//                JOptionPane.showMessageDialog(null, Res.getString("ERROR_PDF_ENCRYPTED"), JPdfBookmarks.APP_NAME,
-//                    JOptionPane.ERROR_MESSAGE);
- outer:     while (true) {
-                while (ownerPassword == null) {
-                    if (!askOwnerPassword(Res.getString("DIALOG_OWNER_PASSWORD"))) {
-                        //the user doesn't have owner password if possible open read only
-                        //if the userPassword is not necessary or has already been inserted
-                        if (!userPasswordNeeded || userPassword != null) {
-                            break outer;
-                        } else {
-                            root = null;
-                            return;
-                        }
+
+        outer:
+        while (ownerPasswordNeeded) {
+            ownerPassword = null;
+            while (ownerPassword == null) {
+                if (!askOwnerPassword(Res.getString("DIALOG_OWNER_PASSWORD"))) {
+                    //the user doesn't have owner password if possible open read only
+                    //if the userPassword is not necessary or has already been inserted
+                    if (!userPasswordNeeded || userPassword != null) {
+                        break outer;
+                    } else {
+                        root = null;
+                        return;
                     }
                 }
-                try {
-                    bookmarksConverter.close();
-                    bookmarksConverter.open(filePath, ownerPassword);
-                    break;
-                } catch (Exception e) {
-                    ownerPassword = null;
-                }
             }
-        } 
-        
+            try {
+                bookmarksConverter.close();
+                bookmarksConverter.open(filePath, ownerPassword);
+                if (bookmarksConverter.isBookmarksEditingPermitted()) {
+                    ownerPasswordNeeded = false;
+                }
+            } catch (Exception e) {
+                ownerPassword = null;
+            }
+        }
+
+
         if (userPasswordNeeded /*|| ownerPasswordNeeded*/) {
             //create an unencrypted copy fot jpedal panel
             File tmp = File.createTempFile("jpdf", ".pdf");
@@ -162,7 +169,7 @@ public class UnifiedFileOperator {
         } else {
             viewPanel.open(file);
         }
-        
+
         showOnOpen = bookmarksConverter.showBookmarksOnOpen();
         root = bookmarksConverter.getRootBookmark(userPrefs.getConvertNamedDestinations());
         bookmarksConverter.close();
@@ -181,13 +188,6 @@ public class UnifiedFileOperator {
         return root;
     }
 
-    private void zeroPasswordsMem(byte[] password) {
-        if (password != null) {
-            Arrays.fill(password, (byte)0);
-            password = null;
-        }
-    }
-
     public void close() {
         viewPanel.close();
         fileChanged = false;
@@ -195,8 +195,14 @@ public class UnifiedFileOperator {
                 FileOperationEvent.Operation.FILE_CLOSED));
         filePath = null;
         file = null;
-        zeroPasswordsMem(ownerPassword);
-        zeroPasswordsMem(userPassword);
+        if (ownerPassword != null) {
+            Arrays.fill(ownerPassword, (byte) 0);
+            ownerPassword = null;
+        }
+        if (userPassword != null) {
+            Arrays.fill(userPassword, (byte) 0);
+            userPassword = null;
+        }
         readonly = false;
     }
 

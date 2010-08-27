@@ -46,7 +46,13 @@ public class Applier extends OutlinePresentation {
 	}
 
 	void save(String outputFilePath) throws IOException {
+//		pdf.rebuildBookmarksFromTreeNodes(root);
+//		pdf.save(outputFilePath);
+            save(outputFilePath, null, null);
+	}
+
+        void save(String outputFilePath, byte[] userPassword, byte[] ownerPassword) throws IOException {
 		pdf.rebuildBookmarksFromTreeNodes(root);
-		pdf.save(outputFilePath);
+		pdf.save(outputFilePath, userPassword, ownerPassword);
 	}
 }
