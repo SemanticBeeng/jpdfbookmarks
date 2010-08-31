@@ -396,7 +396,7 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
                 tmpReader = new PdfReader(tmp.getPath());
             }
 
-            stamper = new PdfStamper(tmpReader, new FileOutputStream(filePath));
+            stamper = new PdfStamper(tmpReader, new FileOutputStream(path));
             if (outline != null) {
                 stamper.setOutlines(outline);
             }

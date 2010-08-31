@@ -29,7 +29,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.CoderResult;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractButton;
@@ -38,6 +45,7 @@ import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
+import sun.misc.CharacterEncoder;
 
 /**
  * Class for utlity static methods usefull in different situations.
@@ -49,17 +57,76 @@ public final class Ut {
 
     /**
      *  The only value of this could be not save the string in memory with possibly a 
-     *  password inside using simple String.valueOf(array).getBytes()
+     *  password inside using simple String.valueOf(array).getBytes(). The internal buffer
+     *  used for transformation is filled with 0 here, thr parameter charsArray and the
+     *  returned byte array must be cleaned by the user.
      * 
-     * @param array
-     * @return
+     * @param charsArray The character array to transform
+     * @return An array of bytes that represent the character array within the default
+     *         Charset.
      */
-    public byte[] arrayOfCharsToArrayOfBytes(char[] array) {
-        byte[] byteArray = new byte[array.length];
-        for (int i = 0; i < array.length; i++) {
-            byteArray[i] = String.valueOf(array[i]).getBytes()[0];
+    public static byte[] arrayOfCharsToArrayOfBytes(char[] charsArray) {
+        Charset defaultCharset = Charset.defaultCharset();
+        CharsetEncoder encoder = defaultCharset.newEncoder();
+        
+        //calculate maximum lenght of the array with this charset and allocate it
+        int maxArrayLen = (int)(charsArray.length * encoder.maxBytesPerChar());
+        byte[] bytesArray = new byte[maxArrayLen];
+
+        //perform encoding
+        encoder.reset();
+        ByteBuffer byteBuffer = ByteBuffer.wrap(bytesArray);
+        CharBuffer charBuffer = CharBuffer.wrap(charsArray);
+        try {
+            encoder.encode(charBuffer, byteBuffer, true);
+            encoder.flush(byteBuffer);
+        } catch (Exception x) {
+            //I can do little to handle an exception here
         }
-        return byteArray;
+
+        //truncate not used bytes
+        byte[] truncated;
+        if (byteBuffer.position() == bytesArray.length) {
+            truncated = bytesArray;
+        } else {
+            truncated = Arrays.copyOf(bytesArray, byteBuffer.position());
+            Arrays.fill(bytesArray, (byte)0);
+        }
+        return truncated;
+
+    }
+
+    private static byte[] encode(CharsetEncoder ce, char[] charsArray) {
+        int maxArrayLen = (int)(charsArray.length * ce.maxBytesPerChar());
+        byte[] bytesArray = new byte[maxArrayLen];
+
+        ce.reset();
+        ByteBuffer bb = ByteBuffer.wrap(bytesArray);
+        CharBuffer cb = CharBuffer.wrap(charsArray);
+        try {
+            CoderResult cr = ce.encode(cb, bb, true);
+            if (!cr.isUnderflow()) {
+                cr.throwException();
+            }
+            cr = ce.flush(bb);
+            if (!cr.isUnderflow()) {
+                cr.throwException();
+            }
+        } catch (CharacterCodingException x) {
+            throw new Error(x);
+        }
+        return truncateArrayToTheLastUsedByte(bytesArray, bb.position());
+    }
+
+    private static byte[] truncateArrayToTheLastUsedByte(byte[] transcodedArray, int usedBytes) {
+        byte[] truncated;
+        if (usedBytes == transcodedArray.length) {
+            truncated = transcodedArray;
+        } else {
+            truncated = Arrays.copyOf(transcodedArray, usedBytes);
+            Arrays.fill(transcodedArray, (byte)0);
+        }
+        return truncated;
     }
 
     /**
