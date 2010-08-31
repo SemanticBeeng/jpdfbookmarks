@@ -37,17 +37,17 @@
                 <id>jar</id>
             </reference>
             <reference>
-                <foreign-project>iTextBookmarksConverter</foreign-project>
+                <foreign-project>iText-2_1_7-patched</foreign-project>
                 <artifact-type>jar</artifact-type>
-                <script>build.xml</script>
+                <script>nbbuild.xml</script>
                 <target>jar</target>
                 <clean-target>clean</clean-target>
                 <id>jar</id>
             </reference>
             <reference>
-                <foreign-project>itext-2_1_7-patched</foreign-project>
+                <foreign-project>iTextBookmarksConverter</foreign-project>
                 <artifact-type>jar</artifact-type>
-                <script>nbbuild.xml</script>
+                <script>build.xml</script>
                 <target>jar</target>
                 <clean-target>clean</clean-target>
                 <id>jar</id>
