@@ -31,6 +31,7 @@ cd ${SCRIPTDIR}
 VERSION=$(cat ../VERSION)
 
 NAME=jpdfbookmarks-${VERSION}
+SRCNAME=jpdfbookmarks-src-${VERSION}
 
 rm -f ${NAME}.zip
 rm -f ${NAME}.tar
@@ -57,6 +58,13 @@ tar -cpvzf ${NAME}.tar.gz ${NAME}
 
 rm -f ${NAME}.tar
 rm -f -R ${NAME}
+
+svn export .. ${SRCNAME}
+
+zip -r ${SRCNAME}.zip ${SRCNAME}
+tar -cpvzf ${SRCNAME}.tar.gz ${SRCNAME}
+
+rm -f -R ${SRCNAME}
 
 cd ${PREV_DIR}
 
