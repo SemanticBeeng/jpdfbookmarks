@@ -42,6 +42,7 @@ public class UnifiedFileOperator {
     private IPdfView viewPanel = new JPedalViewPanel();
     private String filePath;
     private File file;
+    private File tmpForViewPanel;
     private boolean showOnOpen = false;
     private Bookmark root;
     private Prefs userPrefs = new Prefs();
@@ -90,7 +91,7 @@ public class UnifiedFileOperator {
         return d.okPressed();
     }
 
-    public void open(File file) throws Exception {
+public void open(File file) throws Exception {
         this.file = file;
         try {
             filePath = file.getCanonicalPath();
@@ -162,10 +163,10 @@ public class UnifiedFileOperator {
 
         if (userPasswordNeeded /*|| ownerPasswordNeeded*/) {
             //create an unencrypted copy fot jpedal panel
-            File tmp = File.createTempFile("jpdf", ".pdf");
-            tmp.deleteOnExit();
-            bookmarksConverter.createUnencryptedCopy(tmp);
-            viewPanel.open(tmp);
+            tmpForViewPanel = File.createTempFile("jpdf", ".pdf");
+            tmpForViewPanel.deleteOnExit();
+            bookmarksConverter.createUnencryptedCopy(tmpForViewPanel);
+            viewPanel.open(tmpForViewPanel);
         } else {
             viewPanel.open(file);
         }
@@ -190,6 +191,10 @@ public class UnifiedFileOperator {
 
     public void close() {
         viewPanel.close();
+        if (tmpForViewPanel != null) {
+            tmpForViewPanel.delete();
+            tmpForViewPanel = null;
+        }
         fileChanged = false;
         fireFileOperationEvent(new FileOperationEvent(this, filePath,
                 FileOperationEvent.Operation.FILE_CLOSED));
@@ -238,7 +243,11 @@ public class UnifiedFileOperator {
             fileSaved = true;
             this.filePath = path;
             this.file = new File(path);
-            //viewPanel.reopen(file);
+            if (tmpForViewPanel != null) {
+                viewPanel.reopen(tmpForViewPanel);
+            } else {
+                viewPanel.reopen(file);
+            }
             fireFileOperationEvent(new FileOperationEvent(this, path,
                     FileOperationEvent.Operation.FILE_SAVED));
             setFileChanged(false);

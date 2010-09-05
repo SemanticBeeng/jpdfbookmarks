@@ -272,7 +272,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     private Action cutAction;
     private Action copyAction;
     private Action pasteAction;
-    private Action openLinkedPdf;// </editor-fold>
+    private Action openLinkedPdf;
+    private Action copyBookmarkFromViewAction;// </editor-fold>
 
     private void saveWindowState() {
         userPrefs.setWindowState(windowState);
@@ -444,7 +445,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                     zoomInAction, zoomOutAction, goToPageAction, fitRectAction,
                     expandAllAction, collapseAllAction, topLeftZoomAction,
                     addSiblingAction, showOnOpenAction, dumpAction, loadAction,
-                    selectText, connectToClipboard, openLinkedPdf);
+                    selectText, connectToClipboard, openLinkedPdf, copyBookmarkFromViewAction);
             if (evt.getOperation() == FileOperationEvent.Operation.FILE_OPENED) {
                 Ut.enableActions(true, saveAsAction);
             }
@@ -495,7 +496,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                     showOnOpenAction, setBoldAction, setItalicAction,
                     renameAction, setDestFromViewAction, changeColorAction,
                     dumpAction, loadAction, addWebLinkAction, addLaunchLinkAction, saveAction,
-                    applyPageOffset, selectText, connectToClipboard, showActionsDialog, openLinkedPdf);
+                    applyPageOffset, selectText, connectToClipboard, showActionsDialog, openLinkedPdf,
+                    copyBookmarkFromViewAction);
             lblMouseOverNode.setText(" ");
             lblSelectedNode.setText(" ");
             lblCurrentView.setText(" ");
@@ -1088,6 +1090,16 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         delete();
     }
 
+    private void copyBookmarkFromView() {
+        Bookmark b = viewPanel.getBookmarkFromView();
+        if (b != null) {
+            Bookmark bookmarkCopied = Bookmark.cloneBookmark(b, !b.isOpened());
+            BookmarkSelection bs = new BookmarkSelection(bookmarkCopied, bookmarkFlavor, false, fileOperator.getFile());
+            localClipboard.setContents(bs, bs);
+            flavorsChanged();
+        }
+    }
+
     private void copy(boolean cut) {
         Bookmark bookmarkSelected = getSelectedBookmark();
         if (bookmarkSelected != null) {
@@ -1639,6 +1651,15 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             }
         };
 
+        copyBookmarkFromViewAction = new ActionBuilder("ACTION_COPY_BOOKMARK_FROM_VIEW",
+                "ACTION_COPY_BOOKMARK_FROM_VIEW_DESCR", "ctrl shift c", "copy-linked.png", false) {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                copyBookmarkFromView();
+            }
+        };
+
         pasteAction = new ActionBuilder("ACTION_PASTE", "ACTION_PASTE_DESCR", "ctrl V",
                 "edit-paste.png", false) {
 
@@ -1876,7 +1897,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         };
 
         connectToClipboard = new ActionBuilder("ACTION_CONNECT_CLIPBOARD",
-                "ACTION_CONNECT_CLIPBOARD_DESCR", "ctrl alt C", "edit-paste.png", false) {
+                "ACTION_CONNECT_CLIPBOARD_DESCR", "ctrl alt C", "system-clip.png", false) {
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -2091,7 +2112,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         };
 
         showActionsDialog = new ActionBuilder("ACTION_ACTIONS_DIALOG",
-                "ACTION_ACTIONS_DIALOG_DESCR", "ctrl alt O",
+                "ACTION_ACTIONS_DIALOG_DESCR", "ctrl alt N",
                 "actions-dialog.png", false) {
 
             @Override
@@ -2265,6 +2286,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         menuEdit.add(cutAction);
         menuEdit.add(copyAction);
         menuEdit.add(pasteAction);
+        menuEdit.add(copyBookmarkFromViewAction);
         menuEdit.addSeparator();
         item = menuEdit.add(addSiblingAction);
         item.setMnemonic(Res.mnemonicFromRes("MENU_ADD_SIBLING_MNEMONIC"));
@@ -2597,6 +2619,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         undoToolbar.add(cutAction);
         undoToolbar.add(copyAction);
         undoToolbar.add(pasteAction);
+        undoToolbar.add(copyBookmarkFromViewAction);
         mainToolbars.put(Prefs.SHOW_UNDO_TB, undoToolbar);
 
         navigationToolbar = new JToolBar();
