@@ -52,6 +52,7 @@ cp ../COPYING ${NAME}/
 cp ../VERSION ${NAME}/
 mkdir ${NAME}/lib
 cp ../jpdfbookmarks_core/dist/lib/* ${NAME}/lib/
+cp ../jpdfbookmarks_graphics/artwork/jpdfbookmarks.png ${NAME}
 
 zip -r ${NAME}.zip ${NAME}
 tar -cpvzf ${NAME}.tar.gz ${NAME} 
