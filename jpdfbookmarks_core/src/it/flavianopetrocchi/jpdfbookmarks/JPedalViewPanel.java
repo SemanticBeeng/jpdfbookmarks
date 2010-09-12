@@ -425,7 +425,9 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
                         viewport.setCursor(rectRedCur);
                     }
                 } else {
-                    viewport.setCursor(Cursor.getDefaultCursor());
+                    if (!textSelectionActive) {
+                        viewport.setCursor(Cursor.getDefaultCursor());
+                    }
                 }
                 calcScaleFactor();
                 adjustPreferredSize();
