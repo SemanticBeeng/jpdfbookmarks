@@ -696,8 +696,10 @@ public class Bookmark extends DefaultMutableTreeNode implements Serializable {
 
         Bookmark bookmark = new Bookmark();
 
+        StringBuilder sbLine = new StringBuilder(line);
         while (line.startsWith(indentation)) {
-            line = line.replaceFirst(indentation, "");
+            sbLine.delete(0, indentation.length());
+            line = sbLine.toString();
         }
 
         int pageSepIndex = findPageSepIndex(line, attributesSeparator, pageSeparator);
