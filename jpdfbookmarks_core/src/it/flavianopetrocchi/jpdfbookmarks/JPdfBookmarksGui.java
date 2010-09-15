@@ -626,12 +626,13 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
         //enable or disable actions applicable to multiple bookmarks
         Ut.enableActions((bookmark != null), setBoldAction, setItalicAction,
-                changeColorAction, applyPageOffset, deleteAction, renameAction);
+                changeColorAction, applyPageOffset, deleteAction, renameAction,
+                setDestFromViewAction);
 
         //enable or disable actions applicable to only a single bookmark
         TreePath[] paths = bookmarksTree.getSelectionPaths();
         Ut.enableActions((bookmark != null) && (paths.length == 1), cutAction, copyAction,
-                addChildAction, setDestFromViewAction, showActionsDialog, addWebLinkAction, addLaunchLinkAction);
+                addChildAction, showActionsDialog, addWebLinkAction, addLaunchLinkAction);
 
         //Ut.enableComponents((bookmark != null), cutMenuItem, copyMenuItem);
         if (bookmark != null) {
@@ -935,35 +936,36 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     }
 
     private void destFromView() {
-//        int answer = JOptionPane.showConfirmDialog(JPdfBookmarksGui.this,
-//                Res.getString("MSG_SET_DESTINATION"), title,
-//                JOptionPane.OK_CANCEL_OPTION);
-//
-//        if (answer != JOptionPane.OK_OPTION) {
-//            return;
-//        }
 
-        Bookmark bookmark = getSelectedBookmark();
         Bookmark fromView = viewPanel.getBookmarkFromView();
         adjustInheritValues(fromView);
 
+        int addOrReplace = UndoableMultipleSetDestination.REPLACE;
         switch (askAddOrReplace()) {
             case 0: //replace
-                if (bookmark != null) {
-                    bookmark.clearChainedBookmarks();
-                    UndoableSetDestination undoable =
-                            new UndoableSetDestination(bookmarksTreeModel,
-                            bookmark, fromView);
-                    undoable.doEdit();
-                    undoSupport.postEdit(undoable);
-                }
+                addOrReplace = UndoableMultipleSetDestination.REPLACE;
                 break;
             case 1: //add
-                bookmark.addChainedBookmark(fromView);
+                addOrReplace = UndoableMultipleSetDestination.ADD;
                 break;
             case 2: //cancel
                 return;
         }
+
+        boolean keepPageNumbers = true;
+        if (bookmarksTree.getSelectionPaths().length > 1) {
+            int answer = JOptionPane.showConfirmDialog(this, Res.getString("KEEP_PAGE_NUMBERS"), JPdfBookmarks.APP_NAME,
+                    JOptionPane.YES_NO_OPTION);
+            if (answer != JOptionPane.YES_OPTION) {
+                keepPageNumbers = false;
+            }
+        }
+
+        UndoableMultipleSetDestination undoable =
+                new UndoableMultipleSetDestination(bookmarksTree, fromView,
+                    addOrReplace, keepPageNumbers);
+        undoable.doEdit();
+        undoSupport.postEdit(undoable);
 
         fileOperator.setFileChanged(true);
     }

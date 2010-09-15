@@ -22,40 +22,25 @@
 package it.flavianopetrocchi.jpdfbookmarks;
 
 import it.flavianopetrocchi.jpdfbookmarks.bookmark.Bookmark;
-import java.util.ArrayList;
 import javax.swing.JTree;
-import javax.swing.undo.CannotUndoException;
 
 public class UndoableRenameAction extends UndoableBookmarksAction {
 
-    ArrayList<Bookmark> list;
-    ArrayList<String> oldtTtles = new ArrayList<String>();
     String title;
 
     public UndoableRenameAction(JTree tree, String title) {
         super(tree);
-        list = getSelectedBookmarks();
         this.title = title;
     }
 
     @Override
     public void doEdit() {
-        super.doEdit();
 
         if ((title != null) && (title.length() > 0)) {
-            for (Bookmark b : list) {
-                oldtTtles.add(b.getTitle());
+            for (Bookmark b : selectedBookmarks) {
                 b.setTitle(title);
             }
         }
     }
 
-    @Override
-    public void undo() throws CannotUndoException {
-        super.undo();
-
-        for (int i = 0; i < list.size(); i++) {
-            list.get(i).setTitle(oldtTtles.get(i));
-        }
-    }
 }

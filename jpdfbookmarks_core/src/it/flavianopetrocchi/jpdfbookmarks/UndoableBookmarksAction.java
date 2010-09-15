@@ -28,16 +28,20 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
 
 public abstract class UndoableBookmarksAction extends AbstractUndoableEdit {
 
     protected DefaultTreeModel treeModel;
-    protected Bookmark selectedBookmark;
+    protected ArrayList<Bookmark> selectedBookmarks;
+    protected ArrayList<Bookmark> backupBookmarks;
     protected JTree tree;
 
     protected UndoableBookmarksAction(JTree tree) {
         this.tree = tree;
         treeModel = (DefaultTreeModel) tree.getModel();
+        selectedBookmarks = getSelectedBookmarks();
+        backupBookmarks = backupBookmarks(selectedBookmarks);
     }
 
     @Override
@@ -46,11 +50,29 @@ public abstract class UndoableBookmarksAction extends AbstractUndoableEdit {
         doEdit();
     }
 
-    public void doEdit() {
-        
+    public abstract void doEdit();
+
+    @Override
+    public void undo() throws CannotUndoException {
+        super.undo();
+        for (int i = 0; i < selectedBookmarks.size(); i++) {
+            selectedBookmarks.get(i).cloneDestination(backupBookmarks.get(i));
+            selectedBookmarks.get(i).cloneAppearance(backupBookmarks.get(i));
+        }
     }
 
-    protected Bookmark getSelectedBookmark() {
+
+    private ArrayList<Bookmark> backupBookmarks(ArrayList<Bookmark> bookmarks) {
+
+        ArrayList<Bookmark> backup = new ArrayList<Bookmark>(bookmarks.size());
+        for (Bookmark b : bookmarks) {
+            Bookmark copy = Bookmark.cloneBookmark(b, false);
+            backup.add(copy);
+        }
+        return backup;
+    }
+
+    protected final Bookmark getSelectedBookmark() {
         TreePath path = tree.getSelectionPath();
         if (path == null) {
             return null;
@@ -64,7 +86,7 @@ public abstract class UndoableBookmarksAction extends AbstractUndoableEdit {
         return treeNode;
     }
 
-    protected ArrayList<Bookmark> getSelectedBookmarks() {
+    protected final ArrayList<Bookmark> getSelectedBookmarks() {
 
         ArrayList<Bookmark> bookmarksList = new ArrayList<Bookmark>();
         TreePath[] paths = tree.getSelectionPaths();
