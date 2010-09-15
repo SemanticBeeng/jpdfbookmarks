@@ -78,6 +78,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -2078,9 +2079,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                for (int i = 0; i < bookmarksTree.getRowCount(); i++) {
-                    bookmarksTree.expandRow(i);
-                }
+                expandAllNodes();
             }
         };
 
@@ -2089,9 +2088,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                for (int i = 0; i < bookmarksTree.getRowCount(); i++) {
-                    bookmarksTree.collapseRow(i);
-                }
+                collapseAllNodes();
             }
         };
 
@@ -2151,6 +2148,36 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                 goToWebLink(JPdfBookmarks.BLOG_URL);
             }
         };
+    }
+
+    private void expandAllNodes() {
+
+        for (int i = 0; i < bookmarksTree.getRowCount(); i++) {
+            bookmarksTree.expandRow(i);
+        }
+    }
+
+    private void collapseAllNodes() {
+
+        expandAllNodes();
+//                for (int i = 0; i < bookmarksTree.getRowCount(); i++) {
+//                    bookmarksTree.collapseRow(i);
+//                }
+        Bookmark root = (Bookmark) bookmarksTreeModel.getRoot();
+        if (root != null) {
+            Enumeration<Bookmark> postOrder = root.postorderEnumeration();
+            //just skip the root element
+            if (postOrder.hasMoreElements()) {
+                postOrder.nextElement();
+            }
+            while (postOrder.hasMoreElements()) {
+                Bookmark b = postOrder.nextElement();
+                TreePath path = new TreePath(b.getPath());
+                //bookmarksTree.collapsePath(path);
+                bookmarksTree.collapseRow(bookmarksTree.getRowForPath(path));
+            }
+        }
+
     }
 
     private void updateStyleButtons(Bookmark bookmark) {

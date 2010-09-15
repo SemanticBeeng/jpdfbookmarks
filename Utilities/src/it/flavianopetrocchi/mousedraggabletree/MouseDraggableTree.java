@@ -44,6 +44,8 @@ import javax.swing.Timer;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellEditor;
@@ -82,11 +84,6 @@ public class MouseDraggableTree extends JTree {
         MOVE_AS_SIBLING_BEFORE,
     }
 
-//	public MouseDraggableTree(DefaultTreeModel model) {
-//		this();
-//		setModel(model);
-//		defaultTreeModel = model;
-//	}
     public MouseDraggableTree() {
         undoSupport = new UndoableEditSupport(this);
 
@@ -352,7 +349,7 @@ public class MouseDraggableTree extends JTree {
                 setCursor(dragCursor);
             }
 
-            if (dragNodeOverTree(e.getX(), e.getY())) {
+            if (isDragNodeOverTree(e.getX(), e.getY())) {
                 setCursor(dragCursor);
 
             } else {
@@ -361,7 +358,7 @@ public class MouseDraggableTree extends JTree {
         }
     }
 
-    private boolean dragNodeOverTree(int x, int y) {
+    private boolean isDragNodeOverTree(int x, int y) {
         draggingOverPath = getPathForLocation(x, y);
         if (draggingOverPath == null) {
             draggingOverNode = null;
