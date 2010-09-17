@@ -28,7 +28,8 @@ PREV_DIR=$(pwd)
 
 cd ${SCRIPTDIR}
 
-VERSION=$(cat ../VERSION)
+PROP_FILE=../jpdfbookmarks_core/src/it/flavianopetrocchi/jpdfbookmarks/jpdfbookmarks.properties
+VERSION=$(sed '/^\#/d' ${PROP_FILE} | grep 'VERSION'  | tail -n 1 | sed 's/^.*=//')
 
 NAME=jpdfbookmarks-${VERSION}
 SRCNAME=jpdfbookmarks-src-${VERSION}
@@ -40,22 +41,29 @@ rm -f -R ${NAME}
 
 mkdir ${NAME}
 
-cp jpdfbookmarks.exe ${NAME}/
-cp jpdfbookmarks_cli.exe ${NAME}/
-cp link_this_in_linux_path.sh ${NAME}/
-cp link_this_in_linux_path_cli.sh ${NAME}/
-cp jpdfbookmarks ${NAME}/
-cp jpdfbookmarks_cli ${NAME}/
-cp ../jpdfbookmarks_core/dist/jpdfbookmarks.jar ${NAME}/
-cp ../README ${NAME}/
-cp ../COPYING ${NAME}/
-cp ../VERSION ${NAME}/
+cp jpdfbookmarks.exe ${NAME}
+cp jpdfbookmarks_cli.exe ${NAME}               
+# if the script is run from cygwin cp cannot write jpdfbookmarks.exe and 
+# jpdfbookamarks in the same folder, we use the native windows xcopy
+if [ -e /usr/bin/cygcheck ] 
+then
+	xcopy jpdfbookmarks ${NAME}
+	xcopy jpdfbookmarks_cli ${NAME}
+else 
+ 	cp jpdfbookmarks ${NAME}
+	cp jpdfbookmarks_cli ${NAME}
+fi
+cp link_this_in_linux_path.sh ${NAME}
+cp link_this_in_linux_path_cli.sh ${NAME}
+cp ../jpdfbookmarks_core/dist/jpdfbookmarks.jar ${NAME}
+cp ../README ${NAME}
+cp ../COPYING ${NAME}
 mkdir ${NAME}/lib
-cp ../jpdfbookmarks_core/dist/lib/* ${NAME}/lib/
+cp ../jpdfbookmarks_core/dist/lib/* ${NAME}/lib
 cp ../jpdfbookmarks_graphics/artwork/jpdfbookmarks.png ${NAME}
 
 zip -r ${NAME}.zip ${NAME}
-tar -cpvzf ${NAME}.tar.gz ${NAME} 
+tar -cpvzf ${NAME}.tar.gz ${NAME}     
 
 rm -f ${NAME}.tar
 rm -f -R ${NAME}
@@ -63,9 +71,8 @@ rm -f -R ${NAME}
 svn export .. ${SRCNAME}
 
 zip -r ${SRCNAME}.zip ${SRCNAME}
-tar -cpvzf ${SRCNAME}.tar.gz ${SRCNAME}
-
+tar -cpvzf ${SRCNAME}.tar.gz ${SRCNAME}      
+      
 rm -f -R ${SRCNAME}
 
 cd ${PREV_DIR}
-

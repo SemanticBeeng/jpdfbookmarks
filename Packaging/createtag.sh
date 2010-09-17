@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# jpdfbookmarks
+# createtag.sh
 # 
 # Copyright (c) 2010 Flaviano Petrocchi <flavianopetrocchi at gmail.com>.
 # All rights reserved.
@@ -22,14 +22,16 @@
 # along with JPdfBookmarks.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-JAR_NAME=jpdfbookmarks.jar
-JVM_OPTIONS="-Xms64m -Xmx512m"
+SCRIPTDIR=$(cd $(dirname "$0"); pwd)
+PREV_DIR=$(pwd)
 
-SCRIPT_DIR=$(cd $(dirname "$0"); pwd)
+cd ${SCRIPTDIR}
 
-if [ -n "$JAVA_HOME" ]; then
-  "$JAVA_HOME/bin/java" $JVM_OPTIONS -jar "$SCRIPT_DIR/$JAR_NAME" "$@"
-else
-  java $JVM_OPTIONS -jar "$SCRIPT_DIR/$JAR_NAME" "$@"
-fi
+PROP_FILE=../jpdfbookmarks_core/src/it/flavianopetrocchi/jpdfbookmarks/jpdfbookmarks.properties
+VERSION=$(sed '/^\#/d' ${PROP_FILE} | grep 'VERSION'  | tail -n 1 | sed 's/^.*=//')
 
+svn copy https://jpdfbookmarks.svn.sourceforge.net/svnroot/jpdfbookmarks/trunk \
+	https://jpdfbookmarks.svn.sourceforge.net/svnroot/jpdfbookmarks/tags/${VERSION} \
+	-m "Tagging the ${VERSION} relase of the 'JPdfBookmarks' project"
+
+cd ${PREV_DIR}
