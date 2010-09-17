@@ -150,7 +150,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     // <editor-fold defaultstate="collapsed" desc="Members">
     private static Clipboard localClipboard;
 //    private Clipboard clipboard;
-    private static DataFlavor bookmarkFlavor;
+    private final static DataFlavor bookmarksFlavor;
     private final int ZOOM_STEP = 10;
     private int windowState;
     private JSplitPane centralSplit;
@@ -297,27 +297,12 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
     static {
         localClipboard = new Clipboard(JPdfBookmarks.APP_NAME);
-        try {
-            bookmarkFlavor = new DataFlavor(
-                    Class.forName("it.flavianopetrocchi.jpdfbookmarks.bookmark.BookmarkSelection"),
-                    "BookmarkSelection");
-        } catch (ClassNotFoundException e) {
-            System.err.println(e.getMessage());
-        }
-        bookmarkFlavor = new DataFlavor(BookmarkSelection.class, "BookmarkSelection");
-
+        bookmarksFlavor = new DataFlavor(BookmarkSelection.class, "BookmarkSelection");
     }
 
     public JPdfBookmarksGui() {
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         Authenticator.setDefault(new ProxyAuthenticator(this, true));
-//        clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-//        DataFlavor[] flavors = clipboard.getAvailableDataFlavors();
-//        if (flavors != null) {
-//            for (DataFlavor f : flavors) {
-//                System.out.println(f.toString());
-//            }
-//        }
         localClipboard.addFlavorListener(new FlavorListener() {
 
             @Override
@@ -325,13 +310,6 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                 JPdfBookmarksGui.this.flavorsChanged();
             }
         });
-//        clipboard.addFlavorListener(new FlavorListener() {
-//
-//            @Override
-//            public void flavorsChanged(FlavorEvent e) {
-//                JPdfBookmarksGui.this.flavorsChanged();
-//            }
-//        });
 
         undoManager = new ExtendedUndoManager();
         undoSupport = new UndoableEditSupport(this);
@@ -379,10 +357,10 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     }
 
     public final void flavorsChanged() {
-        DataFlavor[] flavors = localClipboard.getAvailableDataFlavors();
-//        DataFlavor[] flavors = clipboard.getAvailableDataFlavors();
-        for (DataFlavor flavor : flavors) {
-            if (flavor.equals(bookmarkFlavor) && fileOperator != null && (fileOperator.getFilePath() != null)) {
+        
+        DataFlavor[] flavorsInClipboard = localClipboard.getAvailableDataFlavors();
+        for (DataFlavor flavor : flavorsInClipboard) {
+            if (flavor.equals(bookmarksFlavor) && fileOperator != null && (fileOperator.getFilePath() != null)) {
                 pasteAction.setEnabled(true);
             }
         }
@@ -627,11 +605,11 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         //enable or disable actions applicable to multiple bookmarks
         Ut.enableActions((bookmark != null), setBoldAction, setItalicAction,
                 changeColorAction, applyPageOffset, deleteAction, renameAction,
-                setDestFromViewAction);
+                setDestFromViewAction, cutAction, copyAction);
 
         //enable or disable actions applicable to only a single bookmark
         TreePath[] paths = bookmarksTree.getSelectionPaths();
-        Ut.enableActions((bookmark != null) && (paths.length == 1), cutAction, copyAction,
+        Ut.enableActions((bookmark != null) && (paths.length == 1),
                 addChildAction, showActionsDialog, addWebLinkAction, addLaunchLinkAction);
 
         //Ut.enableComponents((bookmark != null), cutMenuItem, copyMenuItem);
@@ -1096,34 +1074,36 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     private void copyBookmarkFromView() {
         Bookmark b = viewPanel.getBookmarkFromView();
         if (b != null) {
-            Bookmark bookmarkCopied = Bookmark.cloneBookmark(b, !b.isOpened());
-            BookmarkSelection bs = new BookmarkSelection(bookmarkCopied, bookmarkFlavor, false, fileOperator.getFile());
+            //Bookmark bookmarkCopied = Bookmark.cloneBookmark(b, !b.isOpened());
+            ArrayList<Bookmark> bookmarks = new ArrayList<Bookmark>();
+            bookmarks.add(b);
+            BookmarkSelection bs = new BookmarkSelection(bookmarks, bookmarksFlavor, false, fileOperator.getFile());
             localClipboard.setContents(bs, bs);
             flavorsChanged();
         }
     }
 
     private void copy(boolean cut) {
-        Bookmark bookmarkSelected = getSelectedBookmark();
-        if (bookmarkSelected != null) {
-            Bookmark bookmarkCopied = Bookmark.cloneBookmark(bookmarkSelected, !bookmarkSelected.isOpened());
-            BookmarkSelection bs = new BookmarkSelection(bookmarkCopied, bookmarkFlavor, cut, fileOperator.getFile());
+        ArrayList<Bookmark> bookmarksSelected = getSelectedBookmarks();
+        if (bookmarksSelected != null && !bookmarksSelected.isEmpty()) {
+            BookmarkSelection bs = new BookmarkSelection(bookmarksSelected, bookmarksFlavor, cut, fileOperator.getFile());
             localClipboard.setContents(bs, bs);
-//            clipboard.setContents(bs, bs);
             flavorsChanged();
         }
     }
 
     private void paste() {
         Transferable content = localClipboard.getContents(this);
-//        Transferable content = clipboard.getContents(this);
-        if (content != null && content.isDataFlavorSupported(bookmarkFlavor)) {
+
+        if (content != null && content.isDataFlavorSupported(bookmarksFlavor)) {
             try {
-                BookmarkSelection bs = (BookmarkSelection) content.getTransferData(bookmarkFlavor);
-                Bookmark bookmarkCopied = bs.getBookmark();
+                BookmarkSelection bs = (BookmarkSelection) content.getTransferData(bookmarksFlavor);
+                ArrayList<Bookmark> bookmarksCopied = bs.getBookmarks();
                 if (!fileOperator.getFile().equals(bs.getFile())) {
                     File relativeRemoteFile = Ut.createRelativePath(fileOperator.getFile(), bs.getFile());
-                    bookmarkCopied.setRemoteFilePathWithChildren(relativeRemoteFile);
+                    for (Bookmark b : bookmarksCopied) {
+                        b.setRemoteFilePathWithChildren(relativeRemoteFile);
+                    }
                 }
                 TreePath path = bookmarksTree.getSelectionPath();
                 Bookmark father;
@@ -1131,11 +1111,19 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                     Bookmark selected = (Bookmark) path.getLastPathComponent();
                     father = (Bookmark) selected.getParent();
                     int i = father.getIndex(selected);
-                    father.insert(bookmarkCopied, i + 1);
+                    for(Bookmark b : bookmarksCopied) {
+                        father.insert(b, i + 1);
+                        i++;
+                    }
                 } else {
                     father = (Bookmark) bookmarksTreeModel.getRoot();
-                    father.add(bookmarkCopied);
+                    for(Bookmark b : bookmarksCopied) {
+                        father.add(b);
+                    }
                 }
+                UndoablePasteBookmarks undoablePaste = new UndoablePasteBookmarks(bookmarksTreeModel, bookmarksCopied);
+                undoablePaste.doEdit();
+                undoSupport.postEdit(undoablePaste);
                 fileOperator.setFileChanged(true);
                 bookmarksTreeModel.nodeStructureChanged(father);
                 recreateNodesOpenedState();
