@@ -223,7 +223,7 @@
         <Component class="javax.swing.JLabel" name="appVersionLabel">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="JPdfBookmarks.VERSION" type="code"/>
+              <Connection code="JPdfBookmarks.getVersion()" type="code"/>
             </Property>
           </Properties>
           <AuxValues>

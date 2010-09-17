@@ -37,6 +37,8 @@ public class Prefs {
 
 	private Preferences userPrefs = Preferences.userNodeForPackage(getClass());
 
+        private final String GPL_ACCEPTED = "GPL_ACCEPTED";
+
 	private final String WINDOW_STATE = "WINDOW_STATE";
 	private final String MAXIMIZED = "MAXIMIZED";
 	private final String LAF = "LAF";
@@ -100,6 +102,14 @@ public class Prefs {
         public void setShowToolbar(String name, boolean value) {
             userPrefs.putBoolean(name, value);
         }
+
+        public boolean getGplAccepted() {
+		return userPrefs.getBoolean(GPL_ACCEPTED, false);
+	}
+
+	public void setGplAccepted(boolean gplAccepted) {
+		userPrefs.putBoolean(GPL_ACCEPTED, gplAccepted);
+	}
 
 	public boolean getUseProxy() {
 		return userPrefs.getBoolean(USE_PROXY, false);

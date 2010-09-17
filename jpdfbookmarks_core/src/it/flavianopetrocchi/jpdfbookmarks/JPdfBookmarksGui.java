@@ -357,7 +357,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     }
 
     public final void flavorsChanged() {
-        
+
         DataFlavor[] flavorsInClipboard = localClipboard.getAvailableDataFlavors();
         for (DataFlavor flavor : flavorsInClipboard) {
             if (flavor.equals(bookmarksFlavor) && fileOperator != null && (fileOperator.getFilePath() != null)) {
@@ -605,12 +605,13 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         //enable or disable actions applicable to multiple bookmarks
         Ut.enableActions((bookmark != null), setBoldAction, setItalicAction,
                 changeColorAction, applyPageOffset, deleteAction, renameAction,
-                setDestFromViewAction, cutAction, copyAction);
+                setDestFromViewAction, cutAction, copyAction, addWebLinkAction,
+                addLaunchLinkAction);
 
         //enable or disable actions applicable to only a single bookmark
         TreePath[] paths = bookmarksTree.getSelectionPaths();
         Ut.enableActions((bookmark != null) && (paths.length == 1),
-                addChildAction, showActionsDialog, addWebLinkAction, addLaunchLinkAction);
+                addChildAction, showActionsDialog);
 
         //Ut.enableComponents((bookmark != null), cutMenuItem, copyMenuItem);
         if (bookmark != null) {
@@ -910,24 +911,29 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                 JOptionPane.YES_NO_CANCEL_OPTION,
                 JOptionPane.QUESTION_MESSAGE, null, choices, choices[0]);
 
-        return response;
+        int addOrReplace = response;
+        switch (response) {
+            case 0: //replace
+                addOrReplace = UndoableMultiSetDest.REPLACE;
+                break;
+            case 1: //add
+                addOrReplace = UndoableMultiSetDest.ADD;
+                break;
+            case 2: //abort
+                addOrReplace = UndoableMultiSetDest.ABORT;
+                break;
+        }
+        return addOrReplace;
     }
 
-    private void destFromView() {
+    private void setDestFromView() {
 
         Bookmark fromView = viewPanel.getBookmarkFromView();
         adjustInheritValues(fromView);
 
-        int addOrReplace = UndoableMultipleSetDestination.REPLACE;
-        switch (askAddOrReplace()) {
-            case 0: //replace
-                addOrReplace = UndoableMultipleSetDestination.REPLACE;
-                break;
-            case 1: //add
-                addOrReplace = UndoableMultipleSetDestination.ADD;
-                break;
-            case 2: //cancel
-                return;
+        int addOrReplace = askAddOrReplace();
+        if (addOrReplace == UndoableMultiSetDest.ABORT) {
+            return;
         }
 
         boolean keepPageNumbers = true;
@@ -939,9 +945,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             }
         }
 
-        UndoableMultipleSetDestination undoable =
-                new UndoableMultipleSetDestination(bookmarksTree, fromView,
-                    addOrReplace, keepPageNumbers);
+        UndoableMultiSetDestFromView undoable = new UndoableMultiSetDestFromView(bookmarksTree,
+                addOrReplace, fromView, keepPageNumbers);
         undoable.doEdit();
         undoSupport.postEdit(undoable);
 
@@ -966,25 +971,16 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
         File relativeFile = Ut.createRelativePath(fileOperator.getFile(), f);
         String relativePath = Ut.onWindowsReplaceBackslashWithSlash(relativeFile.toString());
-        Bookmark bookmark = getSelectedBookmark();
 
-        switch (askAddOrReplace()) {
-            case 0: //replace
-                if (bookmark != null) {
-                    bookmark.clearChainedBookmarks();
-                    bookmark.setType(BookmarkType.Launch);
-                    bookmark.setFileToLaunch(relativePath);
-                }
-                break;
-            case 1: //add
-                Bookmark b = new Bookmark();
-                b.setType(BookmarkType.Launch);
-                b.setFileToLaunch(relativePath);
-                bookmark.addChainedBookmark(b);
-                break;
-            case 2: //cancel
-                return;
+        int addOrReplace = askAddOrReplace();
+        if (addOrReplace == UndoableMultiSetDest.ABORT) {
+            return;
         }
+
+       UndoableMultiSetLaunchLink undoable =
+                new UndoableMultiSetLaunchLink(bookmarksTree, addOrReplace, relativePath);
+        undoable.doEdit();
+        undoSupport.postEdit(undoable);
 
         fileOperator.setFileChanged(true);
 
@@ -998,27 +994,17 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             return;
         }
 
-        Bookmark bookmark = getSelectedBookmark();
-
-        switch (askAddOrReplace()) {
-            case 0: //replace
-                if (bookmark != null) {
-                    bookmark.clearChainedBookmarks();
-                    bookmark.setType(BookmarkType.Uri);
-                    bookmark.setUri(address);
-                }
-                break;
-            case 1: //add
-                Bookmark b = new Bookmark();
-                b.setType(BookmarkType.Uri);
-                b.setUri(address);
-                bookmark.addChainedBookmark(b);
-                break;
-            case 2: //cancel
-                return;
+        int addOrReplace = askAddOrReplace();
+        if (addOrReplace == UndoableMultiSetDest.ABORT) {
+            return;
         }
-        fileOperator.setFileChanged(true);
 
+        UndoableMultiSetWebLink undoable =
+                new UndoableMultiSetWebLink(bookmarksTree, addOrReplace, address);
+        undoable.doEdit();
+        undoSupport.postEdit(undoable);
+
+        fileOperator.setFileChanged(true);
         goToWebLinkAsking(address);
     }
 
@@ -1111,13 +1097,13 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                     Bookmark selected = (Bookmark) path.getLastPathComponent();
                     father = (Bookmark) selected.getParent();
                     int i = father.getIndex(selected);
-                    for(Bookmark b : bookmarksCopied) {
+                    for (Bookmark b : bookmarksCopied) {
                         father.insert(b, i + 1);
                         i++;
                     }
                 } else {
                     father = (Bookmark) bookmarksTreeModel.getRoot();
-                    for(Bookmark b : bookmarksCopied) {
+                    for (Bookmark b : bookmarksCopied) {
                         father.add(b);
                     }
                 }
@@ -1422,7 +1408,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             prop.load(reader);
             String inputLine = prop.getProperty("VERSION");
             String[] newVersionNumbers = inputLine.split("\\.");
-            String[] thisVersionNumbers = JPdfBookmarks.VERSION.split("\\.");
+            String[] thisVersionNumbers = JPdfBookmarks.getVersion().split("\\.");
             for (int i = 0; i < newVersionNumbers.length; i++) {
                 int newVerN = Integer.parseInt(newVersionNumbers[i]);
                 int thisVerN = Integer.parseInt(thisVersionNumbers[i]);
@@ -1456,63 +1442,62 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         }
     }
 
-    private class UpdatesChecker extends SwingWorker<Boolean, Void> {
-
-        boolean quietMode = false;
-
-        public UpdatesChecker(boolean quietMode) {
-            this.quietMode = quietMode;
-        }
-
-        @Override
-        protected Boolean doInBackground() throws Exception {
-            Proxy proxy = Proxy.NO_PROXY;
-            if (userPrefs.getUseProxy()) {
-                SocketAddress addr = new InetSocketAddress(
-                        userPrefs.getProxyAddress(), userPrefs.getProxyPort());
-                String proxyType = userPrefs.getProxyType();
-                proxy = new Proxy(Proxy.Type.valueOf(proxyType), addr);
-            }
-
-            URL altervista = null;
-            BufferedReader in;
-            boolean newVersionAvailable = false;
-            altervista = new URL(JPdfBookmarks.LAST_VERSION_URL);
-            HttpURLConnection connection = (HttpURLConnection) altervista.openConnection(proxy);
-            in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            String inputLine;
-            while ((inputLine = in.readLine()) != null) {
-                String[] newVersionNumbers = inputLine.split("\\.");
-                String[] thisVersionNumbers = JPdfBookmarks.VERSION.split("\\.");
-                for (int i = 0; i < newVersionNumbers.length; i++) {
-                    if (Integer.parseInt(newVersionNumbers[i])
-                            > Integer.parseInt(thisVersionNumbers[i])) {
-                        newVersionAvailable = true;
-                    }
-                }
-            }
-            in.close();
-            return newVersionAvailable;
-        }
-
-        @Override
-        protected void done() {
-            boolean newVersion = false;
-            try {
-                newVersion = get();
-                if (newVersion || !quietMode) {
-                    JOptionPane.showMessageDialog(JPdfBookmarksGui.this, newVersionAvailable(newVersion),
-                            JPdfBookmarks.APP_NAME, JOptionPane.INFORMATION_MESSAGE);
-                }
-            } catch (Exception ex) {
-                if (!quietMode) {
-                    showErrorMessage(Res.getString("ERROR_CHECKING_UPDATES"));
-                }
-            }
-
-        }
-    }
-
+//    private class UpdatesChecker extends SwingWorker<Boolean, Void> {
+//
+//        boolean quietMode = false;
+//
+//        public UpdatesChecker(boolean quietMode) {
+//            this.quietMode = quietMode;
+//        }
+//
+//        @Override
+//        protected Boolean doInBackground() throws Exception {
+//            Proxy proxy = Proxy.NO_PROXY;
+//            if (userPrefs.getUseProxy()) {
+//                SocketAddress addr = new InetSocketAddress(
+//                        userPrefs.getProxyAddress(), userPrefs.getProxyPort());
+//                String proxyType = userPrefs.getProxyType();
+//                proxy = new Proxy(Proxy.Type.valueOf(proxyType), addr);
+//            }
+//
+//            URL altervista = null;
+//            BufferedReader in;
+//            boolean newVersionAvailable = false;
+//            altervista = new URL(JPdfBookmarks.LAST_VERSION_URL);
+//            HttpURLConnection connection = (HttpURLConnection) altervista.openConnection(proxy);
+//            in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+//            String inputLine;
+//            while ((inputLine = in.readLine()) != null) {
+//                String[] newVersionNumbers = inputLine.split("\\.");
+//                String[] thisVersionNumbers = JPdfBookmarks.VERSION.split("\\.");
+//                for (int i = 0; i < newVersionNumbers.length; i++) {
+//                    if (Integer.parseInt(newVersionNumbers[i])
+//                            > Integer.parseInt(thisVersionNumbers[i])) {
+//                        newVersionAvailable = true;
+//                    }
+//                }
+//            }
+//            in.close();
+//            return newVersionAvailable;
+//        }
+//
+//        @Override
+//        protected void done() {
+//            boolean newVersion = false;
+//            try {
+//                newVersion = get();
+//                if (newVersion || !quietMode) {
+//                    JOptionPane.showMessageDialog(JPdfBookmarksGui.this, newVersionAvailable(newVersion),
+//                            JPdfBookmarks.APP_NAME, JOptionPane.INFORMATION_MESSAGE);
+//                }
+//            } catch (Exception ex) {
+//                if (!quietMode) {
+//                    showErrorMessage(Res.getString("ERROR_CHECKING_UPDATES"));
+//                }
+//            }
+//
+//        }
+//    }
     private void checkUpdates(boolean quietMode) {
 //		UpdatesChecker updatesChecker = new UpdatesChecker(quietMode);
 //		updatesChecker.execute();
@@ -1859,7 +1844,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                destFromView();
+                setDestFromView();
             }
         };
 

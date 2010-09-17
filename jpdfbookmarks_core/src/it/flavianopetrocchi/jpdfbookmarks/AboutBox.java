@@ -32,15 +32,14 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
 
 
 public class AboutBox extends javax.swing.JDialog {
 
     private URI homePage;
-    private Color focusedColor = new Color(128, 0, 128);
+    //private Color focusedColor = new Color(128, 0, 128);
     private Color nonFocusedColor = new Color(0, 0, 255);
+    private MyHyperlinkListener linksListener;
 
     /** Creates new form AboutBox5 */
     public AboutBox(java.awt.Frame parent, boolean modal) {
@@ -55,7 +54,8 @@ public class AboutBox extends javax.swing.JDialog {
         txtHomepage.setCursor(handCursor);
         txtBlog.setCursor(handCursor);
         btnClose.requestFocusInWindow();
-        txtLibraries.addHyperlinkListener(new MyHyperlinkListener());
+        linksListener = new MyHyperlinkListener(this);
+        txtLibraries.addHyperlinkListener(linksListener);
     }
 
     /** This method is called from within the constructor to
@@ -114,7 +114,7 @@ public class AboutBox extends javax.swing.JDialog {
         homepageLabel.setFont(homepageLabel.getFont().deriveFont(homepageLabel.getFont().getStyle() | java.awt.Font.BOLD));
         homepageLabel.setText(bundle.getString("EMAIL_LABEL")); // NOI18N
 
-        appVersionLabel.setText(JPdfBookmarks.VERSION);
+        appVersionLabel.setText(JPdfBookmarks.getVersion());
 
         appVendorLabel.setText("Flaviano Petrocchi");
 
@@ -356,7 +356,7 @@ public class AboutBox extends javax.swing.JDialog {
 	}//GEN-LAST:event_txtMailActionPerformed
 
 	private void txtHomepageMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_txtHomepageMouseClicked
-            goToWebLink(txtHomepage.getText().trim());
+            linksListener.goToWebLink(txtHomepage.getText().trim());
 	}//GEN-LAST:event_txtHomepageMouseClicked
 
 	private void txtMailMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_txtMailMouseClicked
@@ -380,15 +380,15 @@ public class AboutBox extends javax.swing.JDialog {
 	}//GEN-LAST:event_txtHomepageFocusLost
 
         private void txtHomepageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtHomepageActionPerformed
-            goToWebLink(((JTextField) evt.getSource()).getText().trim());
+            linksListener.goToWebLink(((JTextField) evt.getSource()).getText().trim());
         }//GEN-LAST:event_txtHomepageActionPerformed
 
         private void txtBlogActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtBlogActionPerformed
-            goToWebLink(((JTextField) evt.getSource()).getText().trim());
+            linksListener.goToWebLink(((JTextField) evt.getSource()).getText().trim());
         }//GEN-LAST:event_txtBlogActionPerformed
 
         private void txtBlogMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_txtBlogMouseClicked
-            goToWebLink(((JTextField) evt.getSource()).getText().trim());
+            linksListener.goToWebLink(((JTextField) evt.getSource()).getText().trim());
         }//GEN-LAST:event_txtBlogMouseClicked
 
         private void txtBlogFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtBlogFocusGained
@@ -411,28 +411,28 @@ public class AboutBox extends javax.swing.JDialog {
                 nonFocusedColor));
     }
 
-    private void goToWebLink(String uri) {
-        int answer = JOptionPane.showConfirmDialog(this,
-                Res.getString("MSG_LAUNCH_BROWSER"), JPdfBookmarks.APP_NAME,
-                JOptionPane.OK_CANCEL_OPTION);
-
-        if (answer != JOptionPane.OK_OPTION) {
-            return;
-        }
-
-        Desktop desktop = Desktop.getDesktop();
-        try {
-            desktop.browse(new URI(uri));
-        } catch (URISyntaxException ex) {
-            JOptionPane.showMessageDialog(this,
-                    Res.getString("ERROR_WRONG_URI"), JPdfBookmarks.APP_NAME,
-                    JOptionPane.ERROR_MESSAGE);
-        } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this,
-                    Res.getString("ERROR_LAUNCHING_BROWSER"), JPdfBookmarks.APP_NAME,
-                    JOptionPane.ERROR_MESSAGE);
-        }
-    }
+//    private void goToWebLink(String uri) {
+//        int answer = JOptionPane.showConfirmDialog(this,
+//                Res.getString("MSG_LAUNCH_BROWSER"), JPdfBookmarks.APP_NAME,
+//                JOptionPane.OK_CANCEL_OPTION);
+//
+//        if (answer != JOptionPane.OK_OPTION) {
+//            return;
+//        }
+//
+//        Desktop desktop = Desktop.getDesktop();
+//        try {
+//            desktop.browse(new URI(uri));
+//        } catch (URISyntaxException ex) {
+//            JOptionPane.showMessageDialog(this,
+//                    Res.getString("ERROR_WRONG_URI"), JPdfBookmarks.APP_NAME,
+//                    JOptionPane.ERROR_MESSAGE);
+//        } catch (IOException ex) {
+//            JOptionPane.showMessageDialog(this,
+//                    Res.getString("ERROR_LAUNCHING_BROWSER"), JPdfBookmarks.APP_NAME,
+//                    JOptionPane.ERROR_MESSAGE);
+//        }
+//    }
 
     private void mail(String mail) {
         int answer = JOptionPane.showConfirmDialog(this,
@@ -457,14 +457,14 @@ public class AboutBox extends javax.swing.JDialog {
         }
     }
 
-    class MyHyperlinkListener implements HyperlinkListener {
-
-        public void hyperlinkUpdate(HyperlinkEvent e) {
-            if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                goToWebLink(e.getURL().toString());
-            }
-        }
-    }
+//    class MyHyperlinkListener implements HyperlinkListener {
+//
+//        public void hyperlinkUpdate(HyperlinkEvent e) {
+//            if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+//                goToWebLink(e.getURL().toString());
+//            }
+//        }
+//    }
 
     /**
      * @param args the command line arguments

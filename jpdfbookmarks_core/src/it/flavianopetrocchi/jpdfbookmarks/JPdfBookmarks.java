@@ -29,9 +29,11 @@ import java.awt.EventQueue;
 import java.io.BufferedReader;
 import java.io.Console;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -40,6 +42,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -71,7 +74,20 @@ class JPdfBookmarks {
         SHOW_ON_OPEN,
     }
     // <editor-fold defaultstate="expanded" desc="Member variables">
-    public static final String VERSION = "2.4.2";
+    private static String version = "1.0.0";
+    private static final String VERSION_FILE = "jpdfbookmarks.properties";
+    static {
+        Properties prop = new Properties();
+        try {
+            InputStream in = JPdfBookmarks.class.getResourceAsStream(VERSION_FILE);
+            prop.load(in);
+            version = prop.getProperty("VERSION");
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(JPdfBookmarks.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(JPdfBookmarks.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
     public static final String APP_NAME = "JPdfBookmarks";
     protected static final String NEWLINE = System.getProperty("line.separator");
     public static final String DOWNLOAD_URL =
@@ -79,8 +95,8 @@ class JPdfBookmarks {
     public static final String BLOG_URL =
             "http://flavianopetrocchi.blogspot.com";
     public static final String ITEXT_URL = "http://www.lowagie.com/iText/";
-    public static final String LAST_VERSION_URL =
-            "http://jpdfbookmarks.altervista.org/version/lastVersion";
+//    public static final String LAST_VERSION_URL =
+//            "http://jpdfbookmarks.altervista.org/version/lastVersion";
     public static final String LAST_VERSION_PROPERTIES_URL =
             "http://jpdfbookmarks.altervista.org/version/jpdfbookmarks.properties";
     public static final String MANUAL_URL = "http://sourceforge.net/apps/mediawiki/jpdfbookmarks/";
@@ -108,6 +124,10 @@ class JPdfBookmarks {
         localizeExternalModules();
         JPdfBookmarks app = new JPdfBookmarks();
         app.start(args);
+    }
+
+    public static String getVersion() {
+        return version;
     }
 
     private static void localizeExternalModules() {
@@ -228,11 +248,11 @@ class JPdfBookmarks {
 
     private void resetPasswords() {
         if (userPassword != null) {
-            Arrays.fill(userPassword, (byte)0);
+            Arrays.fill(userPassword, (byte) 0);
             userPassword = null;
         }
         if (ownerPassword != null) {
-            Arrays.fill(ownerPassword, (byte)0);
+            Arrays.fill(ownerPassword, (byte) 0);
             ownerPassword = null;
         }
     }
@@ -292,10 +312,10 @@ class JPdfBookmarks {
             ipdf.save(outputFilePath, userPassword, ownerPassword);
             ipdf.close();
             if (userPassword != null) {
-                Arrays.fill(userPassword, (byte)0);
+                Arrays.fill(userPassword, (byte) 0);
             }
             if (ownerPassword != null) {
-                Arrays.fill(ownerPassword, (byte)0);
+                Arrays.fill(ownerPassword, (byte) 0);
             }
         } catch (IOException ex) {
             fatalSaveFileError(outputFilePath);
@@ -371,7 +391,7 @@ class JPdfBookmarks {
 
         switch (mode) {
             case VERSION:
-                out.println(VERSION);
+                out.println(version);
                 break;
             case DUMP:
                 dump();
@@ -425,6 +445,18 @@ class JPdfBookmarks {
             try {
                 JPdfBookmarksGui viewer;
                 viewer = new JPdfBookmarksGui();
+                Prefs prefs = new Prefs();
+                //prefs.setGplAccepted(false); //for debugging only remember to comment
+                if (!prefs.getGplAccepted()) {
+                    LicenseBox licenseBox = new LicenseBox(null, true);
+                    licenseBox.setLocationRelativeTo(null);
+                    licenseBox.setVisible(true);
+                    if (licenseBox.getLicenseAccepted()) {
+                        prefs.setGplAccepted(true);
+                    } else {
+                        return;
+                    }
+                }
                 viewer.setVisible(true);
                 if (inputPath != null) {
                     viewer.openFileAsync(new File(new File(inputPath).getAbsolutePath()),
