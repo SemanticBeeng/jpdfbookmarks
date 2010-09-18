@@ -27,6 +27,15 @@ PREV_DIR=$(pwd)
 
 cd ${SCRIPTDIR}
 
+PROP_FILE=../jpdfbookmarks_core/src/it/flavianopetrocchi/jpdfbookmarks/jpdfbookmarks.properties
+VERSION=$(sed '/^\#/d' ${PROP_FILE} | grep 'VERSION'  | tail -n 1 | sed 's/^.*=//')
 
+NAME=jpdfbookmarks-${VERSION}
+SRCNAME=jpdfbookmarks-src-${VERSION}
+
+DIRNAME=JPdfBookmarks-${VERSION}
+
+rsync -avP -e ssh ${NAME}.zip ${NAME}.tar.gz ${SRCNAME}.zip ${SRCNAME}.tar.gz \
+	fla1257,jpdfbookmarks@frs.sourceforge.net:/home/frs/project/j/jp/jpdfbookmarks/${DIRNAME}/
 
 cd ${PREV_DIR}
