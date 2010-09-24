@@ -43,7 +43,6 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.GridLayout;
@@ -84,8 +83,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
@@ -958,7 +955,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.setCurrentDirectory(fileOperator.getFile().getParentFile());
-
+        chooser.setDialogTitle(Res.getString("LAUNCH_LINK_DIALOG_TITLE"));
+        
         if (chooser.showSaveDialog(JPdfBookmarksGui.this)
                 != JFileChooser.APPROVE_OPTION) {
             return;
@@ -2866,6 +2864,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         bookmarksToolbars.put(Prefs.SHOW_ADD_TB, addToolbar);
         addToolbar.add(addSiblingAction);
         addToolbar.add(addChildAction);
+        addToolbar.setMaximumSize(addToolbar.getPreferredSize());
 //		addToolbar.add(setDestFromViewAction);
 //		addToolbar.add(addWebLinkAction);
 
@@ -2873,6 +2872,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         bookmarksToolbars.put(Prefs.SHOW_CHANGE_TB, changeToolbar);
         changeToolbar.add(renameAction);
         changeToolbar.add(deleteAction);
+        changeToolbar.setMaximumSize(changeToolbar.getPreferredSize());
 
 //        JToolBar undoToolbar = new JToolBar(JToolBar.VERTICAL);
 //        bookmarksToolbars.put(Prefs.SHOW_UNDO_TB, undoToolbar);
@@ -2888,6 +2888,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         tbItalic.setText("");
         styleToolbar.add(tbItalic);
         styleToolbar.add(changeColorAction);
+        styleToolbar.setMaximumSize(styleToolbar.getPreferredSize());
 
         JToolBar setDestToolbar = new JToolBar(JToolBar.VERTICAL);
         bookmarksToolbars.put(Prefs.SHOW_SETDEST_TB, setDestToolbar);
@@ -2896,6 +2897,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         setDestToolbar.add(addLaunchLinkAction);
         setDestToolbar.add(setDestFromViewAction);
         setDestToolbar.add(showActionsDialog);
+        setDestToolbar.setMaximumSize(setDestToolbar.getPreferredSize());
 
         bookmarksToolbarsPanel.add(addToolbar);
         bookmarksToolbarsPanel.add(changeToolbar);
