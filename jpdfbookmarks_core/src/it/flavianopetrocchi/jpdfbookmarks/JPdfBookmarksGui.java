@@ -53,6 +53,11 @@ import java.awt.datatransfer.FlavorEvent;
 import java.awt.datatransfer.FlavorListener;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -147,6 +152,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     // <editor-fold defaultstate="collapsed" desc="Members">
     private static Clipboard localClipboard;
 //    private Clipboard clipboard;
+    private DropTarget dropTarget;
     private final static DataFlavor bookmarksFlavor;
     private final int ZOOM_STEP = 10;
     private int windowState;
@@ -956,7 +962,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.setCurrentDirectory(fileOperator.getFile().getParentFile());
         chooser.setDialogTitle(Res.getString("LAUNCH_LINK_DIALOG_TITLE"));
-        
+
         if (chooser.showSaveDialog(JPdfBookmarksGui.this)
                 != JFileChooser.APPROVE_OPTION) {
             return;
@@ -975,7 +981,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             return;
         }
 
-       UndoableMultiSetLaunchLink undoable =
+        UndoableMultiSetLaunchLink undoable =
                 new UndoableMultiSetLaunchLink(bookmarksTree, addOrReplace, relativePath);
         undoable.doEdit();
         undoSupport.postEdit(undoable);
@@ -2992,7 +2998,9 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         centralSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                 false, leftTabbedPane, centralPanel);
         centralSplit.setOneTouchExpandable(true);
-        centralSplit.setTransferHandler(new FilesTransferHandler());
+        dropTarget = new DropTarget(centralSplit, new SplitDropListener());
+        centralSplit.setDropTarget(dropTarget);
+        //centralSplit.setTransferHandler(new FilesTransferHandler());
         centralSplit.setDividerLocation(userPrefs.getSplitterLocation());
         add(centralSplit, BorderLayout.CENTER);
 
@@ -3111,14 +3119,28 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         public void mousePressed(MouseEvent e) {
             super.mousePressed(e);
 
-//            TreePath path = bookmarksTree.getPathForLocation(e.getX(), e.getY());
-//
-//            if (e.isPopupTrigger()) {
-//                if (path != null) {
-//                    bookmarksTree.setSelectionPath(path);
-//                    treeMenu.show(e.getComponent(), e.getX(), e.getY());
-//                }
-//            }
+            TreePath path = bookmarksTree.getPathForLocation(e.getX(), e.getY());
+
+            //On Linux is necessary to do this on mousePresed on Windows on mouseReleased
+            if (e.isPopupTrigger()) {
+                //if there are multiple bookmarks selected change selection only if over
+                //a not selected bookmark
+                TreePath[] paths = bookmarksTree.getSelectionPaths();
+                if (path != null) {
+                    boolean changeSelection = true;
+                    if (paths != null) {
+                        for (TreePath p : paths) {
+                            if (p.equals(path)) {
+                                changeSelection = false;
+                            }
+                        }
+                    }
+                    if (changeSelection) {
+                        bookmarksTree.setSelectionPath(path);
+                    }
+                }
+                treeMenu.show(e.getComponent(), e.getX(), e.getY());
+            }
         }
 
         @Override
@@ -3239,51 +3261,51 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         }
     }
 
-    private class FilesTransferHandler extends TransferHandler {
-
-        @Override
-        public boolean canImport(JComponent c, DataFlavor[] flavors) {
-            for (DataFlavor flavor : flavors) {
-                if (flavor.equals(DataFlavor.javaFileListFlavor)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        @Override
-        public boolean importData(JComponent c, Transferable t) {
-            DataFlavor[] flavors = t.getTransferDataFlavors();
-            for (DataFlavor flavor : flavors) {
-                if (flavor.equals(DataFlavor.javaFileListFlavor)) {
-                    try {
-                        List filesList = (List) t.getTransferData(DataFlavor.javaFileListFlavor);
-                        Iterator i = filesList.iterator();
-                        if (i.hasNext()) {
-                            File f = (File) i.next();
-                            if (!askCloseWithoutSave()) {
-                                return false;
-                            }
-                            fileOperator.close();
-
-                            if (f != null && f.isFile()) {
-                                //close();
-                                openFileAsync(f, null);
-                                return true;
-                            } else {
-                                showErrorMessage(Res.getString("ERROR_OPENING_FILE") + " " + f.getName());
-                                return false;
-                            }
-                        }
-                    } catch (UnsupportedFlavorException ex) {
-                    } catch (IOException ex) {
-                    }
-                    return true;
-                }
-            }
-            return false;
-        }
-    }
+//    private class FilesTransferHandler extends TransferHandler {
+//
+//        @Override
+//        public boolean canImport(JComponent c, DataFlavor[] flavors) {
+//            for (DataFlavor flavor : flavors) {
+//                if (flavor.equals(DataFlavor.javaFileListFlavor)) {
+//                    return true;
+//                }
+//            }
+//            return false;
+//        }
+//
+//        @Override
+//        public boolean importData(JComponent c, Transferable t) {
+//            DataFlavor[] flavors = t.getTransferDataFlavors();
+//            for (DataFlavor flavor : flavors) {
+//                if (flavor.equals(DataFlavor.javaFileListFlavor)) {
+//                    try {
+//                        List filesList = (List) t.getTransferData(DataFlavor.javaFileListFlavor);
+//                        Iterator i = filesList.iterator();
+//                        if (i.hasNext()) {
+//                            File f = (File) i.next();
+//                            if (!askCloseWithoutSave()) {
+//                                return false;
+//                            }
+//                            fileOperator.close();
+//
+//                            if (f != null && f.isFile()) {
+//                                //close();
+//                                openFileAsync(f, null);
+//                                return true;
+//                            } else {
+//                                showErrorMessage(Res.getString("ERROR_OPENING_FILE") + " " + f.getName());
+//                                return false;
+//                            }
+//                        }
+//                    } catch (UnsupportedFlavorException ex) {
+//                    } catch (IOException ex) {
+//                    }
+//                    return true;
+//                }
+//            }
+//            return false;
+//        }
+//    }
 //    private class BookmarksTransferHandler extends TransferHandler {
 //        Bookmark selectedBookmark;
 //
@@ -3438,4 +3460,93 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 //                    action));
 //        }
 //    }
+
+    private class SplitDropListener implements DropTargetListener {
+
+        public SplitDropListener() {
+        }
+
+        @Override
+        public void dragEnter(DropTargetDragEvent dtde) {
+        }
+
+        @Override
+        public void dragOver(DropTargetDragEvent dtde) {
+        }
+
+        @Override
+        public void dropActionChanged(DropTargetDragEvent dtde) {
+        }
+
+        @Override
+        public void dragExit(DropTargetEvent dte) {
+        }
+
+        private java.util.List textURIListToFileList(String data) {
+            java.util.List list = new java.util.ArrayList(1);
+            for (java.util.StringTokenizer st = new java.util.StringTokenizer(data, "\r\n");
+                    st.hasMoreTokens();) {
+                String s = st.nextToken();
+                if (s.startsWith("#")) {
+                    continue;
+                }
+                try {
+                    java.net.URI uri = new java.net.URI(s);
+                    java.io.File file = new java.io.File(uri);
+                    list.add(file);
+                } catch (java.net.URISyntaxException e) {
+                } catch (IllegalArgumentException e) {
+                }
+            }
+            return list;
+        }
+
+        @Override
+        public void drop(DropTargetDropEvent evt) {
+            int action = evt.getDropAction();
+            evt.acceptDrop(action);
+            try {
+                Transferable data = evt.getTransferable();
+                DataFlavor uriListFlavor = null;
+                try {
+                    uriListFlavor = new DataFlavor("text/uri-list;class=java.lang.String");
+                } catch (ClassNotFoundException e1) {
+                }
+
+
+                List filesList = null;
+                if (data.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+                    filesList = (List) data.getTransferData(DataFlavor.javaFileListFlavor);
+
+                } else if (data.isDataFlavorSupported(uriListFlavor)) {
+                    String data1 = (String) data.getTransferData(uriListFlavor);
+                    filesList = (List<File>) textURIListToFileList(data1);
+                }
+
+                if (filesList != null) {
+                    Iterator i = filesList.iterator();
+                    if (i.hasNext()) {
+                        File f = (File) i.next();
+                        if (!askCloseWithoutSave()) {
+                            return;
+                        }
+                        fileOperator.close();
+
+                        if (f != null && f.isFile()) {
+                            //close();
+                            openFileAsync(f, null);
+                            return;
+                        } else {
+                            showErrorMessage(Res.getString("ERROR_OPENING_FILE") + " " + f.getName());
+                            return;
+                        }
+                    }
+                }
+            } catch (UnsupportedFlavorException e) {
+            } catch (IOException e) {
+            } finally {
+                evt.dropComplete(true);
+            }
+        }
+    }
 }
