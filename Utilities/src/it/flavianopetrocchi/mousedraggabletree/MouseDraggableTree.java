@@ -24,6 +24,7 @@ package it.flavianopetrocchi.mousedraggabletree;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.dnd.DragSource;
@@ -52,6 +53,7 @@ import javax.swing.tree.DefaultTreeCellEditor;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
+import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
@@ -395,13 +397,9 @@ public class MouseDraggableTree extends JTree {
         }
     }
 
-    private class CustomRenderer extends DefaultTreeCellRenderer {
-
-        Color draggingBackground = Color.lightGray;
-        Color draggingForeground = Color.white;
-        Color stdBackground = getBackgroundNonSelectionColor();
+    public class CustomRenderer extends DefaultTreeCellRenderer {
+        
         Color stdNonSelectionForeground = getTextNonSelectionColor();
-        Color stdSelectionForeground = getTextSelectionColor();
         DefaultMutableTreeNode previous;
         ImageIcon borderIcon;
 
@@ -415,7 +413,7 @@ public class MouseDraggableTree extends JTree {
             for (int i = 0; i < 2; i++) {
                 borderColor = borderColor.brighter();
             }
-
+            
             if (value.equals(draggingOverNode)) {
                 switch (moveType) {
                     case MOVE_AS_CHILD:
@@ -452,17 +450,13 @@ public class MouseDraggableTree extends JTree {
                 }
 
                 sel = false;
-            } else {
-
-                setBackgroundNonSelectionColor(stdBackground);
-                setTextNonSelectionColor(stdNonSelectionForeground);
-                setTextSelectionColor(stdSelectionForeground);
             }
 
             Component res = super.getTreeCellRendererComponent(tree, value,
                     sel, expanded, leaf, row, hasFocus);
 
             return res;
+
         }
     }
 }

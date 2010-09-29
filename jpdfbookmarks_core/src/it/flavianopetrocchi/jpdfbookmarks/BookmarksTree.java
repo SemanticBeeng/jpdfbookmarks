@@ -44,16 +44,7 @@ public class BookmarksTree extends MouseDraggableTree {
         setCellRenderer(bookmarkRenderer);
     }
 
-    private class BookmarkRenderer extends DefaultTreeCellRenderer {
-
-        Color draggingBackground = Color.lightGray;
-        Color draggingForeground = Color.white;
-        Color stdBackground = getBackgroundNonSelectionColor();
-        Color stdSelectedBackground = getBackgroundSelectionColor();
-        Color stdNonSelectionForeground = getTextNonSelectionColor();
-        Color stdSelectionForeground = getTextSelectionColor();
-        DefaultMutableTreeNode previous;
-        ImageIcon borderIcon;
+    private class BookmarkRenderer extends MouseDraggableTree.CustomRenderer {
 
         @Override
         public Component getTreeCellRendererComponent(JTree tree,
@@ -76,51 +67,6 @@ public class BookmarksTree extends MouseDraggableTree {
                 setBorder(null);
 
                 setTextNonSelectionColor(node.getColor());
-            }
-
-            setBorder(null);
-            Color borderColor = stdNonSelectionForeground.brighter();
-            for (int i = 0; i < 4; i++) {
-                borderColor = borderColor.brighter();
-            }
-
-            if (value.equals(draggingOverNode)) {
-                switch (moveType) {
-                    case MOVE_AS_CHILD:
-                        if (node != null) {
-                            if (previous == null || (node != previous)) {
-                                TreePath path = new TreePath(node.getPath());
-                                Rectangle rect = getPathBounds(path);
-                                Icon lblIcon = getIcon();
-                                int iconWidth = lblIcon.getIconWidth();
-                                BufferedImage borderImage = new BufferedImage(
-                                        rect.width, 3,
-                                        BufferedImage.TYPE_INT_ARGB);
-                                Graphics2D g2 = (Graphics2D) borderImage.getGraphics();
-                                g2.setColor(borderColor);
-                                int childLineStart = iconWidth + getIconTextGap();
-                                g2.fillRect(childLineStart, 0,
-                                        rect.width - childLineStart, 3);
-                                g2.dispose();
-                                borderIcon = new ImageIcon(borderImage);
-                                previous = node;
-                            }
-
-                            setBorder(BorderFactory.createMatteBorder(
-                                    0, 0, 3, 0, borderIcon));
-                        }
-                        break;
-                    case MOVE_AS_SIBLING_BEFORE:
-                        setBorder(BorderFactory.createMatteBorder(
-                                3, 0, 0, 0, borderColor));
-                        break;
-                    case MOVE_AS_SIBLING_AFTER:
-                        setBorder(BorderFactory.createMatteBorder(
-                                0, 0, 3, 0, borderColor));
-                        break;
-                }
-
-                sel = false;
             }
 
             Component res = super.getTreeCellRendererComponent(tree, value,
