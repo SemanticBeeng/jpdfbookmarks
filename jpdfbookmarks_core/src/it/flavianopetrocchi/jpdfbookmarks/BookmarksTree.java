@@ -23,25 +23,16 @@ package it.flavianopetrocchi.jpdfbookmarks;
 
 import it.flavianopetrocchi.jpdfbookmarks.bookmark.Bookmark;
 import it.flavianopetrocchi.mousedraggabletree.MouseDraggableTree;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.image.BufferedImage;
-import javax.swing.BorderFactory;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JTree;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.TreePath;
 
 public class BookmarksTree extends MouseDraggableTree {
 
     public BookmarksTree() {
         BookmarkRenderer bookmarkRenderer = new BookmarkRenderer();
         setCellRenderer(bookmarkRenderer);
+
     }
 
     private class BookmarkRenderer extends MouseDraggableTree.CustomRenderer {

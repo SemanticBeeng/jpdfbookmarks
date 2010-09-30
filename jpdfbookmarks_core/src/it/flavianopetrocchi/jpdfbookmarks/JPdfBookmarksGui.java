@@ -135,6 +135,7 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
@@ -221,6 +222,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     private HashMap<String, JToolBar> mainToolbars = new HashMap<String, JToolBar>();
     private HashMap<String, JToolBar> bookmarksToolbars = new HashMap<String, JToolBar>();
     private JPanel mainToolbarsPanel = new JPanel(new WrapFlowLayout(WrapFlowLayout.LEFT));
+    private MouseAdapter mouseAdapter;
     private ToolbarsPopupListener toolbarsPopupListener = new ToolbarsPopupListener();// </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Actions">
     private Action quitAction;
@@ -1150,10 +1152,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             Bookmark bookmark = (Bookmark) path.getLastPathComponent();
             bookmark.setBold(bold);
         }
-
-        //try to trigger a selection to update the menu presentation
-//		bookmarksTree.setSelectionPaths(paths);
-        SwingUtilities.updateComponentTreeUI(bookmarksTree);
+        
+        bookmarksTree.updateTree(mouseAdapter);
         valueChanged(null);
         fileOperator.setFileChanged(true);
     }
@@ -1164,7 +1164,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             Bookmark bookmark = (Bookmark) path.getLastPathComponent();
             bookmark.setItalic(italic);
         }
-        SwingUtilities.updateComponentTreeUI(bookmarksTree);
+
+        bookmarksTree.updateTree(mouseAdapter);
         valueChanged(null);
         fileOperator.setFileChanged(true);
     }
@@ -2839,7 +2840,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         //bookmarksScrollerPanel.add(bookmarksToolbarsPanel, BorderLayout.WEST);
         bookmarksScroller.setViewportView(bookmarksScrollerPanel);
 
-        MouseAdapter mouseAdapter = new MouseOverTree();
+        mouseAdapter = new MouseOverTree();
         bookmarksTree.addMouseMotionListener(mouseAdapter);
         bookmarksTree.addMouseListener(mouseAdapter);
         bookmarksTree.addKeyListener(new KeysOverTree());
@@ -3181,12 +3182,12 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             super.mouseClicked(e);
 
             TreePath path = bookmarksTree.getPathForLocation(e.getX(), e.getY());
+            TreePath[] paths = bookmarksTree.getSelectionPaths();
 
             if (e.isPopupTrigger()) {
                 treeMenu.show(e.getComponent(), e.getX(), e.getY());
                 //if there are multiple bookmarks selected change selection only if over
                 //a not selected bookmark
-                TreePath[] paths = bookmarksTree.getSelectionPaths();
                 if (path != null) {
                     boolean changeSelection = true;
                     if (paths != null) {
@@ -3212,6 +3213,17 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                     followBookmarkInView(bookmark);
                 }
             }
+//            else {
+//                if (e.isControlDown()) {
+//                    if (bookmarksTree.isPathSelected(path)) {
+//                        bookmarksTree.removeSelectionPath(path);
+//                    } else {
+//                        bookmarksTree.addSelectionPath(path);
+//                    }
+//                } else {
+//                    bookmarksTree.setSelectionPath(path);
+//                }
+//            }
         }
     }
 
