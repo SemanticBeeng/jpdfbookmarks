@@ -658,7 +658,7 @@ public class MouseDraggableTree extends JTree {
             int labelGap = iconWidth + gap - gap / 2;
             Rectangle rect = new Rectangle(labelGap, 0, getWidth() - labelGap, getHeight());
             Graphics2D g2 = (Graphics2D) g;
-            if (selected) {
+            if (selected && !currentLAF.equals("GTK look and feel")) {
                 g2.setColor(backgroundSelectionColor);
                 g2.fill(rect);
             }
