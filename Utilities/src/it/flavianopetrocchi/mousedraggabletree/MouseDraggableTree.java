@@ -21,19 +21,21 @@
  */
 package it.flavianopetrocchi.mousedraggabletree;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.Shape;
+import java.awt.Stroke;
 import java.awt.dnd.DragSource;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionAdapter;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -47,13 +49,8 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
 import javax.swing.event.UndoableEditListener;
-import javax.swing.plaf.TreeUI;
-import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellEditor;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
@@ -85,13 +82,6 @@ public class MouseDraggableTree extends JTree {
     private TreeMouseListener mouseListener;
     private MouseListener[] listeners;
 
-    protected enum MoveType {
-
-        MOVE_AS_CHILD,
-        MOVE_AS_SIBLING_AFTER,
-        MOVE_AS_SIBLING_BEFORE,
-    }
-
     public MouseDraggableTree() {
         //take full control of mouse interaction with the tree
         removeUIMouseListeners();
@@ -119,12 +109,10 @@ public class MouseDraggableTree extends JTree {
         addMouseMotionListener(mouseListener);
         CustomRenderer treeRenderer = new CustomRenderer();
         setCellRenderer(treeRenderer);
-        DefaultTreeCellEditor treeEditor = new DefaultTreeCellEditor(this,
-                treeRenderer);
-        setCellEditor(treeEditor);
+//        DefaultCellEditor treeEditor = new DefaultCellEditor();
         setEditable(false);
         setInvokesStopCellEditing(true);
-        JTree tree = new JTree();
+//        JTree tree = new JTree();
 //        setDragEnabled(true);
     }
 
@@ -204,53 +192,71 @@ public class MouseDraggableTree extends JTree {
         }
     }
 
-    private void moveNode() {
-        if (draggingNode == null || draggingOverNode == null) {
-            return;
+    private boolean isValidDropLocation() {
+
+        boolean valid = draggingNode != null
+                && draggingOverNode != null
+                && !draggingNode.equals(draggingOverNode)
+                && !isChildNode(draggingNode, draggingOverNode);
+
+        TreePath[] paths = getSelectionPaths();
+        if (paths != null) {
+            for (TreePath path : paths) {
+                valid = valid && !isChildNode((TreeNode) path.getLastPathComponent(), draggingOverNode);
+            }
         }
 
-        if (draggingNode.equals(draggingOverNode)) {
-            return;
+        return valid;
+    }
+
+    private boolean moveNode() {
+        if (!isValidDropLocation()) {
+            return false;
         }
 
-        if (isChildNode(draggingNode, draggingOverNode)) {
-            return;
-        }
-
-        sourceParent = (MutableTreeNode) draggingNode.getParent();
-        sourcePosition = sourceParent.getIndex(draggingNode);
+//        sourceParent = (MutableTreeNode) draggingNode.getParent();
+//        sourcePosition = sourceParent.getIndex(draggingNode);
 
         //the next two calls are necessary to avoid confusion while dragging
-        draggingNode.removeFromParent();
-        defaultTreeModel.nodeStructureChanged(sourceParent);
+//        draggingNode.removeFromParent();
+//        defaultTreeModel.nodeStructureChanged(sourceParent);
 
-        targetParent = (MutableTreeNode) draggingOverNode.getParent();
-        targetPosition = targetParent.getIndex(draggingOverNode);
+        if (moveType == MoveType.MOVE_AS_CHILD) {
+            targetParent = draggingOverNode;
+        } else {
+            targetParent = (MutableTreeNode) draggingOverNode.getParent();
+        }
+//        targetPosition = targetParent.getIndex(draggingOverNode);
 
-        UndoableNodeMoved undoableNodeMoved = null;
-        switch (moveType) {
-            case MOVE_AS_CHILD:
-                undoableNodeMoved = new UndoableNodeMoved(defaultTreeModel, draggingNode,
-                        sourceParent, sourcePosition, draggingOverNode, 0);
-                break;
-            case MOVE_AS_SIBLING_AFTER:
-                undoableNodeMoved = new UndoableNodeMoved(defaultTreeModel, draggingNode,
-                        sourceParent, sourcePosition,
-                        targetParent, targetPosition + 1);
-                break;
-            case MOVE_AS_SIBLING_BEFORE:
-                undoableNodeMoved = new UndoableNodeMoved(defaultTreeModel, draggingNode,
-                        sourceParent, sourcePosition,
-                        targetParent, targetPosition);
-                break;
-        }
-        if (undoableNodeMoved != null) {
-            undoableNodeMoved.doEdit();
-            undoSupport.postEdit(undoableNodeMoved);
-        }
-        TreePath path = new TreePath(draggingNode.getPath());
-        setSelectionPath(path);
-        scrollPathToVisible(path);
+        UndoableMoveNodes undoableMoveNodes = new UndoableMoveNodes(this,
+                targetParent, draggingOverNode, moveType);
+        undoableMoveNodes.doEdit();
+        undoSupport.postEdit(undoableMoveNodes);
+
+//        UndoableNodeMoved undoableNodeMoved = null;
+//        switch (moveType) {
+//            case MOVE_AS_CHILD:
+//                undoableNodeMoved = new UndoableNodeMoved(defaultTreeModel, draggingNode,
+//                        sourceParent, sourcePosition, draggingOverNode, 0);
+//                break;
+//            case MOVE_AS_SIBLING_AFTER:
+//                undoableNodeMoved = new UndoableNodeMoved(defaultTreeModel, draggingNode,
+//                        sourceParent, sourcePosition,
+//                        targetParent, targetPosition + 1);
+//                break;
+//            case MOVE_AS_SIBLING_BEFORE:
+//                undoableNodeMoved = new UndoableNodeMoved(defaultTreeModel, draggingNode,
+//                        sourceParent, sourcePosition,
+//                        targetParent, targetPosition);
+//                break;
+//        }
+//        if (undoableNodeMoved != null) {
+//            undoableNodeMoved.doEdit();
+//            undoSupport.postEdit(undoableNodeMoved);
+//        }
+//        TreePath path = new TreePath(draggingNode.getPath());
+//        setSelectionPath(path);
+//        scrollPathToVisible(path);
 
         if (SwingUtilities.isEventDispatchThread()) {
             fireTreeNodeMovedEvent(new TreeNodeMovedEvent(this, draggingNode,
@@ -265,7 +271,7 @@ public class MouseDraggableTree extends JTree {
             });
         }
 
-
+        return true;
     }
 
     public void updateTree(final MouseListener... mouseListenersToRestore) {
@@ -319,9 +325,30 @@ public class MouseDraggableTree extends JTree {
 
     private class TreeMouseListener extends MouseAdapter {
 
+        private Timer startEditingTimer;
+        private TreePath mousePressedPath;
+
+        public TreeMouseListener() {
+
+            startEditingTimer = new Timer(600, new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (mousePressedPath != null && !isDragging) {
+                        startEditingAtPath(mousePressedPath);
+                    }
+                }
+            });
+            startEditingTimer.setRepeats(false);
+        }
+
         @Override
         public void mousePressed(MouseEvent e) {
             requestFocus();
+
+            if (isEditing()) {
+                stopEditing();
+            }
 
             if (checkAndShowPopup(e)) {
                 return;
@@ -329,12 +356,15 @@ public class MouseDraggableTree extends JTree {
 
             int x = e.getX();
             int y = e.getY();
-            TreePath path = getPathForLocation(x, y);
-            if (path == null) {
+            mousePressedPath = getPathForLocation(x, y);
+            if (mousePressedPath != null) {
+                startEditingTimer.restart();
+            }
+            if (mousePressedPath == null) {
                 draggingNode = null;
             } else {
                 draggingNode =
-                        (DefaultMutableTreeNode) path.getLastPathComponent();
+                        (DefaultMutableTreeNode) mousePressedPath.getLastPathComponent();
             }
             draggingOverNode = null;
 
@@ -345,7 +375,7 @@ public class MouseDraggableTree extends JTree {
                         MouseDraggableTree.this, e, draggingNode));
             }
 
-            if (path == null) {
+            if (mousePressedPath == null) {
                 checkExpandIconClick(x, y);
             }
         }
@@ -377,6 +407,7 @@ public class MouseDraggableTree extends JTree {
 
         @Override
         public void mouseReleased(MouseEvent e) {
+            startEditingTimer.stop();
 
             if (checkAndShowPopup(e)) {
                 return;
@@ -384,10 +415,11 @@ public class MouseDraggableTree extends JTree {
 
             expanderTimer.stop();
 
+            boolean moveDone = false;
             if (draggingNode != null) {
                 setCursor(Cursor.getDefaultCursor());
 
-                moveNode();
+                moveDone = moveNode();
 
                 isDragging = false;
                 draggingNode = null;
@@ -396,21 +428,23 @@ public class MouseDraggableTree extends JTree {
             }
 
 
-            if (isEditing()) {
-                stopEditing();
-            } else if (SwingUtilities.isLeftMouseButton(e)) {
-                int x = e.getX();
-                int y = e.getY();
-                TreePath path = getPathForLocation(x, y);
-                if (path != null) {
-                    if (e.isControlDown()) {
-                        if (isPathSelected(path)) {
-                            removeSelectionPath(path);
+            if (!moveDone) {
+                if (isEditing()) {
+//                    stopEditing();
+                } else if (SwingUtilities.isLeftMouseButton(e)) {
+                    int x = e.getX();
+                    int y = e.getY();
+                    TreePath path = getPathForLocation(x, y);
+                    if (path != null && !isEditing()) {
+                        if (e.isControlDown()) {
+                            if (isPathSelected(path)) {
+                                removeSelectionPath(path);
+                            } else {
+                                addSelectionPath(path);
+                            }
                         } else {
-                            addSelectionPath(path);
+                            setSelectionPath(path);
                         }
-                    } else {
-                        setSelectionPath(path);
                     }
                 }
             }
@@ -429,10 +463,11 @@ public class MouseDraggableTree extends JTree {
             Rectangle r = new Rectangle(e.getX(), e.getY(), 1, 1);
             scrollRectToVisible(r);
 
-            if (draggingNode == null) {
+            if (draggingNode == null || isEditing()) {
                 return;
             }
 
+            //this permits to start dragging even if the bookmark is not already selected
             TreePath draggingPath = new TreePath(draggingNode.getPath());
             if (!isPathSelected(draggingPath)) {
                 setSelectionPath(draggingPath);
@@ -443,7 +478,7 @@ public class MouseDraggableTree extends JTree {
                 setCursor(dragCursor);
             }
 
-            if (isDragNodeOverTree(e.getX(), e.getY())) {
+            if (isDragNodeOverTree(e.getX(), e.getY()) && isValidDropLocation()) {
                 setCursor(dragCursor);
             } else {
                 setCursor(nodropCursor);
@@ -488,19 +523,68 @@ public class MouseDraggableTree extends JTree {
         }
     }
 
-    public class CustomRenderer extends DefaultTreeCellRenderer {
+    private TreeNode getSelectedNode() {
+        TreePath path = getSelectionPath();
+        if (path == null) {
+            return null;
+        }
 
-        Color stdNonSelectionForeground = getTextNonSelectionColor();
-        DefaultMutableTreeNode previous;
-        ImageIcon borderIcon;
+        TreeNode treeNode = null;
+        try {
+            treeNode = (TreeNode) path.getLastPathComponent();
+        } catch (ClassCastException e) {
+        }
+        return treeNode;
+    }
+
+    public class CustomRenderer extends JLabel implements TreeCellRenderer {
+
+        //Color stdNonSelectionForeground = getTextNonSelectionColor();
+        private DefaultMutableTreeNode previous;
+        private ImageIcon borderIcon;
+        private boolean selected;
+        private boolean focused;
+        private Color backgroundSelectionColor;
+        private Color textSelectionColor;
+        private Color borderSelectionColor;
 
         @Override
         public Component getTreeCellRendererComponent(JTree tree,
                 Object value, boolean sel, boolean expanded,
                 boolean leaf, int row, boolean hasFocus) {
 
+            DefaultTreeCellRenderer defaultRenderer = new DefaultTreeCellRenderer();
+            backgroundSelectionColor = defaultRenderer.getBackgroundSelectionColor();
+            textSelectionColor = defaultRenderer.getTextSelectionColor();
+            borderSelectionColor = defaultRenderer.getBorderSelectionColor();
+
+            setForeground(defaultRenderer.getTextNonSelectionColor());
+            // setText(value.toString());
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
+            setText(node.toString());
+
+            TreePath path = new TreePath(node.getPath());
+            if (node.isLeaf()) {
+                setIcon(defaultRenderer.getLeafIcon());
+            } else if (tree.isCollapsed(path)) {
+                setIcon(defaultRenderer.getClosedIcon());
+            } else if (tree.isExpanded(path)) {
+                setIcon(defaultRenderer.getOpenIcon());
+            }
+
+            if (sel) {
+//                setOpaque(true);
+//                setBackground(defaultRenderer.getBackgroundSelectionColor());
+                setForeground(textSelectionColor);
+            }
+//            else {
+//                setOpaque(false);
+//                setBackground(defaultRenderer.getBackgroundNonSelectionColor());
+//                setForeground(defaultRenderer.getTextNonSelectionColor());
+//            }
+
             setBorder(null);
-            Color borderColor = stdNonSelectionForeground.brighter();
+            Color borderColor = defaultRenderer.getTextNonSelectionColor().brighter();
             for (int i = 0; i < 2; i++) {
                 borderColor = borderColor.brighter();
             }
@@ -508,9 +592,7 @@ public class MouseDraggableTree extends JTree {
             if (value.equals(draggingOverNode)) {
                 switch (moveType) {
                     case MOVE_AS_CHILD:
-                        DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
                         if (previous == null || (node != previous)) {
-                            TreePath path = new TreePath(node.getPath());
                             Rectangle rect = getPathBounds(path);
                             Icon lblIcon = getIcon();
                             int iconWidth = lblIcon.getIconWidth();
@@ -540,14 +622,129 @@ public class MouseDraggableTree extends JTree {
                         break;
                 }
 
-                //sel = false;
             }
 
-            Component res = super.getTreeCellRendererComponent(tree, value,
-                    sel, expanded, leaf, row, hasFocus);
+            selected = sel;
+            focused = hasFocus;
 
-            return res;
+            return this;
 
         }
+
+//        @Override
+//        public void paint(Graphics g) {
+//            if (selected) {
+//                g.setColor(backgroundSelectionColor);
+//                Icon icon = getIcon();
+//                int iconWidth = icon.getIconWidth();
+//                int gap = getIconTextGap();
+//                g.fillRect(iconWidth + gap - gap / 2, 0, getWidth(), getHeight());
+//            }
+//
+//            super.paint(g);
+//        }
+        @Override
+        protected void paintComponent(Graphics g) {
+
+            String currentLAF = UIManager.getLookAndFeel().getName();
+            if (currentLAF.equals("Nimbus")) {
+                super.paintComponent(g);
+                return;
+            }
+
+            Icon icon = getIcon();
+            int iconWidth = icon.getIconWidth();
+            int gap = getIconTextGap();
+            int labelGap = iconWidth + gap - gap / 2;
+            Rectangle rect = new Rectangle(labelGap, 0, getWidth() - labelGap, getHeight());
+            Graphics2D g2 = (Graphics2D) g;
+            if (selected) {
+                g2.setColor(backgroundSelectionColor);
+                g2.fill(rect);
+            }
+
+            if (focused) {
+                g2.setColor(borderSelectionColor);
+                rect.width--;
+                rect.height--;
+
+                boolean drawDashed = UIManager.getBoolean("Tree.drawDashedFocusIndicator");
+                if (drawDashed) {
+                    float dash1[] = {1.0f};
+                    BasicStroke dashed = new BasicStroke(1.0f,
+                                          BasicStroke.CAP_BUTT,
+                                          BasicStroke.JOIN_MITER,
+                                          1.0f, dash1, 0.0f);
+                    g2.setStroke(dashed);
+                }
+
+                g2.draw(rect);
+            }
+
+            super.paintComponent(g);
+        }
     }
+//    public class CustomRenderer extends DefaultTreeCellRenderer {
+//
+//        Color stdNonSelectionForeground = getTextNonSelectionColor();
+//        DefaultMutableTreeNode previous;
+//        ImageIcon borderIcon;
+//
+//        @Override
+//        public Component getTreeCellRendererComponent(JTree tree,
+//                Object value, boolean sel, boolean expanded,
+//                boolean leaf, int row, boolean hasFocus) {
+//
+//            setBorder(null);
+//            Color borderColor = stdNonSelectionForeground.brighter();
+//            for (int i = 0; i < 2; i++) {
+//                borderColor = borderColor.brighter();
+//            }
+//
+//            if (value.equals(draggingOverNode)) {
+//                switch (moveType) {
+//                    case MOVE_AS_CHILD:
+//                        DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
+//                        if (previous == null || (node != previous)) {
+//                            TreePath path = new TreePath(node.getPath());
+//                            Rectangle rect = getPathBounds(path);
+//                            Icon lblIcon = getIcon();
+//                            int iconWidth = lblIcon.getIconWidth();
+//                            BufferedImage borderImage = new BufferedImage(
+//                                    rect.width, 3,
+//                                    BufferedImage.TYPE_INT_ARGB);
+//                            Graphics2D g2 = (Graphics2D) borderImage.getGraphics();
+//                            g2.setColor(borderColor);
+//                            int childLineStart = iconWidth + getIconTextGap();
+//                            g2.fillRect(childLineStart, 0,
+//                                    rect.width - childLineStart, 3);
+//                            g2.dispose();
+//                            borderIcon = new ImageIcon(borderImage);
+//                            previous = node;
+//                        }
+//
+//                        setBorder(BorderFactory.createMatteBorder(
+//                                0, 0, 3, 0, borderIcon));
+//                        break;
+//                    case MOVE_AS_SIBLING_BEFORE:
+//                        setBorder(BorderFactory.createMatteBorder(
+//                                3, 0, 0, 0, borderColor));
+//                        break;
+//                    case MOVE_AS_SIBLING_AFTER:
+//                        setBorder(BorderFactory.createMatteBorder(
+//                                0, 0, 3, 0, borderColor));
+//                        break;
+//                }
+//
+//                //sel = false;
+//            }
+//
+//            Component res = super.getTreeCellRendererComponent(tree, value,
+//                    sel, expanded, leaf, row, hasFocus);
+//
+//            return res;
+////            return this;
+//
+//        }
+//    }
 }

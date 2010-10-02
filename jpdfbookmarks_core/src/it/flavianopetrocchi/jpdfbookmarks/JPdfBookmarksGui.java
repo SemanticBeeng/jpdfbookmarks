@@ -30,6 +30,8 @@ import it.flavianopetrocchi.labelvertical.VerticalLabel;
 import it.flavianopetrocchi.labelvertical.VerticalLabelUI;
 import it.flavianopetrocchi.linklabel.LinkLabel;
 import it.flavianopetrocchi.mousedraggabletree.MouseDraggableTree;
+import it.flavianopetrocchi.mousedraggabletree.TreeNodeMovedEvent;
+import it.flavianopetrocchi.mousedraggabletree.TreeNodeMovedListener;
 import it.flavianopetrocchi.utilities.FileOperationEvent;
 import it.flavianopetrocchi.utilities.FileOperationListener;
 import it.flavianopetrocchi.utilities.IntegerTextField;
@@ -123,6 +125,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
+import javax.swing.Timer;
 import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
@@ -148,7 +151,7 @@ import javax.swing.undo.UndoableEditSupport;
 class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         PageChangedListener, ViewChangedListener, TreeExpansionListener,
         UndoableEditListener, TreeSelectionListener, CellEditorListener,
-        RenderingStartListener, TextCopiedListener {
+        RenderingStartListener, TextCopiedListener, TreeNodeMovedListener {
 
     // <editor-fold defaultstate="collapsed" desc="Members">
     private static Clipboard localClipboard;
@@ -626,6 +629,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
     private Bookmark getSelectedBookmark() {
         TreePath path = bookmarksTree.getSelectionPath();
+
         if (path == null) {
             return null;
         }
@@ -676,6 +680,11 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         }
 
         lblStatus.setText(Res.getString("EXTRACTED") + ": " + text);
+    }
+
+    @Override
+    public void treeNodeMoved(TreeNodeMovedEvent e) {
+        recreateNodesOpenedState();
     }
 
     abstract class ActionBuilder extends AbstractAction {
@@ -777,14 +786,14 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                 Bookmark root = null;
                 try {
                     root = get();
+                    bookmarksTree.setRootVisible(false);
+                    bookmarksTree.setEditable(true);
                     if (root != null) {
                         bookmarksTreeModel.setRoot(root);
                         recreateNodesOpenedState();
                     } else {
                         bookmarksTreeModel.setRoot(new Bookmark());
                     }
-                    bookmarksTree.setRootVisible(false);
-                    bookmarksTree.setEditable(true);
                     bookmarksTree.treeDidChange();
                     SwingUtilities.invokeLater(new Runnable() {
 
@@ -1152,7 +1161,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             Bookmark bookmark = (Bookmark) path.getLastPathComponent();
             bookmark.setBold(bold);
         }
-        
+
         bookmarksTree.updateTree(mouseAdapter);
         valueChanged(null);
         fileOperator.setFileChanged(true);
@@ -2602,9 +2611,10 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         public void actionPerformed(ActionEvent arg0) {
             Ut.changeLAF(laf, JPdfBookmarksGui.this);
             lblInheritLeft.setUI(new VerticalLabelUI(false));
-            JOptionPane.showMessageDialog(JPdfBookmarksGui.this,
-                    Res.getString("LAF_CHANGED_RESTART_MANUALLY"));
+//            JOptionPane.showMessageDialog(JPdfBookmarksGui.this,
+//                    Res.getString("LAF_CHANGED_RESTART_MANUALLY"));
             userPrefs.setLAF(laf);
+            bookmarksTree.updateTree(JPdfBookmarksGui.this.mouseAdapter);
         }
     }
 
@@ -2846,6 +2856,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         bookmarksTree.addKeyListener(new KeysOverTree());
         bookmarksTree.addTreeSelectionListener(this);
         bookmarksTree.addTreeExpansionListener(this);
+        bookmarksTree.addTreeNodeMovedListener(this);
         bookmarksTree.getCellEditor().addCellEditorListener(this);
         //the extended undo manager recevies events from the tree and relaunch
         //to the gui with additional information
@@ -3015,6 +3026,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             return;
         }
 
+        bookmarksTree.setLastFollowedBookmark(bookmarkToFollow);
+
         lblSelectedNode.setText(Res.getString("SELECTED_BOOKMARK") + ": "
                 + bookmarkToFollow.getDescription(userPrefs.getUseThousandths()));
 
@@ -3116,28 +3129,34 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
     private class MouseOverTree extends MouseAdapter {
 
+
+        private TreePath mousePressedPath;
+
+        public MouseOverTree() {
+        }
+
         @Override
         public void mousePressed(MouseEvent e) {
             super.mousePressed(e);
 
-            TreePath path = bookmarksTree.getPathForLocation(e.getX(), e.getY());
+            mousePressedPath = bookmarksTree.getPathForLocation(e.getX(), e.getY());
 
             //On Linux is necessary to do this on mousePresed on Windows on mouseReleased
             if (e.isPopupTrigger()) {
                 //if there are multiple bookmarks selected change selection only if over
                 //a not selected bookmark
                 TreePath[] paths = bookmarksTree.getSelectionPaths();
-                if (path != null) {
+                if (mousePressedPath != null) {
                     boolean changeSelection = true;
                     if (paths != null) {
                         for (TreePath p : paths) {
-                            if (p.equals(path)) {
+                            if (p.equals(mousePressedPath)) {
                                 changeSelection = false;
                             }
                         }
                     }
                     if (changeSelection) {
-                        bookmarksTree.setSelectionPath(path);
+                        bookmarksTree.setSelectionPath(mousePressedPath);
                     }
                 }
                 treeMenu.show(e.getComponent(), e.getX(), e.getY());
@@ -3237,7 +3256,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             int code = e.getKeyCode();
             int[] triggers;
             if (userPrefs.getNumClicks() > 1) {
-                triggers = new int[]{KeyEvent.VK_ENTER, KeyEvent.VK_SPACE};
+                triggers = new int[]{KeyEvent.VK_SPACE};
 
             } else {
                 triggers = new int[]{KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT,
@@ -3248,9 +3267,18 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
             for (int trigger : triggers) {
                 if (trigger == code) {
-                    followBookmarkInView(getSelectedBookmark());
+                    TreePath path = bookmarksTree.getLeadSelectionPath();
+                    Bookmark b = (Bookmark) path.getLastPathComponent();
+//                    Bookmark b = (Bookmark) bookmarksTree.getLastSelectedPathComponent();
+                    if(b != null) {
+                        followBookmarkInView(b);
+                    }
                     break;
                 }
+            }
+
+            if (deleteAction.isEnabled() && code == KeyEvent.VK_DELETE) {
+                delete();
             }
 
             if (e.isControlDown() && code == KeyEvent.VK_C) {
@@ -3472,7 +3500,6 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 //                    action));
 //        }
 //    }
-
     private class SplitDropListener implements DropTargetListener {
 
         public SplitDropListener() {
