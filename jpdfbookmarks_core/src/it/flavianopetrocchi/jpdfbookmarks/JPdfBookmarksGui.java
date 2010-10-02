@@ -285,14 +285,17 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     private Action copyBookmarkFromViewAction;// </editor-fold>
 
     private void saveWindowState() {
-        userPrefs.setWindowState(windowState);
-        if (windowState == JFrame.MAXIMIZED_BOTH) {
-            userPrefs.setLocation(null);
-            userPrefs.setSize(null);
-        } else {
-            userPrefs.setLocation(getLocation());
-            userPrefs.setSize(getSize());
-        }
+//        userPrefs.setWindowState(windowState);
+//        if (windowState == JFrame.MAXIMIZED_BOTH) {
+//            userPrefs.setLocation(null);
+//            userPrefs.setSize(null);
+//        } else {
+//            userPrefs.setLocation(getLocation());
+//            userPrefs.setSize(getSize());
+//        }
+        userPrefs.setLocation(getLocation());
+        userPrefs.setSize(getSize());
+        userPrefs.setWindowState(getExtendedState());
         userPrefs.setSplitterLocation(centralSplit.getDividerLocation());
     }
 
@@ -3107,6 +3110,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                 followBookmarkInView(b);
             }
         }
+
+        bookmarksTree.repaint();
     }
 
     private JPdfBookmarksGui alreadyOpenedIn(File file) {
@@ -3256,7 +3261,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             int code = e.getKeyCode();
             int[] triggers;
             if (userPrefs.getNumClicks() > 1) {
-                triggers = new int[]{KeyEvent.VK_SPACE};
+                triggers = new int[]{KeyEvent.VK_ENTER, KeyEvent.VK_SPACE};
 
             } else {
                 triggers = new int[]{KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT,
@@ -3301,205 +3306,6 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         }
     }
 
-//    private class FilesTransferHandler extends TransferHandler {
-//
-//        @Override
-//        public boolean canImport(JComponent c, DataFlavor[] flavors) {
-//            for (DataFlavor flavor : flavors) {
-//                if (flavor.equals(DataFlavor.javaFileListFlavor)) {
-//                    return true;
-//                }
-//            }
-//            return false;
-//        }
-//
-//        @Override
-//        public boolean importData(JComponent c, Transferable t) {
-//            DataFlavor[] flavors = t.getTransferDataFlavors();
-//            for (DataFlavor flavor : flavors) {
-//                if (flavor.equals(DataFlavor.javaFileListFlavor)) {
-//                    try {
-//                        List filesList = (List) t.getTransferData(DataFlavor.javaFileListFlavor);
-//                        Iterator i = filesList.iterator();
-//                        if (i.hasNext()) {
-//                            File f = (File) i.next();
-//                            if (!askCloseWithoutSave()) {
-//                                return false;
-//                            }
-//                            fileOperator.close();
-//
-//                            if (f != null && f.isFile()) {
-//                                //close();
-//                                openFileAsync(f, null);
-//                                return true;
-//                            } else {
-//                                showErrorMessage(Res.getString("ERROR_OPENING_FILE") + " " + f.getName());
-//                                return false;
-//                            }
-//                        }
-//                    } catch (UnsupportedFlavorException ex) {
-//                    } catch (IOException ex) {
-//                    }
-//                    return true;
-//                }
-//            }
-//            return false;
-//        }
-//    }
-//    private class BookmarksTransferHandler extends TransferHandler {
-//        Bookmark selectedBookmark;
-//
-//        // <editor-fold defaultstate="collapsed" desc="Export Methods">
-//        @Override
-//        public int getSourceActions(JComponent c) {
-//            return COPY_OR_MOVE;
-//        }
-//
-//        @Override
-//        public Transferable createTransferable(JComponent c) {
-//            
-//            selectedBookmark = getSelectedBookmark();
-//            return selectedBookmark;
-////            if (selectedBookmark == null) {
-////                return null;
-////            }
-////            int selectedLevel = selectedBookmark.getLevel();
-////
-////            StringBuilder buffer = new StringBuilder();
-////            Enumeration e = selectedBookmark.preorderEnumeration();
-////
-////            boolean useThousandths = userPrefs.getUseThousandths();
-////            String psep = userPrefs.getPageSeparator();
-////            String asep = userPrefs.getAttributesSeparator();
-////            String indent = userPrefs.getIndentationString();
-////            String nl = System.getProperty("line.separator");
-////
-////            while (e.hasMoreElements()) {
-////                Bookmark b = (Bookmark) e.nextElement();
-////                for (int i = selectedLevel; i < b.getLevel(); i++) {
-////                    buffer.append(indent);
-////                }
-////                buffer.append(b.getExtendedDescription(null, psep, asep, useThousandths));
-////                //always add the file informatin to allow pasting bookmarks from one
-////                //file to another, this must be taken into account when pasting,
-////                //if the bookmark is actually a remote destination the remote file is
-////                //already in the description
-////                if (b.isRemoteDestination() == false) {
-////                    buffer.append(asep);
-////                    buffer.append(BookmarkType.GoToFile.toString());
-////                    buffer.append(asep);
-////                    buffer.append(fileOperator.getFilePath());
-////                }
-////                buffer.append(nl);
-////            }
-////            return new StringSelection(buffer.toString());
-//        }
-//
-//        @Override
-//        public void exportDone(JComponent c, Transferable t, int action) {
-//            if (action == MOVE) {
-//                ArrayList<Bookmark> deleteList = new ArrayList<Bookmark>();
-//                deleteList.add(selectedBookmark);
-//
-//                UndoableDeleteBookmark undoableDelete =
-//                        new UndoableDeleteBookmark(
-//                        bookmarksTreeModel, deleteList);
-//
-//                undoableDelete.doEdit();
-//                recreateNodesOpenedState();
-//                undoSupport.postEdit(undoableDelete);
-//            }
-//        }
-//        // </editor-fold>
-//
-//        // <editor-fold defaultstate="collapsed" desc="Import Methods">
-//        @Override
-//        public boolean canImport(JComponent c, DataFlavor[] flavors) {
-//            for (DataFlavor flavor : flavors) {
-////                if (flavor.equals(DataFlavor.stringFlavor)) {
-////                    return true;
-////                }
-//                if (flavor.equals(bookmarkFlavor)) {
-//                    return true;
-//                }
-//            }
-//            return false;
-//        }
-//
-//        @Override
-//        public boolean importData(JComponent c, Transferable t) {
-//            
-//            DataFlavor[] flavors = t.getTransferDataFlavors();
-//            for (DataFlavor flavor : flavors) {
-//                if (flavor.equals(DataFlavor.stringFlavor)) {
-//                    try {
-////                        IBookmarksConverter bookmarksConverter = JPdfBookmarks.getBookmarksConverter();
-////                        bookmarksConverter.open(fileOperator.getFilePath());
-////                        Bookmark bookmark = Bookmark.bookmarkFromString(null,
-////                                bookmarksConverter, (String) t.getTransferData(DataFlavor.stringFlavor),
-////                                userPrefs.getIndentationString(), userPrefs.getPageSeparator(),
-////                                userPrefs.getAttributesSeparator());
-////                        Bookmark bookmark = Bookmark.outlineFromString(bookmarksConverter,
-////                                (String) t.getTransferData(DataFlavor.stringFlavor),
-////                                userPrefs.getIndentationString(), userPrefs.getPageSeparator(),
-////                                userPrefs.getAttributesSeparator());
-////                        bookmarksConverter.close();
-//                        //Bookmark.outlineFromString cerates a Father for the actual bookmark copied 
-//                        //we have to get its child and remove  it from its dummy father
-////                        bookmark = (Bookmark) bookmark.getFirstChild();
-////                        bookmark.removeFromParent();
-//                        Bookmark bookmark = (Bookmark)t.getTransferData(bookmarkFlavor);
-//                        String remotePath = bookmark.getRemoteFilePath();
-//                        if (remotePath != null) {
-//                            File openedFile = fileOperator.getFile();
-//                            File remoteFile = new File(remotePath);
-//                            File relativeFile = Ut.createRelativePath(openedFile, remoteFile);
-//                            if (openedFile.equals(remoteFile)) {
-//                                bookmark.setRemoteDestination(false);
-//                                bookmark.setRemoteFilePath(null);
-//                            } else {
-//                                bookmark.setRemoteDestination(true);
-//                                bookmark.setRemoteFilePath(relativeFile.getPath());
-//                            }
-//                        }
-//                        Bookmark selected = getSelectedBookmark();
-//                        Bookmark parent;
-//                        if (selected == null) {
-//                            parent = (Bookmark) bookmarksTreeModel.getRoot();
-//                            parent.add(bookmark);
-//                        } else {
-//                            parent = (Bookmark) selected.getParent();
-//                            int selectedPosition = parent.getIndex(selected);
-//                            parent.insert(bookmark, selectedPosition + 1);
-//                        }
-//                        bookmarksTreeModel.nodeStructureChanged(parent);
-//                        recreateNodesOpenedState();
-//                        bookmarksTree.startEditingAtPath(
-//                                new TreePath(bookmark.getPath()));
-//                        fileOperator.setFileChanged(true);
-//                        return true;
-//                    } catch (Exception ex) {
-//                        return false;
-//                    }
-//                }
-//            }
-//            return false;
-//        }
-//        // </editor-fold>
-//    }
-    //this calss is used to address the actions cut copy and paste to
-    //the correct component
-//    public class TransferActionListener implements ActionListener {
-//
-//        @Override
-//        public void actionPerformed(ActionEvent e) {
-//            String action = (String) e.getActionCommand();
-//            Action a = bookmarksTree.getActionMap().get(action);
-//            a.actionPerformed(new ActionEvent(bookmarksTree,
-//                    ActionEvent.ACTION_PERFORMED,
-//                    action));
-//        }
-//    }
     private class SplitDropListener implements DropTargetListener {
 
         public SplitDropListener() {

@@ -59,6 +59,10 @@ public class BookmarksTree extends MouseDraggableTree implements CellEditorListe
         lastFollowedBookmark = b;
     }
 
+    public Bookmark getLastFollowedBookmark() {
+        return lastFollowedBookmark;
+    }
+
     @Override
     public void editingStopped(ChangeEvent e) {
         Bookmark b = getSelectedBookmark();
@@ -96,10 +100,10 @@ public class BookmarksTree extends MouseDraggableTree implements CellEditorListe
             }
             return d;
         }
-
     }
 
     private class CustomCellEditor extends DefaultCellEditor {
+
         private BookmarkRenderer renderer;
 
         public CustomCellEditor(BookmarkRenderer renderer, JTextField editor) {
@@ -139,7 +143,6 @@ public class BookmarksTree extends MouseDraggableTree implements CellEditorListe
             panel.add(c);
             return panel;
         }
-
     }
 
     private class BookmarkRenderer extends MouseDraggableTree.CustomRenderer {
@@ -167,6 +170,7 @@ public class BookmarksTree extends MouseDraggableTree implements CellEditorListe
                         getFont().getSize());
                 setFont(font);
 
+//                if (lastFollowedBookmark != null && node.equals(lastFollowedBookmark)) {
                 if (node.equals(lastFollowedBookmark)) {
                     setEnabled(false);
                 } else {
