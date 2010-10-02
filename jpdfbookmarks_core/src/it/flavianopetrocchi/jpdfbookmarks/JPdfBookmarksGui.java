@@ -285,17 +285,15 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     private Action copyBookmarkFromViewAction;// </editor-fold>
 
     private void saveWindowState() {
-//        userPrefs.setWindowState(windowState);
-//        if (windowState == JFrame.MAXIMIZED_BOTH) {
-//            userPrefs.setLocation(null);
-//            userPrefs.setSize(null);
-//        } else {
-//            userPrefs.setLocation(getLocation());
-//            userPrefs.setSize(getSize());
-//        }
-        userPrefs.setLocation(getLocation());
-        userPrefs.setSize(getSize());
-        userPrefs.setWindowState(getExtendedState());
+        userPrefs.setWindowState(windowState);
+        if (windowState == JFrame.MAXIMIZED_BOTH) {
+            userPrefs.setLocation(null);
+            userPrefs.setSize(null);
+        } else {
+            userPrefs.setLocation(getLocation());
+            userPrefs.setSize(getSize());
+        }
+        userPrefs.setWindowState(windowState);
         userPrefs.setSplitterLocation(centralSplit.getDividerLocation());
     }
 
@@ -352,7 +350,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
             @Override
             public void windowStateChanged(WindowEvent e) {
-                windowState = e.getNewState();
+                windowState = getExtendedState();
             }
 
             @Override
@@ -412,6 +410,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
         Frame[] frames = JFrame.getFrames();
         if (frames.length == 1) {
+            saveWindowState();
             System.exit(0);
         } else {
             dispose();
