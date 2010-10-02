@@ -293,7 +293,6 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             userPrefs.setLocation(getLocation());
             userPrefs.setSize(getSize());
         }
-        userPrefs.setWindowState(windowState);
         userPrefs.setSplitterLocation(centralSplit.getDividerLocation());
     }
 
