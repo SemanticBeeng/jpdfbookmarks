@@ -38,6 +38,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import javax.swing.BorderFactory;
@@ -50,6 +51,7 @@ import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.UndoableEditListener;
+import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
@@ -327,6 +329,7 @@ public class MouseDraggableTree extends JTree {
 
         private Timer startEditingTimer;
         private TreePath mousePressedPath;
+        private TreePath firstShiftSelect; //reference for shift click selection
 
         public TreeMouseListener() {
 
@@ -442,8 +445,12 @@ public class MouseDraggableTree extends JTree {
                             } else {
                                 addSelectionPath(path);
                             }
+                            firstShiftSelect = path;
+                        } else if (e.isShiftDown()) {
+                            makeShiftClickSelectJava(path);
                         } else {
                             setSelectionPath(path);
+                            firstShiftSelect = path;
                         }
                     }
                 }
@@ -482,6 +489,57 @@ public class MouseDraggableTree extends JTree {
                 setCursor(dragCursor);
             } else {
                 setCursor(nodropCursor);
+            }
+        }
+
+        //Reproduce Windows tree shift click behaviour
+        private void makeShiftClickSelectWindows(TreePath path) {
+            if (path == null) {
+                return;
+            }
+
+            int clickedRow = getRowForPath(path);
+            int[] selectedRows = getSelectionRows();
+
+            if (selectedRows == null || selectedRows.length == 0) {
+                setSelectionRow(clickedRow);
+            } else {
+                Arrays.sort(selectedRows);
+                int firstSelectedRow = -1;
+                int lastSelectedRow = -1;
+                if (clickedRow <= selectedRows[0]) {
+                    firstSelectedRow = clickedRow;
+                    lastSelectedRow = selectedRows[selectedRows.length - 1];
+                } else {
+                    firstSelectedRow = selectedRows[0];
+                    lastSelectedRow = Math.max(clickedRow, selectedRows[selectedRows.length - 1]);
+                }
+
+                addSelectionInterval(firstSelectedRow, lastSelectedRow);
+            }
+        }
+
+        //Reproduce java tree shift click behaviour
+        private void makeShiftClickSelectJava(TreePath path) {
+            if (path == null) {
+                return;
+            }
+            int clickedRow = getRowForPath(path);
+            if (firstShiftSelect == null) {
+                setSelectionRow(clickedRow);
+                firstShiftSelect = path;
+            } else {
+                int firstShiftSelectRow = getRowForPath(firstShiftSelect);
+                int firstSelectedRow = -1;
+                int lastSelectedRow = -1;
+                if (clickedRow <= firstShiftSelectRow) {
+                    firstSelectedRow = clickedRow;
+                    lastSelectedRow = firstShiftSelectRow;
+                } else {
+                    firstSelectedRow = firstShiftSelectRow;
+                    lastSelectedRow = clickedRow;
+                }
+                setSelectionInterval(firstSelectedRow, lastSelectedRow);
             }
         }
     }
@@ -672,9 +730,9 @@ public class MouseDraggableTree extends JTree {
                 if (drawDashed) {
                     float dash1[] = {1.0f};
                     BasicStroke dashed = new BasicStroke(1.0f,
-                                          BasicStroke.CAP_BUTT,
-                                          BasicStroke.JOIN_MITER,
-                                          1.0f, dash1, 0.0f);
+                            BasicStroke.CAP_BUTT,
+                            BasicStroke.JOIN_MITER,
+                            1.0f, dash1, 0.0f);
                     g2.setStroke(dashed);
                 }
 

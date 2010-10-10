@@ -3201,7 +3201,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
          * while dragging */
         @Override
         public void mouseReleased(MouseEvent e) {
-            super.mouseClicked(e);
+            super.mouseReleased(e);
 
             TreePath path = bookmarksTree.getPathForLocation(e.getX(), e.getY());
             TreePath[] paths = bookmarksTree.getSelectionPaths();
