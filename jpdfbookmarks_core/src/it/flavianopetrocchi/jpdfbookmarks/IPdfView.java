@@ -71,4 +71,6 @@ public interface IPdfView {
         public void setTextSelectionMode(boolean set);
         public void setConnectToClipboard(Boolean set);
 
+        public String extractText(Rectangle rectInCrop);
+
 }

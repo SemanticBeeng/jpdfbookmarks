@@ -24,6 +24,7 @@ package it.flavianopetrocchi.jpdfbookmarks;
 import com.lowagie.text.exceptions.BadPasswordException;
 import it.flavianopetrocchi.jpdfbookmarks.bookmark.Bookmark;
 import it.flavianopetrocchi.jpdfbookmarks.bookmark.IBookmarksConverter;
+import it.flavianopetrocchi.jpdfbookmarks.bookmark.IBookmarksConverter.AnnotationRect;
 import it.flavianopetrocchi.utilities.FileOperationEvent;
 import it.flavianopetrocchi.utilities.FileOperationListener;
 import java.awt.Component;
@@ -31,9 +32,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import javax.management.ServiceNotFoundException;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import java.awt.Rectangle;
 
 public class UnifiedFileOperator {
 
@@ -91,7 +95,7 @@ public class UnifiedFileOperator {
         return d.okPressed();
     }
 
-public void open(File file) throws Exception {
+    public void open(File file) throws Exception {
         this.file = file;
         try {
             filePath = file.getCanonicalPath();
@@ -290,6 +294,62 @@ public void open(File file) throws Exception {
         } else {
             SwingUtilities.invokeLater(new FireInEventThread(e));
         }
+    }
+
+    public ArrayList<Bookmark> getLinksOnPage(int currentPage) {
+        ArrayList<Bookmark> links = new ArrayList<Bookmark>();
+        try {
+            //IBookmarksConverter bookmarksConverter = new iTextBookmarksConverter(filePath);
+            IBookmarksConverter bookmarksConverter = Bookmark.getBookmarksConverter();
+            if (bookmarksConverter == null) {
+                throw new ServiceNotFoundException(Res.getString("ERROR_BOOKMARKS_CONVERTER_NOT_FOUND"));
+            }
+
+            bookmarksConverter.open(filePath, userPassword);
+            ArrayList<IBookmarksConverter.AnnotationRect> annoRects = bookmarksConverter.getLinks(currentPage, userPrefs.getConvertNamedDestinations());
+            Collections.sort(annoRects, new Comparator<IBookmarksConverter.AnnotationRect>() {
+
+                @Override
+                public int compare(AnnotationRect o1, AnnotationRect o2) {
+                    if (o1.lly > o2.lly) {
+                        return -1;
+                    } else if (o1.lly < o2.lly) {
+                        return 1;
+                    } else {
+                        return 0;
+                    }
+                }
+            });
+            for (IBookmarksConverter.AnnotationRect annoRect : annoRects) {
+                JPedalViewPanel jpedalView = (JPedalViewPanel) viewPanel;
+                String text = jpedalView.extractTextInRect(annoRect.llx, annoRect.ury, annoRect.urx, annoRect.lly);
+                int sentinel = 0;
+                while (text == null && sentinel < 10) {
+                    sentinel++;
+                    text = jpedalView.extractTextInRect(annoRect.llx, ++annoRect.ury, annoRect.urx, --annoRect.lly);
+                }
+//                Rectangle rectInCrop = new Rectangle(annoRect.llx, annoRect.ury, Math.abs(annoRect.urx - annoRect.llx), Math.abs(annoRect.lly - annoRect.ury));
+//                String text = jpedalView.extractText(rectInCrop);
+//                int sentinel = 0;
+//                while (text == null && sentinel < 50) {
+//                    sentinel++;
+//                    rectInCrop.x -= 1;
+//                    rectInCrop.width += 1;
+//                    rectInCrop.y -= 1;
+//                    rectInCrop.height += 1;
+//                    text = jpedalView.extractText(rectInCrop);
+//                }
+                if (text != null) {
+                    annoRect.bookmark.setTitle(text);
+                }
+                links.add(annoRect.bookmark);
+            }
+            bookmarksConverter.close();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e.getMessage(), JPdfBookmarks.APP_NAME,
+                    JOptionPane.ERROR_MESSAGE);
+        }
+        return links;
     }
 
     private class FireInEventThread implements Runnable {

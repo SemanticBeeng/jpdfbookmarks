@@ -282,6 +282,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     private Action copyAction;
     private Action pasteAction;
     private Action openLinkedPdf;
+    private Action extractLinks;
     private Action copyBookmarkFromViewAction;// </editor-fold>
 
     private void saveWindowState() {
@@ -435,7 +436,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                     addSiblingAction, showOnOpenAction, dumpAction, loadAction,
                     selectText, connectToClipboard, openLinkedPdf, copyBookmarkFromViewAction);
             if (evt.getOperation() == FileOperationEvent.Operation.FILE_OPENED) {
-                Ut.enableActions(true, saveAsAction);
+                Ut.enableActions(true, saveAsAction, extractLinks);
             }
             tbShowOnOpen.setSelected(fileOperator.getShowBookmarksOnOpen());
             cbShowOnOpen.setSelected(fileOperator.getShowBookmarksOnOpen());
@@ -485,7 +486,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                     renameAction, setDestFromViewAction, changeColorAction,
                     dumpAction, loadAction, addWebLinkAction, addLaunchLinkAction, saveAction,
                     applyPageOffset, selectText, connectToClipboard, showActionsDialog, openLinkedPdf,
-                    copyBookmarkFromViewAction);
+                    copyBookmarkFromViewAction, extractLinks);
             lblMouseOverNode.setText(" ");
             lblSelectedNode.setText(" ");
             lblCurrentView.setText(" ");
@@ -951,12 +952,12 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             return;
         }
 
-        boolean keepPageNumbers = true;
+        boolean keepPageNumbers = false;
         if (bookmarksTree.getSelectionPaths().length > 1) {
             int answer = JOptionPane.showConfirmDialog(this, Res.getString("KEEP_PAGE_NUMBERS"), JPdfBookmarks.APP_NAME,
                     JOptionPane.YES_NO_OPTION);
-            if (answer != JOptionPane.YES_OPTION) {
-                keepPageNumbers = false;
+            if (answer == JOptionPane.YES_OPTION) {
+                keepPageNumbers = true;
             }
         }
 
@@ -1624,6 +1625,15 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 //        copyAction = TransferHandler.getCopyAction();
 //        pasteAction = TransferHandler.getPasteAction();
 
+        extractLinks = new ActionBuilder("ACTION_EXTRACT_LINKS", "ACTION_EXTRACT_LINKS_DESCR",
+                null, "extract-links.png", false) {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                extractLinksFromPage();
+            }
+        };
+
         cutAction = new ActionBuilder("ACTION_CUT", "ACTION_CUT_DESCR", "ctrl X",
                 "edit-cut.png", false) {
 
@@ -2138,6 +2148,26 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                 goToWebLink(JPdfBookmarks.BLOG_URL);
             }
         };
+    }
+
+    private void extractLinksFromPage() {
+        
+        ArrayList<Bookmark> links = fileOperator.getLinksOnPage(viewPanel.getCurrentPage());
+        Bookmark parent = null;
+        for (Bookmark b : links) {
+            Bookmark selected = getSelectedBookmark();
+            if (selected == null) {
+                parent = (Bookmark) bookmarksTreeModel.getRoot();
+                parent.add(b);
+            } else {
+                parent = (Bookmark) selected.getParent();
+                int selectedPosition = parent.getIndex(selected);
+                parent.insert(b, selectedPosition + 1);
+            }
+        }
+        bookmarksTreeModel.nodeStructureChanged(parent);
+        recreateNodesOpenedState();
+        fileOperator.setFileChanged(true);
     }
 
     private void expandAllNodes() {
@@ -2734,6 +2764,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         othersToolbar.add(dumpAction);
         othersToolbar.add(loadAction);
         othersToolbar.add(applyPageOffset);
+        othersToolbar.add(extractLinks);
 
         JToolBar webToolbar = new JToolBar();
         mainToolbars.put(Prefs.SHOW_WEB_TB, webToolbar);
@@ -3132,7 +3163,6 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
     private class MouseOverTree extends MouseAdapter {
 
-
         private TreePath mousePressedPath;
 
         public MouseOverTree() {
@@ -3273,7 +3303,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                     TreePath path = bookmarksTree.getLeadSelectionPath();
                     Bookmark b = (Bookmark) path.getLastPathComponent();
 //                    Bookmark b = (Bookmark) bookmarksTree.getLastSelectedPathComponent();
-                    if(b != null) {
+                    if (b != null) {
                         followBookmarkInView(b);
                     }
                     break;

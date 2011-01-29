@@ -2713,6 +2713,25 @@ public class PdfReader implements PdfViewerPreferences {
         return result;
     }
 
+    public ArrayList getAnnotations(int page) {
+        pageRefs.resetReleasePage();
+        ArrayList result = new ArrayList();
+        PdfDictionary pageDic = pageRefs.getPageN(page);
+        if (pageDic.get(PdfName.ANNOTS) != null) {
+            PdfArray annots = pageDic.getAsArray(PdfName.ANNOTS);
+            for (int j = 0; j < annots.size(); ++j) {
+                PdfDictionary annot = (PdfDictionary)getPdfObjectRelease(annots.getPdfObject(j));
+
+                if (PdfName.LINK.equals(annot.get(PdfName.SUBTYPE))) {
+                	result.add(annot);
+                }
+            }
+        }
+    	pageRefs.releasePage(page);
+        pageRefs.resetReleasePage();
+        return result;
+    }
+
     private void iterateBookmarks(PdfObject outlineRef, HashMap names) {
         while (outlineRef != null) {
             replaceNamedDestination(outlineRef, names);

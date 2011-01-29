@@ -84,6 +84,7 @@ import com.lowagie.text.pdf.PdfName;
 import com.lowagie.text.pdf.PdfNumber;
 import com.lowagie.text.pdf.PdfObject;
 import com.lowagie.text.pdf.PdfReader;
+import com.lowagie.text.pdf.PdfRectangle;
 import com.lowagie.text.pdf.PdfString;
 import com.lowagie.text.pdf.PdfWriter;
 import com.lowagie.text.pdf.PdfStamper;
@@ -422,6 +423,15 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
         }
     }
 
+    private void initPages() {
+        pages = new IntHashtable();
+        int numPages = reader.getNumberOfPages();
+        for (int k = 1; k <= numPages; ++k) {
+            pages.put(reader.getPageOrigRef(k).getNumber(), k);
+            reader.releasePage(k);
+        }
+    }
+
     private Bookmark getBookmark() {
         PdfDictionary catalog = reader.getCatalog();
         PdfObject obj = PdfReader.getPdfObjectRelease(catalog.get(PdfName.OUTLINES));
@@ -429,12 +439,13 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
             return null;
         }
         PdfDictionary outlines = (PdfDictionary) obj;
-        pages = new IntHashtable();
-        int numPages = reader.getNumberOfPages();
-        for (int k = 1; k <= numPages; ++k) {
-            pages.put(reader.getPageOrigRef(k).getNumber(), k);
-            reader.releasePage(k);
-        }
+//        pages = new IntHashtable();
+//        int numPages = reader.getNumberOfPages();
+//        for (int k = 1; k <= numPages; ++k) {
+//            pages.put(reader.getPageOrigRef(k).getNumber(), k);
+//            reader.releasePage(k);
+//        }
+        initPages();
 
         Bookmark root = new Bookmark();
         root.setTitle("Root Bookmark");
@@ -761,6 +772,9 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
             s.append(((PdfNumber) obj).intValue() + 1);
             bookmark.setPageNumber(((PdfNumber) obj).intValue() + 1);
         } else {
+            if (pages == null) {
+                initPages();
+            }
             if (pages != null) {
                 s.append(pages.get(getNumber((PdfIndirectReference) obj))); //changed by ujihara 2004-06-13
                 bookmark.setPageNumber(pages.get(getNumber((PdfIndirectReference) obj)));
@@ -934,6 +948,52 @@ public class iTextBookmarksConverter implements IBookmarksConverter {
 
     public String getOpenedFilePath() {
         return filePath;
+    }
+
+
+
+    public ArrayList<AnnotationRect> getLinks(int currentPage, boolean convertNamedDestinations) {
+
+        ArrayList<AnnotationRect> bookmarkLinks = new ArrayList<AnnotationRect>();
+        ArrayList links = null;
+        if (reader != null) {
+            if (convertNamedDestinations) {
+                reader.consolidateNamedDestinations();
+            }
+            links = reader.getAnnotations(currentPage);
+            for (int i = 0; i < links.size(); i++) {
+                AnnotationRect annoRect = new AnnotationRect();
+                Bookmark bookmark = new Bookmark();
+                PdfDictionary annot = (PdfDictionary) links.get(i);
+                try {
+                    PdfObject dest = PdfReader.getPdfObjectRelease(annot.get(PdfName.DEST));
+                    if (dest != null) {
+                        mapGotoBookmark(bookmark, dest);
+                    } else {
+                        PdfDictionary action = (PdfDictionary) PdfReader.getPdfObjectRelease(annot.get(PdfName.A));
+                        if (action != null) {
+                            setActionsRecursive(bookmark, action);
+                        } else {
+                            bookmark.setType(BookmarkType.Unknown);
+                        }
+                    }
+                } catch (Exception e) {
+                    //empty on purpose
+                }
+                PdfObject obj = (PdfObject) annot.get(PdfName.RECT);
+                if (obj instanceof PdfArray) {
+                    PdfArray rc = (PdfArray) obj;
+                    annoRect.llx = (int)rc.getAsNumber(0).floatValue();
+                    annoRect.lly = (int)rc.getAsNumber(1).floatValue();
+                    annoRect.urx = (int)rc.getAsNumber(2).floatValue();
+                    annoRect.ury = (int)rc.getAsNumber(3).floatValue();
+                }
+                annoRect.bookmark = bookmark;
+                bookmarkLinks.add(annoRect);
+            }
+        }
+
+        return bookmarkLinks;
     }
 
 

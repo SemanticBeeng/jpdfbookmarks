@@ -531,6 +531,11 @@ public class PdfViewAdapter extends JScrollPane implements IPdfView {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
+    public String extractText(Rectangle rectInCrop) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
     private class ResizeListener extends ComponentAdapter {
 
         @Override

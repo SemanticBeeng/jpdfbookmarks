@@ -21,8 +21,10 @@
  */
 package it.flavianopetrocchi.jpdfbookmarks.bookmark;
 
+import java.awt.Rectangle;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 public interface IBookmarksConverter {
     
@@ -70,5 +72,14 @@ public interface IBookmarksConverter {
 
     public String getOpenedFilePath();
 
+    public ArrayList<AnnotationRect> getLinks(int page, boolean convertNamedDestinations);
+
+    public class AnnotationRect {
+        public Bookmark bookmark;
+        public int llx;
+        public int lly;
+        public int urx;
+        public int ury;
+    }
 
 }
