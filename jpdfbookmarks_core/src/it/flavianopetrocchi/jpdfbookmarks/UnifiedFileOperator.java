@@ -352,6 +352,10 @@ public class UnifiedFileOperator {
         return links;
     }
 
+    byte[] getPassword() {
+        return userPassword;
+    }
+
     private class FireInEventThread implements Runnable {
 
         FileOperationEvent e;

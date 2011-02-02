@@ -1358,6 +1358,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                 showErrorMessage(Res.getString("ERROR_BOOKMARKS_CONVERTER_NOT_FOUND"));
                 throw new Exception();
             }
+            converter.open(fileOperator.getFilePath(), fileOperator.getPassword());
             Bookmark root = Bookmark.outlineFromFile(converter,
                     file.getAbsolutePath(), userPrefs.getIndentationString(),
                     userPrefs.getPageSeparator(),
