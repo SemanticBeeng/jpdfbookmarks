@@ -768,6 +768,12 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
             int y2 = mediaBoxHeight - cropBoxY - rectInCrop.y - rectInCrop.height;
             text = currentGrouping.extractTextInRectangle(x1, y1,
                     x2, y2, page, false, true);
+            int sentinel = 0;
+            while (text == null && sentinel < 10) {
+                sentinel++;
+                text = currentGrouping.extractTextInRectangle(--x1, ++y1,
+                        ++x2, --y2, page, false, true);
+            }
         } catch (Exception ex) {
         }
 
@@ -781,13 +787,20 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
             decoder.decodePage(page);
             PdfGroupingAlgorithms currentGrouping = decoder.getGroupingObject();
             text = currentGrouping.extractTextInRectangle(tlx, tly,
-                    brx, bry, page, false, true);
+                    brx, bry, page, true, true);
         } catch (Exception ex) {
         }
 
         return text;
     }
 
+//    private ArrayList<Rectangle> rects = new ArrayList<Rectangle>();
+//
+//    public void addDrawRect(int x, int y, int width, int height) {
+//        Rectangle rect = new Rectangle(x, mediaBoxHeight - y, width, height);
+//        rects.add(rect);
+//        rendererPanel.revalidate();
+//    }
     private class PdfRenderPanel extends JPanel implements Scrollable {
 
         public PdfRenderPanel() {
@@ -871,8 +884,25 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
                     g2.drawImage(cloneImg, 0, 0, this);
 
                 } else {
+//                    if (!rects.isEmpty()) {
+//                        if (cloneImg == null) {
+//                            cloneImg = new BufferedImage(img.getWidth(),
+//                                    img.getHeight(), img.getType());
+//                        }
+//                        Graphics2D g2CloneImg = (Graphics2D) cloneImg.getGraphics();
+//                        g2CloneImg.drawImage(img, 0, 0, this);
+//                        g2CloneImg.setColor(Color.gray);
+//                        for (Rectangle r : rects) {
+//                            g2CloneImg.drawRect(r.x, r.y, r.width, r.height);
+//                        }
+//                        g2.drawImage(cloneImg, 0, 0, this);
+//                    } else {
+
                     g2.drawImage(img, 0, 0, this);
+//                    }
                 }
+
+
             }
 
             Bookmark bookmark = getBookmarkFromView();

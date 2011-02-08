@@ -2152,8 +2152,13 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     }
 
     private void extractLinksFromPage() {
-        
+
         ArrayList<Bookmark> links = fileOperator.getLinksOnPage(viewPanel.getCurrentPage());
+        if (links.isEmpty()) {
+            JOptionPane.showMessageDialog(this, Res.getString("NO_LINKS_FOUND"), JPdfBookmarks.APP_NAME,
+                    JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
         Bookmark parent = null;
         for (Bookmark b : links) {
             Bookmark selected = getSelectedBookmark();
@@ -2166,7 +2171,11 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                 parent.insert(b, selectedPosition + 1);
             }
         }
-        bookmarksTreeModel.nodeStructureChanged(parent);
+        UndoablePasteBookmarks undoableExtractLinks = new UndoablePasteBookmarks(bookmarksTreeModel, links);
+        undoableExtractLinks.doEdit();
+        undoSupport.postEdit(undoableExtractLinks);
+        fileOperator.setFileChanged(true);
+        bookmarksTreeModel.nodeStructureChanged((TreeNode) bookmarksTreeModel.getRoot());
         recreateNodesOpenedState();
         fileOperator.setFileChanged(true);
     }

@@ -323,6 +323,7 @@ public class UnifiedFileOperator {
             for (IBookmarksConverter.AnnotationRect annoRect : annoRects) {
                 JPedalViewPanel jpedalView = (JPedalViewPanel) viewPanel;
                 String text = jpedalView.extractTextInRect(annoRect.llx, annoRect.ury, annoRect.urx, annoRect.lly);
+//                jpedalView.addDrawRect(annoRect.llx, annoRect.ury, Math.abs(annoRect.urx - annoRect.llx), Math.abs(annoRect.lly - annoRect.ury));
                 int sentinel = 0;
                 while (text == null && sentinel < 10) {
                     sentinel++;

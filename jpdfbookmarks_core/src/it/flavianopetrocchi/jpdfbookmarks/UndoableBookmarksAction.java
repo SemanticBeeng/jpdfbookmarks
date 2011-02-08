@@ -61,7 +61,6 @@ public abstract class UndoableBookmarksAction extends AbstractUndoableEdit {
         }
     }
 
-
     private ArrayList<Bookmark> backupBookmarks(ArrayList<Bookmark> bookmarks) {
 
         ArrayList<Bookmark> backup = new ArrayList<Bookmark>(bookmarks.size());
@@ -90,8 +89,10 @@ public abstract class UndoableBookmarksAction extends AbstractUndoableEdit {
 
         ArrayList<Bookmark> bookmarksList = new ArrayList<Bookmark>();
         TreePath[] paths = tree.getSelectionPaths();
-        for (TreePath path : paths) {
-            bookmarksList.add((Bookmark) path.getLastPathComponent());
+        if (paths != null) {
+            for (TreePath path : paths) {
+                bookmarksList.add((Bookmark) path.getLastPathComponent());
+            }
         }
         return bookmarksList;
     }
