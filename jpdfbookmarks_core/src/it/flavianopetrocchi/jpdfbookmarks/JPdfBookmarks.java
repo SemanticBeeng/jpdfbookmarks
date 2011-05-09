@@ -631,9 +631,6 @@ class JPdfBookmarks {
         appOptions.addOption(OptionBuilder.withLongOpt("apply").hasArg(true).withArgName("bookmarks.txt").withDescription(Res.getString("APPLY_DESCR")).create('a'));
         appOptions.addOption(OptionBuilder.withLongOpt("out").hasArg(true).withArgName("output.pdf").withDescription(Res.getString("OUT_DESCR")).create('o'));
         appOptions.addOption(OptionBuilder.withLongOpt("encoding").hasArg(true).withArgName("UTF-8").withDescription(Res.getString("ENCODING_DESCR")).create('e'));
-//        appOptions.addOption(OptionBuilder.withLongOpt("show-on-open").hasArg(true)
-//                .withArgName("YES | NO | CHECK")
-//                .withDescription(Res.getString("SHOW_ON_OPEN_DESCR")).create('w'));
 
         appOptions.addOption("b", "bookmark", true,
                 Res.getString("BOOKMARK_ARG_DESCR"));

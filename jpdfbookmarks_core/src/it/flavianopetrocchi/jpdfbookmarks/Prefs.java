@@ -22,6 +22,7 @@
 
 package it.flavianopetrocchi.jpdfbookmarks;
 
+import it.flavianopetrocchi.components.collapsingpanel.CollapsingPanel;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -45,6 +46,7 @@ public class Prefs {
 	private final String LOCATION_X = "LOCATION_X";
 	private final String LOCATION_Y = "LOCATION_Y";
 	private final String SPLITTER_POS = "SPLITTER_POS";
+        private final String COLLAPSING_PANEL_STATE = "COLLAPSING_PANEL_STATE";
 	private final String SIZE_WIDTH = "SIZE_WIDTH";
 	private final String SIZE_HEIGHT = "SIZE_HEIGHT";
 	private final String LAST_DIRECTORY = "LAST_DIRECTORY";
@@ -85,6 +87,15 @@ public class Prefs {
 
 	Prefs() {
 	}
+
+        public int getCollapsingPanelState() {
+            return userPrefs.getInt(COLLAPSING_PANEL_STATE,
+                    CollapsingPanel.PANEL_OPENED);
+        }
+
+        public void setCollapsingPanelState(int state) {
+            userPrefs.putInt(COLLAPSING_PANEL_STATE, state);
+        }
 
         public String getCharsetEncoding() {
             return userPrefs.get(CHARSET_ENCODING,

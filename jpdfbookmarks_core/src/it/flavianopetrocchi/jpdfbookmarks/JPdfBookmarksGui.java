@@ -21,10 +21,12 @@
  */
 package it.flavianopetrocchi.jpdfbookmarks;
 
+// <editor-fold defaultstate="collapsed" desc="import">
 import it.flavianopetrocchi.jpdfbookmarks.bookmark.Bookmark;
 import it.flavianopetrocchi.jpdfbookmarks.bookmark.IBookmarksConverter;
 import it.flavianopetrocchi.jpdfbookmarks.bookmark.BookmarkType;
 import it.flavianopetrocchi.colors.ColorsListPanel;
+import it.flavianopetrocchi.components.collapsingpanel.CollapsingPanel;
 import it.flavianopetrocchi.jpdfbookmarks.bookmark.BookmarkSelection;
 import it.flavianopetrocchi.labelvertical.VerticalLabel;
 import it.flavianopetrocchi.labelvertical.VerticalLabelUI;
@@ -103,7 +105,6 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JColorChooser;
-import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -125,7 +126,6 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
-import javax.swing.Timer;
 import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
@@ -138,7 +138,6 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
@@ -146,7 +145,7 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
-import javax.swing.undo.UndoableEditSupport;
+import javax.swing.undo.UndoableEditSupport;// </editor-fold>
 
 class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         PageChangedListener, ViewChangedListener, TreeExpansionListener,
@@ -226,7 +225,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     private HashMap<String, JToolBar> bookmarksToolbars = new HashMap<String, JToolBar>();
     private JPanel mainToolbarsPanel = new JPanel(new WrapFlowLayout(WrapFlowLayout.LEFT));
     private MouseAdapter mouseAdapter;
-    private ToolbarsPopupListener toolbarsPopupListener = new ToolbarsPopupListener();// </editor-fold>
+    private ToolbarsPopupListener toolbarsPopupListener = new ToolbarsPopupListener();
+    private CollapsingPanel leftPanel;// </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Actions">
     private Action quitAction;
     //File actions
@@ -294,7 +294,9 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             userPrefs.setLocation(getLocation());
             userPrefs.setSize(getSize());
         }
-        userPrefs.setSplitterLocation(centralSplit.getDividerLocation());
+        //userPrefs.setSplitterLocation(centralSplit.getDividerLocation());
+        userPrefs.setCollapsingPanelState(leftPanel.getPanelState());
+        userPrefs.setSplitterLocation(leftPanel.getDividerLocation());
     }
 
     private void loadWindowState() {
@@ -687,6 +689,10 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     @Override
     public void treeNodeMoved(TreeNodeMovedEvent e) {
         recreateNodesOpenedState();
+    }
+
+    private JPanel createThumbnailsPanel() {
+        return new JPanel();
     }
 
     abstract class ActionBuilder extends AbstractAction {
@@ -2426,6 +2432,29 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         menuView.add(collapseAllAction).setMnemonic(
                 Res.mnemonicFromRes("MENU_COLLAPSE_ALL_MNEMONIC"));
 
+        menuView.addSeparator();
+        JCheckBoxMenuItem viewLeftPanel =
+                new JCheckBoxMenuItem(Res.getString("MENU_SHOW_NAVIGATION_PANEL"));
+        viewLeftPanel.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0));
+        if (userPrefs.getCollapsingPanelState() == CollapsingPanel.PANEL_OPENED) {
+            viewLeftPanel.setState(true);
+        } else {
+            viewLeftPanel.setState(false);
+        }
+        viewLeftPanel.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int currentState = leftPanel.getPanelState();
+                if (currentState == CollapsingPanel.PANEL_COLLAPSED) {
+                    leftPanel.setPanelState(CollapsingPanel.PANEL_OPENED);
+                } else {
+                    leftPanel.setPanelState(CollapsingPanel.PANEL_COLLAPSED);
+                }
+            }
+        });
+        menuView.add(viewLeftPanel);
+
         menuBar.add(menuView);
 
         JMenu menuTools = new JMenu(Res.getString("MENU_TOOLS"));
@@ -2651,6 +2680,9 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         @Override
         public void actionPerformed(ActionEvent arg0) {
             Ut.changeLAF(laf, JPdfBookmarksGui.this);
+            leftPanel.updateComponentsUI();
+//            Ut.changeLAF(laf, cardsContainer);
+//            Ut.changeLAF(laf, openLeftPanelContainer);
             lblInheritLeft.setUI(new VerticalLabelUI(false));
 //            JOptionPane.showMessageDialog(JPdfBookmarksGui.this,
 //                    Res.getString("LAF_CHANGED_RESTART_MANUALLY"));
@@ -2912,7 +2944,6 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         bookmarksPanel = new JPanel(new BorderLayout());
 //        bookmarksPanel.setTransferHandler(new BookmarksTransferHandler());
 
-
         bookmarksScroller = new JScrollPane();
         setEmptyBookmarksTree();
 
@@ -2969,6 +3000,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
         return bookmarksPanel;
     }
+    private int dividerLocation;
 
     private void initComponents() {
         UIManager.put("Tree.leafIcon", Res.getIcon(getClass(), "gfx16/bookmark.png"));
@@ -2985,10 +3017,10 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         JPanel toolbarsPanel = createToolbarsPanel();
         add(toolbarsPanel, BorderLayout.NORTH);
 
-        leftTabbedPane = new JTabbedPane(JTabbedPane.TOP);
-        leftTabbedPane.add(Res.getString("BOOKMARKS_TAB_TITLE"),
-                createBookmarksPanel());
-//        leftTabbedPane.setTabComponentAt(0, tabToolbars);
+        centralSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, false);
+        leftPanel = new CollapsingPanel(centralSplit);
+        leftPanel.addInnerPanel(createBookmarksPanel(), Res.getString("BOOKMARKS_TAB_TITLE"));
+        leftPanel.addInnerPanel(createThumbnailsPanel(), Res.getString("THUMBNAILS_TAB_TITLE"));
 
         JPanel centralPanel = new JPanel(new BorderLayout());
         centralPanel.add((Component) viewPanel, BorderLayout.CENTER);
@@ -3049,13 +3081,21 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 //				Res.mnemonicFromRes("INHERIT_ZOOM_MNEMONIC"));
 //		lblInheritZoom.setLabelFor(checkInheritZoom);
 
-        centralSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                false, leftTabbedPane, centralPanel);
+//        centralSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+//                false, leftTabbedPane, centralPanel);
+//        centralSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+//                false, leftPanel, centralPanel);
+        centralSplit.setLeftComponent(leftPanel);
+        centralSplit.setRightComponent(centralPanel);
         centralSplit.setOneTouchExpandable(true);
+
+        leftPanel.setDividerLocation(userPrefs.getSplitterLocation());
+        leftPanel.setPanelState(userPrefs.getCollapsingPanelState());
+
         dropTarget = new DropTarget(centralSplit, new SplitDropListener());
         centralSplit.setDropTarget(dropTarget);
         //centralSplit.setTransferHandler(new FilesTransferHandler());
-        centralSplit.setDividerLocation(userPrefs.getSplitterLocation());
+        //centralSplit.setDividerLocation(userPrefs.getSplitterLocation());
         add(centralSplit, BorderLayout.CENTER);
 
         add(createStatusBar(), BorderLayout.SOUTH);

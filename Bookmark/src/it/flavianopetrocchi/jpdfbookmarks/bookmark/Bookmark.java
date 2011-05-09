@@ -878,7 +878,11 @@ public class Bookmark extends DefaultMutableTreeNode implements Serializable {
                         remoteFileConverter.open(absoluteRemoteFile.getAbsolutePath());
                         bookmark.setTop(verticalFromThousandths(bookmark.getThousandthsTop(),
                                 remoteFileConverter.getPageHeight(bookmark.getPageNumber())));
+                        bookmark.setBottom(verticalFromThousandths(bookmark.getThousandthsBottom(),
+                                remoteFileConverter.getPageHeight(bookmark.getPageNumber())));
                         bookmark.setLeft(horizontalFromThousandths(bookmark.getThousandthsLeft(),
+                                remoteFileConverter.getPageWidth(bookmark.getPageNumber())));
+                        bookmark.setRight(horizontalFromThousandths(bookmark.getThousandthsRight(),
                                 remoteFileConverter.getPageWidth(bookmark.getPageNumber())));
                         remoteFileConverter.close();
                     } catch (IOException ex) {

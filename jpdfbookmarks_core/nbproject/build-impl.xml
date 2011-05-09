@@ -291,15 +291,18 @@ is divided into following sections:
             <attribute default="${build.classes.dir}" name="destdir"/>
             <sequential>
                 <fail unless="javac.includes">Must set javac.includes</fail>
-                <pathconvert pathsep="," property="javac.includes.binary">
+                <pathconvert pathsep="${line.separator}" property="javac.includes.binary">
                     <path>
                         <filelist dir="@{destdir}" files="${javac.includes}"/>
                     </path>
                     <globmapper from="*.java" to="*.class"/>
                 </pathconvert>
+                <tempfile deleteonexit="true" property="javac.includesfile.binary"/>
+                <echo file="${javac.includesfile.binary}" message="${javac.includes.binary}"/>
                 <delete>
-                    <files includes="${javac.includes.binary}"/>
+                    <files includesfile="${javac.includesfile.binary}"/>
                 </delete>
+                <delete file="${javac.includesfile.binary}"/>
             </sequential>
         </macrodef>
     </target>
@@ -510,8 +513,22 @@ is divided into following sections:
         </antcall>
         <antcall target="-maybe-call-dep">
             <param name="call.built.properties" value="${built-jar.properties}"/>
+            <param location="${project.CollapsingPanel}" name="call.subproject"/>
+            <param location="${project.CollapsingPanel}/build.xml" name="call.script"/>
+            <param name="call.target" value="jar"/>
+            <param name="transfer.built-jar.properties" value="${built-jar.properties}"/>
+        </antcall>
+        <antcall target="-maybe-call-dep">
+            <param name="call.built.properties" value="${built-jar.properties}"/>
             <param location="${project.Colors}" name="call.subproject"/>
             <param location="${project.Colors}/build.xml" name="call.script"/>
+            <param name="call.target" value="jar"/>
+            <param name="transfer.built-jar.properties" value="${built-jar.properties}"/>
+        </antcall>
+        <antcall target="-maybe-call-dep">
+            <param name="call.built.properties" value="${built-jar.properties}"/>
+            <param location="${project.ResourceHelper}" name="call.subproject"/>
+            <param location="${project.ResourceHelper}/build.xml" name="call.script"/>
             <param name="call.target" value="jar"/>
             <param name="transfer.built-jar.properties" value="${built-jar.properties}"/>
         </antcall>
@@ -920,8 +937,22 @@ is divided into following sections:
         </antcall>
         <antcall target="-maybe-call-dep">
             <param name="call.built.properties" value="${built-clean.properties}"/>
+            <param location="${project.CollapsingPanel}" name="call.subproject"/>
+            <param location="${project.CollapsingPanel}/build.xml" name="call.script"/>
+            <param name="call.target" value="clean"/>
+            <param name="transfer.built-clean.properties" value="${built-clean.properties}"/>
+        </antcall>
+        <antcall target="-maybe-call-dep">
+            <param name="call.built.properties" value="${built-clean.properties}"/>
             <param location="${project.Colors}" name="call.subproject"/>
             <param location="${project.Colors}/build.xml" name="call.script"/>
+            <param name="call.target" value="clean"/>
+            <param name="transfer.built-clean.properties" value="${built-clean.properties}"/>
+        </antcall>
+        <antcall target="-maybe-call-dep">
+            <param name="call.built.properties" value="${built-clean.properties}"/>
+            <param location="${project.ResourceHelper}" name="call.subproject"/>
+            <param location="${project.ResourceHelper}/build.xml" name="call.script"/>
             <param name="call.target" value="clean"/>
             <param name="transfer.built-clean.properties" value="${built-clean.properties}"/>
         </antcall>
