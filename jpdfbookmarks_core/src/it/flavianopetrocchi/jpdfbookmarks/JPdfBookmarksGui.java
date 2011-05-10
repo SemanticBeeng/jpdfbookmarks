@@ -226,7 +226,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     private JPanel mainToolbarsPanel = new JPanel(new WrapFlowLayout(WrapFlowLayout.LEFT));
     private MouseAdapter mouseAdapter;
     private ToolbarsPopupListener toolbarsPopupListener = new ToolbarsPopupListener();
-    private CollapsingPanel leftPanel;// </editor-fold>
+    private LeftPanel leftPanel;// </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Actions">
     private Action quitAction;
     //File actions
@@ -493,6 +493,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             lblSelectedNode.setText(" ");
             lblCurrentView.setText(" ");
             setEmptyBookmarksTree();
+            updateThumbnailsPanel(null);
             undoManager.die();
         } else if (evt.getOperation() == FileOperationEvent.Operation.FILE_CHANGED) {
             if (fileOperator.getFileChanged() && !fileOperator.isReadonly()) {
@@ -814,6 +815,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
                             }
                         }
                     });
+                    updateThumbnailsPanel(fileOperator.getViewPanel().getThumbnails());
                 } catch (Exception ex) {
                     showErrorMessage(Res.getString("ERROR_OPENING_FILE") + " "
                             + file.getName());
@@ -824,6 +826,10 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             }
         };
         opener.execute();
+    }
+
+    private void updateThumbnailsPanel(JScrollPane thumbnails) {
+        leftPanel.updateThumbnails(thumbnails);
     }
 
     private void recreateNodesOpenedState() {
@@ -3018,9 +3024,11 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         add(toolbarsPanel, BorderLayout.NORTH);
 
         centralSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, false);
-        leftPanel = new CollapsingPanel(centralSplit);
-        leftPanel.addInnerPanel(createBookmarksPanel(), Res.getString("BOOKMARKS_TAB_TITLE"));
-        leftPanel.addInnerPanel(createThumbnailsPanel(), Res.getString("THUMBNAILS_TAB_TITLE"));
+        leftPanel = new LeftPanel(centralSplit);
+        leftPanel.addBookmarksPanel(createBookmarksPanel());
+        leftPanel.addThumbnailsPanel(createThumbnailsPanel());
+//        leftPanel.addInnerPanel(createBookmarksPanel(), Res.getString("BOOKMARKS_TAB_TITLE"));
+//        leftPanel.addInnerPanel(createThumbnailsPanel(), Res.getString("THUMBNAILS_TAB_TITLE"));
 
         JPanel centralPanel = new JPanel(new BorderLayout());
         centralPanel.add((Component) viewPanel, BorderLayout.CENTER);

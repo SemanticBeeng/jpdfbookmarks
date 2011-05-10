@@ -26,6 +26,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -36,6 +37,8 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
@@ -49,12 +52,16 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.Scrollable;
 import javax.swing.SwingUtilities;
 import org.jpedal.PdfDecoder;
+import org.jpedal.examples.simpleviewer.Values;
+import org.jpedal.examples.simpleviewer.gui.generic.GUIThumbnailPanel;
+import org.jpedal.examples.simpleviewer.gui.swing.SwingThumbnailPanel;
 import org.jpedal.grouping.PdfGroupingAlgorithms;
 import org.jpedal.objects.PdfPageData;
 
@@ -65,6 +72,8 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
     private static final int MIN_RECT_HEIGHT = 100;
     private static final float MIN_SCALE = 0.001f;
     private static final float MAX_SCALE = 4.0f;
+
+    private final Font textFont = new Font("Serif", Font.PLAIN, 12);
     private ArrayList<PageChangedListener> pageChangedListeners =
             new ArrayList<PageChangedListener>();
     private ArrayList<ViewChangedListener> viewChangedListeners =
@@ -101,6 +110,8 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
     private Boolean textSelectionActive = false;
     private String copiedText;
     private Boolean connectToClipboard = false;
+    private Values commonValues = new Values();
+    private ThumbnailsPanel thumbnails;
     private JScrollBar vbar;// </editor-fold>
 
     @Override
@@ -115,17 +126,49 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
             decoder.setExtractionMode(PdfDecoder.TEXT);
             decoder.init(true);
         }
-        //byte[] fileBytes = Ut.getBytesFromFile(file);
+
+        if (thumbnails == null) {
+            thumbnails = new ThumbnailsPanel(commonValues, decoder);
+            addPageChangedListener(thumbnails);
+        }
+
         if (password != null) {
             decoder.setEncryptionPassword(password);
-            //decoder.openPdfFile(file.getCanonicalPath(), password);
-        } //else {
+        } 
         decoder.openPdfFile(file.getCanonicalPath());
-        //}
-        //decoder.openPdfArray(fileBytes);
+
         pdfPageData = decoder.getPdfPageData();
         numberOfPages = decoder.getPageCount();
         updateCurrentPageBoxes();
+
+//        thumbnails = new ThumbnailsPanel(commonValues, decoder);
+//        addPageChangedListener(thumbnails);
+//        thumbnails.resetToDefault();
+        thumbnails.setupThumbnails(numberOfPages, textFont, Res.getString("PAGE"), pdfPageData);
+        thumbnails.addComponentListener();
+        Object[] buttons = thumbnails.getButtons();
+        for (int i = 0; i < buttons.length; i++) {
+            ((JButton) buttons[i]).addActionListener(new ThumbnailListener(i));
+        }
+    }
+
+    private class ThumbnailListener implements ActionListener {
+        private int page = 1;
+
+        public ThumbnailListener(int page) {
+            this.page = page + 1;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            goToPage(page);
+        }
+
+    }
+
+    @Override
+    public JScrollPane getThumbnails() {
+        return (JScrollPane) thumbnails;
     }
 
     @Override
@@ -140,7 +183,12 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
     public void close() {
         if (decoder != null) {
             decoder.closePdfFile();
+            decoder.dispose();
             decoder = null;
+        }
+        if (thumbnails != null) {
+            thumbnails.dispose();
+            thumbnails = null;
         }
         img = null;
         currentPage = 0;

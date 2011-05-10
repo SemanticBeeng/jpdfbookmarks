@@ -26,6 +26,7 @@ package it.flavianopetrocchi.jpdfbookmarks;
 import it.flavianopetrocchi.jpdfbookmarks.bookmark.Bookmark;
 import java.awt.Rectangle;
 import java.io.File;
+import javax.swing.JScrollPane;
 
 public interface IPdfView {
 	
@@ -72,5 +73,7 @@ public interface IPdfView {
         public void setConnectToClipboard(Boolean set);
 
         public String extractText(Rectangle rectInCrop);
+
+        public JScrollPane getThumbnails();
 
 }
