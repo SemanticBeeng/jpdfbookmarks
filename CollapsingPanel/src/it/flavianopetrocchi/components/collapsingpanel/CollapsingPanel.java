@@ -4,6 +4,7 @@ import it.flavianopetrocchi.reshelper.ResHelper;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -46,7 +47,7 @@ public class CollapsingPanel extends JPanel {
     }
     private final static String PROPERTIES_PATH = "it/flavianopetrocchi/components/collapsingpanel/CollapsingPanel";
     private final JPanel innerPanelsContainer = new JPanel();
-    private final JComboBox tabsCombo = new JComboBox();
+    private JComboBox tabsCombo = new JComboBox();
     private final JPanel openLeftPanelContainer = new JPanel();
     private JSplitPane containerSplitter;
     private int dividerLocation;
@@ -136,9 +137,20 @@ public class CollapsingPanel extends JPanel {
 
     public void addInnerPanel(JPanel innerPanel, String name) {
         innerPanelsContainer.add(innerPanel, name);
-
         tabsCombo.addItem(name);
     }
+
+//    public void removeInnerPanel(String name) {
+//        for (Component c : innerPanelsContainer.getComponents()) {
+//            if (c.getName() != null && c.getName().equals(name)) {
+//                innerPanelsContainer.remove(c);
+//                tabsCombo.setEditable(true);
+//                tabsCombo.removeItem(name);
+//                tabsCombo.setEditable(false);
+//                break;
+//            }
+//        }
+//    }
 
     private class ButtonRolloverListener extends MouseAdapter {
 
