@@ -46,12 +46,12 @@ public class CollapsingPanel extends JPanel {
         }
     }
     private final static String PROPERTIES_PATH = "it/flavianopetrocchi/components/collapsingpanel/CollapsingPanel";
-    private final JPanel innerPanelsContainer = new JPanel();
-    private JComboBox tabsCombo = new JComboBox();
+    protected final JPanel innerPanelsContainer = new JPanel();
+    protected JComboBox tabsCombo = new JComboBox();
     private final JPanel openLeftPanelContainer = new JPanel();
     private JSplitPane containerSplitter;
     private int dividerLocation;
-    private final CardLayout cardLayout = new CardLayout();
+    protected final CardLayout cardLayout = new CardLayout();
     private ResHelper resHelper;
     private int state = PANEL_OPENED;
     private boolean firstRestore = true;
@@ -219,4 +219,17 @@ public class CollapsingPanel extends JPanel {
             SwingUtilities.updateComponentTreeUI(openLeftPanelContainer);
         }
     }
+
+    public JComboBox getComboBoxSelector() {
+        return tabsCombo;
+    }
+
+    public CardLayout getCardLayout() {
+        return cardLayout;
+    }
+
+    public JPanel getCardsContainerPanel() {
+        return innerPanelsContainer;
+    }
 }
+

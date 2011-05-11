@@ -63,6 +63,7 @@ public class Prefs {
 	private final String USE_PROXY = "USE_PROXY";
 	private final String CHECK_UPDATES_ON_START = "CHECK_UPDATES_ON_START";
         private final String CONFIRM_WEB_ACCESS = "CONFIRM_WEB_ACCESS";
+        private final String PANEL_TO_SHOW = "PANEL_TO_SHOW";
 
         public static final String SHOW_FILE_TB = "SHOW_FILE_TB";
         public static final String SHOW_FITTYPE_TB = "SHOW_FITTYPE_TB";
@@ -82,11 +83,17 @@ public class Prefs {
         public static final String NUM_CLICKS = "NUM_CLICKS";
 
 	private Dimension screenSize = null;
-    
-
 
 	Prefs() {
 	}
+
+        public String getPanelToShow() {
+            return userPrefs.get(PANEL_TO_SHOW, Res.getString("BOOKMARKS_TAB_TITLE"));
+        }
+
+        public void setPanelToShow(String panelName) {
+            userPrefs.put(PANEL_TO_SHOW, panelName);
+        }
 
         public int getCollapsingPanelState() {
             return userPrefs.getInt(COLLAPSING_PANEL_STATE,

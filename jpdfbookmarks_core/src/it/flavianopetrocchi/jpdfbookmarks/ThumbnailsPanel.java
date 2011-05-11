@@ -14,7 +14,6 @@ public class ThumbnailsPanel extends SwingThumbnailPanel implements PageChangedL
     public ThumbnailsPanel(Values commonValues, PdfDecoder decoder) {
         super(commonValues, decoder);
         setThumbnailsEnabled(true);
-        super.panel.setLayout(new WrapFlowLayout(WrapFlowLayout.LEFT));
     }
 
     @Override

@@ -64,6 +64,9 @@ import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -180,6 +183,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     private JRadioButtonMenuItem rbFitNative;
     private JRadioButtonMenuItem rbTopLeftZoom;
     private JRadioButtonMenuItem rbFitRect;
+    private JRadioButtonMenuItem bookmarksButton;
+    private JRadioButtonMenuItem thumbnailsButton;
     private JCheckBoxMenuItem cbBold;
     private JCheckBoxMenuItem cbItalic;
     private JCheckBoxMenuItem cbEditMenuBold;
@@ -226,7 +231,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     private JPanel mainToolbarsPanel = new JPanel(new WrapFlowLayout(WrapFlowLayout.LEFT));
     private MouseAdapter mouseAdapter;
     private ToolbarsPopupListener toolbarsPopupListener = new ToolbarsPopupListener();
-    private LeftPanel leftPanel;// </editor-fold>
+    private LeftPanel leftPanel;
+    private ButtonGroup leftPanelMenuGroup;// </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Actions">
     private Action quitAction;
     //File actions
@@ -297,6 +303,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         //userPrefs.setSplitterLocation(centralSplit.getDividerLocation());
         userPrefs.setCollapsingPanelState(leftPanel.getPanelState());
         userPrefs.setSplitterLocation(leftPanel.getDividerLocation());
+        userPrefs.setPanelToShow((String) leftPanel.getComboBoxSelector().getSelectedItem());
     }
 
     private void loadWindowState() {
@@ -493,7 +500,9 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             lblSelectedNode.setText(" ");
             lblCurrentView.setText(" ");
             setEmptyBookmarksTree();
+//            leftPanel.addThumbnailsPanel(new JPanel());
             updateThumbnailsPanel(null);
+            leftPanel.setPanelState(leftPanel.getPanelState());
             undoManager.die();
         } else if (evt.getOperation() == FileOperationEvent.Operation.FILE_CHANGED) {
             if (fileOperator.getFileChanged() && !fileOperator.isReadonly()) {
@@ -2460,7 +2469,39 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             }
         });
         menuView.add(viewLeftPanel);
+        leftPanelMenuGroup = new ButtonGroup();
+        bookmarksButton = new JRadioButtonMenuItem(Res.getString("SHOW_BOOKMARKS"));
+        bookmarksButton.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0));
+        thumbnailsButton = new JRadioButtonMenuItem(Res.getString("SHOW_THUMBNAILS"));
+        thumbnailsButton.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F7, InputEvent.SHIFT_DOWN_MASK));
+        if (userPrefs.getPanelToShow().equals(Res.getString("THUMBNAILS_TAB_TITLE"))) {
+            thumbnailsButton.setSelected(true);
+        } else {
+            bookmarksButton.setSelected(true);
+        }
+        bookmarksButton.addActionListener(new ActionListener() {
 
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (leftPanel != null) {
+                    leftPanel.selectPanelToShow(Res.getString("BOOKMARKS_TAB_TITLE"));
+                }
+            }
+        });
+        thumbnailsButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (leftPanel != null) {
+                    leftPanel.selectPanelToShow(Res.getString("THUMBNAILS_TAB_TITLE"));
+                }
+            }
+        });
+        leftPanelMenuGroup.add(bookmarksButton);
+        leftPanelMenuGroup.add(thumbnailsButton);
+        menuView.add(bookmarksButton);
+        menuView.add(thumbnailsButton);
+                
         menuBar.add(menuView);
 
         JMenu menuTools = new JMenu(Res.getString("MENU_TOOLS"));
@@ -3027,6 +3068,19 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         leftPanel = new LeftPanel(centralSplit);
         leftPanel.addBookmarksPanel(createBookmarksPanel());
         leftPanel.addThumbnailsPanel(createThumbnailsPanel());
+        leftPanel.getComboBoxSelector().addItemListener(new ItemListener() {
+
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                String item = (String)e.getItem();
+                if (item.equals(Res.getString("BOOKMARKS_TAB_TITLE"))) {
+                    bookmarksButton.setSelected(true);
+                } else {
+                    thumbnailsButton.setSelected(true);
+                }
+            }
+        });
+        leftPanel.getComboBoxSelector().setSelectedItem(userPrefs.getPanelToShow());
 //        leftPanel.addInnerPanel(createBookmarksPanel(), Res.getString("BOOKMARKS_TAB_TITLE"));
 //        leftPanel.addInnerPanel(createThumbnailsPanel(), Res.getString("THUMBNAILS_TAB_TITLE"));
 
