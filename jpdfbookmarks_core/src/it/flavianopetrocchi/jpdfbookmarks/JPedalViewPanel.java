@@ -64,6 +64,7 @@ import org.jpedal.examples.simpleviewer.gui.generic.GUIThumbnailPanel;
 import org.jpedal.examples.simpleviewer.gui.swing.SwingThumbnailPanel;
 import org.jpedal.grouping.PdfGroupingAlgorithms;
 import org.jpedal.objects.PdfPageData;
+import org.jpedal.utils.sleep;
 
 public class JPedalViewPanel extends JScrollPane implements IPdfView {
 
@@ -72,7 +73,6 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
     private static final int MIN_RECT_HEIGHT = 100;
     private static final float MIN_SCALE = 0.001f;
     private static final float MAX_SCALE = 4.0f;
-
     private final Font textFont = new Font("Serif", Font.PLAIN, 12);
     private ArrayList<PageChangedListener> pageChangedListeners =
             new ArrayList<PageChangedListener>();
@@ -124,7 +124,7 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
         if (decoder == null) {
             decoder = new PdfDecoder();
             decoder.setExtractionMode(PdfDecoder.TEXT);
-            decoder.init(true);
+            PdfDecoder.init(true);
         }
 
         if (thumbnails == null) {
@@ -134,12 +134,23 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
 
         if (password != null) {
             decoder.setEncryptionPassword(password);
-        } 
+        }
         decoder.openPdfFile(file.getCanonicalPath());
 
         pdfPageData = decoder.getPdfPageData();
         numberOfPages = decoder.getPageCount();
         updateCurrentPageBoxes();
+//        if (SwingUtilities.isEventDispatchThread()) {
+//            updateCurrentPageBoxes();
+//        } else {
+//            SwingUtilities.invokeAndWait(new Runnable() {
+//
+//                @Override
+//                public void run() {
+//                    updateCurrentPageBoxes();
+//                }
+//            });
+//        }
 
 //        thumbnails = new ThumbnailsPanel(commonValues, decoder);
 //        addPageChangedListener(thumbnails);
@@ -150,9 +161,12 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
         for (int i = 0; i < buttons.length; i++) {
             ((JButton) buttons[i]).addActionListener(new ThumbnailListener(i));
         }
+
+//        updateCurrentPageBoxes();
     }
 
     private class ThumbnailListener implements ActionListener {
+
         private int page = 1;
 
         public ThumbnailListener(int page) {
@@ -163,7 +177,6 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
         public void actionPerformed(ActionEvent e) {
             goToPage(page);
         }
-
     }
 
     @Override
@@ -183,7 +196,7 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
     public void close() {
         if (decoder != null) {
             decoder.closePdfFile();
-            decoder.dispose();
+//            decoder.dispose();
             decoder = null;
         }
         if (thumbnails != null) {
@@ -556,6 +569,9 @@ public class JPedalViewPanel extends JScrollPane implements IPdfView {
                         / cropBoxHeight;
                 scale = Math.min(scaleWidth, scaleHeight);
                 break;
+        }
+        if (Double.isNaN(scale) || Double.isInfinite(scale)) {
+            scale = 1.0f;
         }
         //setScale(zoom);
     }

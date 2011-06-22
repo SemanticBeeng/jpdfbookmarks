@@ -786,6 +786,43 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         busyPanel.repaint();
     }
 
+//    public void openFileAsync(final File file, final Bookmark target) {
+//        setProgressBar(Res.getString("WAIT_LOADING_FILE"));
+//        CursorToolkit.startWaitCursor(tbBold);
+//
+//        try {
+//            fileOperator.open(file);
+//            Bookmark root = fileOperator.getRootBookmark();
+//            bookmarksTree.setRootVisible(false);
+//            bookmarksTree.setEditable(true);
+//            if (root != null) {
+//                bookmarksTreeModel.setRoot(root);
+//                recreateNodesOpenedState();
+//            } else {
+//                bookmarksTreeModel.setRoot(new Bookmark());
+//            }
+//            bookmarksTree.treeDidChange();
+//            SwingUtilities.invokeLater(new Runnable() {
+//
+//                @Override
+//                public void run() {
+//                    if (target != null) {
+//                        followBookmarkInView(target);
+//                    } else {
+//                        viewPanel.goToFirstPage();
+//                    }
+//                }
+//            });
+//            updateThumbnailsPanel(fileOperator.getViewPanel().getThumbnails());
+//        } catch (Exception ex) {
+//            showErrorMessage(Res.getString("ERROR_OPENING_FILE") + " "
+//                    + file.getName());
+//        } finally {
+//            CursorToolkit.stopWaitCursor(tbBold);
+//            removeProgressBar();
+//        }
+//
+//    }
     public void openFileAsync(final File file, final Bookmark target) {
         setProgressBar(Res.getString("WAIT_LOADING_FILE"));
         CursorToolkit.startWaitCursor(tbBold);
@@ -2501,7 +2538,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         leftPanelMenuGroup.add(thumbnailsButton);
         menuView.add(bookmarksButton);
         menuView.add(thumbnailsButton);
-                
+
         menuBar.add(menuView);
 
         JMenu menuTools = new JMenu(Res.getString("MENU_TOOLS"));
@@ -3072,7 +3109,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
             @Override
             public void itemStateChanged(ItemEvent e) {
-                String item = (String)e.getItem();
+                String item = (String) e.getItem();
                 if (item.equals(Res.getString("BOOKMARKS_TAB_TITLE"))) {
                     bookmarksButton.setSelected(true);
                 } else {
@@ -3405,9 +3442,9 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
             } else {
                 triggers = new int[]{KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT,
-                            KeyEvent.VK_UP, KeyEvent.VK_DOWN, KeyEvent.VK_HOME,
-                            KeyEvent.VK_END, KeyEvent.VK_PAGE_DOWN,
-                            KeyEvent.VK_PAGE_UP};
+                    KeyEvent.VK_UP, KeyEvent.VK_DOWN, KeyEvent.VK_HOME,
+                    KeyEvent.VK_END, KeyEvent.VK_PAGE_DOWN,
+                    KeyEvent.VK_PAGE_UP};
             }
 
             for (int trigger : triggers) {
