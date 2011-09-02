@@ -1287,40 +1287,45 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     private void saveAsync() {
         setProgressBar(Res.getString("WAIT_SAVING_FILE"));
         CursorToolkit.startWaitCursor(tbBold);
-
-        SwingWorker saver = new SwingWorker<Void, Void>() {
-
-            @Override
-            protected Void doInBackground() throws Exception {
-                if (!fileOperator.save((Bookmark) bookmarksTreeModel.getRoot())) {
-                    //fileOperator.save already print an error message, no need to do it again here
-                    //showErrorMessage(Res.getString("ERROR_SAVING_FILE"));
-                }
-                return null;
-            }
-
-            @Override
-            protected void done() {
-                CursorToolkit.stopWaitCursor(tbBold);
-                removeProgressBar();
-            }
-        };
-        saver.execute();
+        new AsyncSaveAs(fileOperator.getFile(), viewPanel.getBookmarkFromView()).execute();
+//        setProgressBar(Res.getString("WAIT_SAVING_FILE"));
+//        CursorToolkit.startWaitCursor(tbBold);
+//
+//        SwingWorker saver = new SwingWorker<Void, Void>() {
+//
+//            @Override
+//            protected Void doInBackground() throws Exception {
+//                if (!fileOperator.save((Bookmark) bookmarksTreeModel.getRoot())) {
+//                    //fileOperator.save already print an error message, no need to do it again here
+//                    //showErrorMessage(Res.getString("ERROR_SAVING_FILE"));
+//                }
+//                return null;
+//            }
+//
+//            @Override
+//            protected void done() {
+//                CursorToolkit.stopWaitCursor(tbBold);
+//                removeProgressBar();
+//            }
+//        };
+//        saver.execute();
 
     }
 
-    private void save() {
-        if (!fileOperator.save((Bookmark) bookmarksTreeModel.getRoot())) {
-            showErrorMessage(Res.getString("ERROR_SAVING_FILE"));
-        }
-    }
+//    private void save() {
+//        if (!fileOperator.save((Bookmark) bookmarksTreeModel.getRoot())) {
+//            showErrorMessage(Res.getString("ERROR_SAVING_FILE"));
+//        }
+//    }
 
     private class AsyncSaveAs extends SwingWorker {
 
         File f;
+        Bookmark currentView;
 
-        public AsyncSaveAs(File f) {
+        public AsyncSaveAs(File f, Bookmark currentView) {
             this.f = f;
+            this.currentView = currentView;
         }
 
         @Override
@@ -1332,12 +1337,13 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
         @Override
         protected void done() {
+            followBookmarkInView(currentView);
             CursorToolkit.stopWaitCursor(tbBold);
             removeProgressBar();
         }
     }
 
-    private void saveAs() {
+    private void saveAsAsync() {
 
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -1376,8 +1382,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
         setProgressBar(Res.getString("WAIT_SAVING_FILE"));
         CursorToolkit.startWaitCursor(tbBold);
-        new AsyncSaveAs(f).execute();
-//        fileOperator.saveAs((Bookmark) bookmarksTreeModel.getRoot(),
+        new AsyncSaveAs(f, viewPanel.getBookmarkFromView()).execute();
+//        fileOperator.saveAsAsync((Bookmark) bookmarksTreeModel.getRoot(),
 //                f.getAbsolutePath());
     }
 
@@ -1772,7 +1778,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                saveAs();
+                saveAsAsync();
             }
         };
 
