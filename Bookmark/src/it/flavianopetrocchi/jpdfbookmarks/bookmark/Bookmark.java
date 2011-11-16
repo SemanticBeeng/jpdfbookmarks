@@ -638,8 +638,8 @@ public class Bookmark extends DefaultMutableTreeNode implements Serializable {
             if (!Character.isWhitespace(c)) {
                 if (line.substring(i, i + attributesSeparator.length()).equals(attributesSeparator)) {
                     betweenAttributesSeparator = true;
-                    break;
                 }
+                break;
             }
         }
 
@@ -649,8 +649,8 @@ public class Bookmark extends DefaultMutableTreeNode implements Serializable {
             if (!Character.isWhitespace(c)) {
                 if (line.substring(i - attributesSeparator.length() + 1, i).equals(attributesSeparator)) {
                     betweenAttributesSeparator = true;
-                    break;
                 }
+                break;
             }
         }
 
@@ -668,6 +668,8 @@ public class Bookmark extends DefaultMutableTreeNode implements Serializable {
             if (typeIndex != -1
                     && isBetweenAttributesSeparator(line, type, typeIndex, attributesSeparator)) {
                 break;
+            } else {
+                typeIndex = -1;
             }
         }
         return typeIndex;
