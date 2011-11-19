@@ -104,6 +104,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.CellEditor;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
@@ -281,6 +282,7 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
     private Action optionsDialogAction;
     private Action checkUpdatesAction;
     private Action readOnlineManualAction;
+    private Action donateToProject;
     private Action goToAuthorBlog;
     private Action selectText;
     private Action connectToClipboard;
@@ -1317,7 +1319,6 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 //            showErrorMessage(Res.getString("ERROR_SAVING_FILE"));
 //        }
 //    }
-
     private class AsyncSaveAs extends SwingWorker {
 
         File f;
@@ -2205,6 +2206,15 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
             }
         };
 
+        donateToProject = new ActionBuilder("ACTION_DONATE",
+                "ACTION_DONATE_DESCR", null, "donate-icon.png", true) {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                goToWebLink("http://sourceforge.net/donate/index.php?group_id=297580");
+            }
+        };
+
         goToAuthorBlog = new ActionBuilder("ACTION_GO_TO_BLOG",
                 "ACTION_GO_TO_BLOG_DESCR", null, "internet-web-browser.png", true) {
 
@@ -2637,6 +2647,8 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         item.setMnemonic(Res.mnemonicFromRes("MENU_GO_TO_BLOG_MNEMONIC"));
         item = menuHelp.add(readOnlineManualAction);
         item.setMnemonic(Res.mnemonicFromRes("MENU_READ_MANUAL_MNEMONIC"));
+        item = menuHelp.add(donateToProject);
+        item.setMnemonic(Res.mnemonicFromRes("MENU_DONATE_MNEMONIC"));
 
         menuHelp.addSeparator();
 
@@ -2903,6 +2915,10 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
         webToolbar.add(checkUpdatesAction);
         webToolbar.add(goToAuthorBlog);
         webToolbar.add(readOnlineManualAction);
+        btn = webToolbar.add(donateToProject);
+        btn.setVerticalTextPosition(SwingConstants.CENTER);
+        btn.setHorizontalTextPosition(SwingConstants.RIGHT);
+        btn.setText(btn.getToolTipText());
 
         mainToolbarsPanel.add(fileToolbar);
         mainToolbarsPanel.add(undoToolbar);
@@ -3448,9 +3464,9 @@ class JPdfBookmarksGui extends JFrame implements FileOperationListener,
 
             } else {
                 triggers = new int[]{KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT,
-                    KeyEvent.VK_UP, KeyEvent.VK_DOWN, KeyEvent.VK_HOME,
-                    KeyEvent.VK_END, KeyEvent.VK_PAGE_DOWN,
-                    KeyEvent.VK_PAGE_UP};
+                            KeyEvent.VK_UP, KeyEvent.VK_DOWN, KeyEvent.VK_HOME,
+                            KeyEvent.VK_END, KeyEvent.VK_PAGE_DOWN,
+                            KeyEvent.VK_PAGE_UP};
             }
 
             for (int trigger : triggers) {
