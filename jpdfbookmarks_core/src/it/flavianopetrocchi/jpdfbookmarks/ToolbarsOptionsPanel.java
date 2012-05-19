@@ -104,14 +104,14 @@ public class ToolbarsOptionsPanel extends javax.swing.JPanel {
 
         checkWebOperations.setText(bundle.getString("TOOLBAR_WEB")); // NOI18N
 
-        btnShowAllMain.setText("Show All");
+        btnShowAllMain.setText(bundle.getString("TOOLBAR_SHOW_ALL")); // NOI18N
         btnShowAllMain.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnShowAllMainActionPerformed(evt);
             }
         });
 
-        btnHideAllMain.setText("Hide All");
+        btnHideAllMain.setText(bundle.getString("TOOLBAR_HIDE_ALL")); // NOI18N
         btnHideAllMain.setMaximumSize(new java.awt.Dimension(65, 29));
         btnHideAllMain.setMinimumSize(new java.awt.Dimension(65, 29));
         btnHideAllMain.addActionListener(new java.awt.event.ActionListener() {
@@ -139,9 +139,9 @@ public class ToolbarsOptionsPanel extends javax.swing.JPanel {
                     .addComponent(checkWebOperations))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panelMainToolbarsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(btnShowAllMain, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnHideAllMain, javax.swing.GroupLayout.DEFAULT_SIZE, 95, Short.MAX_VALUE))
-                .addContainerGap(77, Short.MAX_VALUE))
+                    .addComponent(btnHideAllMain, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnShowAllMain, javax.swing.GroupLayout.DEFAULT_SIZE, 109, Short.MAX_VALUE))
+                .addGap(64, 64, 64))
         );
         panelMainToolbarsLayout.setVerticalGroup(
             panelMainToolbarsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -172,14 +172,14 @@ public class ToolbarsOptionsPanel extends javax.swing.JPanel {
 
         checkApplyDestination.setText(bundle.getString("TOOLBAR_SETDEST")); // NOI18N
 
-        btnShowAllBookmarks.setText("Show All");
+        btnShowAllBookmarks.setText(bundle.getString("TOOLBAR_SHOW_ALL")); // NOI18N
         btnShowAllBookmarks.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnShowAllBookmarksActionPerformed(evt);
             }
         });
 
-        btnHideAllBookmarks.setText("Hide All");
+        btnHideAllBookmarks.setText(bundle.getString("TOOLBAR_HIDE_ALL")); // NOI18N
         btnHideAllBookmarks.setMaximumSize(new java.awt.Dimension(65, 29));
         btnHideAllBookmarks.setMinimumSize(new java.awt.Dimension(65, 29));
         btnHideAllBookmarks.addActionListener(new java.awt.event.ActionListener() {
@@ -206,9 +206,9 @@ public class ToolbarsOptionsPanel extends javax.swing.JPanel {
                     .addComponent(checkApplyDestination))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panelBookmarksToolbarsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(btnShowAllBookmarks, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnHideAllBookmarks, javax.swing.GroupLayout.DEFAULT_SIZE, 88, Short.MAX_VALUE))
-                .addContainerGap(75, Short.MAX_VALUE))
+                    .addComponent(btnHideAllBookmarks, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnShowAllBookmarks, javax.swing.GroupLayout.DEFAULT_SIZE, 98, Short.MAX_VALUE))
+                .addGap(65, 65, 65))
         );
         panelBookmarksToolbarsLayout.setVerticalGroup(
             panelBookmarksToolbarsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -233,8 +233,8 @@ public class ToolbarsOptionsPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(panelMainToolbars, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(panelBookmarksToolbars, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(panelMainToolbars, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 466, Short.MAX_VALUE)
+                    .addComponent(panelBookmarksToolbars, javax.swing.GroupLayout.DEFAULT_SIZE, 466, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(

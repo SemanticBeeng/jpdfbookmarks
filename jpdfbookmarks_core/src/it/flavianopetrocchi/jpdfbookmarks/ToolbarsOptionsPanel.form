@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.1" encoding="UTF-8" ?>
 
 <Form version="1.3" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
@@ -19,8 +19,8 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="panelMainToolbars" alignment="1" max="32767" attributes="0"/>
-                  <Component id="panelBookmarksToolbars" alignment="0" max="32767" attributes="0"/>
+                  <Component id="panelMainToolbars" alignment="1" pref="466" max="32767" attributes="0"/>
+                  <Component id="panelBookmarksToolbars" alignment="0" pref="466" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -53,13 +53,13 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" attributes="0">
-                  <EmptySpace max="-2" attributes="0"/>
+              <Group type="102" max="-2" attributes="0">
+                  <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="checkFileActions" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="checkNavigation" alignment="0" min="-2" max="-2" attributes="1"/>
                   </Group>
-                  <EmptySpace max="-2" attributes="0"/>
+                  <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="checkOtherActions" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="checkFitType" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -69,12 +69,12 @@
                       <Component id="checkZoom" min="-2" max="-2" attributes="0"/>
                       <Component id="checkWebOperations" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace max="-2" attributes="0"/>
+                  <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                      <Component id="btnShowAllMain" max="32767" attributes="1"/>
-                      <Component id="btnHideAllMain" alignment="0" pref="95" max="32767" attributes="1"/>
+                      <Component id="btnHideAllMain" max="32767" attributes="1"/>
+                      <Component id="btnShowAllMain" alignment="0" pref="109" max="32767" attributes="1"/>
                   </Group>
-                  <EmptySpace pref="77" max="32767" attributes="0"/>
+                  <EmptySpace min="-2" pref="64" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -144,7 +144,9 @@
         </Component>
         <Component class="javax.swing.JButton" name="btnShowAllMain">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Show All"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="it/flavianopetrocchi/jpdfbookmarks/locales/localizedText.properties" key="TOOLBAR_SHOW_ALL" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+            </Property>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnShowAllMainActionPerformed"/>
@@ -152,7 +154,9 @@
         </Component>
         <Component class="javax.swing.JButton" name="btnHideAllMain">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Hide All"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="it/flavianopetrocchi/jpdfbookmarks/locales/localizedText.properties" key="TOOLBAR_HIDE_ALL" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+            </Property>
             <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[65, 29]"/>
             </Property>
@@ -180,13 +184,13 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" alignment="0" attributes="0">
-                  <EmptySpace max="-2" attributes="0"/>
+              <Group type="102" alignment="0" max="-2" attributes="0">
+                  <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="1" max="-2" attributes="0">
                       <Component id="checkAddBookmark" alignment="0" max="32767" attributes="1"/>
                       <Component id="checkEditStyle" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace max="-2" attributes="0"/>
+                  <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="checkEditBookmark" min="-2" max="-2" attributes="0"/>
@@ -195,12 +199,12 @@
                       </Group>
                       <Component id="checkApplyDestination" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace max="-2" attributes="0"/>
+                  <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                      <Component id="btnShowAllBookmarks" max="32767" attributes="1"/>
-                      <Component id="btnHideAllBookmarks" alignment="0" pref="88" max="32767" attributes="1"/>
+                      <Component id="btnHideAllBookmarks" max="32767" attributes="1"/>
+                      <Component id="btnShowAllBookmarks" alignment="0" pref="98" max="32767" attributes="1"/>
                   </Group>
-                  <EmptySpace pref="75" max="32767" attributes="0"/>
+                  <EmptySpace min="-2" pref="65" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -262,7 +266,9 @@
         </Component>
         <Component class="javax.swing.JButton" name="btnShowAllBookmarks">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Show All"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="it/flavianopetrocchi/jpdfbookmarks/locales/localizedText.properties" key="TOOLBAR_SHOW_ALL" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+            </Property>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnShowAllBookmarksActionPerformed"/>
@@ -270,7 +276,9 @@
         </Component>
         <Component class="javax.swing.JButton" name="btnHideAllBookmarks">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Hide All"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="it/flavianopetrocchi/jpdfbookmarks/locales/localizedText.properties" key="TOOLBAR_HIDE_ALL" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+            </Property>
             <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[65, 29]"/>
             </Property>
